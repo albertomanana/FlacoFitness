@@ -21,3 +21,4 @@ Registrar aquí cambios funcionales acumulativos que afecten comportamiento, mó
 - Se añadió la capa inicial de repositorios Spring Data JPA y la configuración base para validar persistencia con datos semilla.
 - Se añadió la capa de servicios con validaciones de negocio básicas y excepciones personalizadas.
 - Se implementó el primer CRUD MVC completo para `Usuario` con controlador y vistas Thymeleaf reutilizables.
+- Se implementó el CRUD MVC completo para `Rutina`, incluyendo controlador, vistas Thymeleaf, selección de usuarios activos y edición del objetivo mediante enum.

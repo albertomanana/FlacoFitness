@@ -44,6 +44,20 @@ public class RutinaService {
     }
 
     @Transactional
+    public Rutina actualizar(Long id, Rutina rutinaActualizada) {
+        Rutina rutinaExistente = buscarPorId(id);
+        Usuario usuario = obtenerUsuarioValido(rutinaActualizada.getUsuario());
+
+        rutinaExistente.setNombre(rutinaActualizada.getNombre());
+        rutinaExistente.setDescripcion(rutinaActualizada.getDescripcion());
+        rutinaExistente.setObjetivo(rutinaActualizada.getObjetivo());
+        rutinaExistente.setActiva(rutinaActualizada.getActiva());
+        rutinaExistente.setUsuario(usuario);
+
+        return rutinaRepository.save(rutinaExistente);
+    }
+
+    @Transactional
     public void desactivar(Long id) {
         Rutina rutina = buscarPorId(id);
         rutina.setActiva(false);
