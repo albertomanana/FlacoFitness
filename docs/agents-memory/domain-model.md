@@ -17,6 +17,7 @@ Define el tipo de usuario dentro del sistema, por ejemplo administrador, entrena
 Estado actual:
 - entidad JPA inicial implementada
 - relación `OneToMany` con `Usuario`
+- campo `activo` añadido para gestionar disponibilidad del plan
 
 ### Plan
 

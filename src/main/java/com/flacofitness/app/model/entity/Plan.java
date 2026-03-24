@@ -37,6 +37,10 @@ public class Plan {
     @Column(name = "precio_mensual", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioMensual;
 
+    @NotNull
+    @Column(nullable = false)
+    private Boolean activo;
+
     @JsonIgnore
     @OneToMany(mappedBy = "plan")
     private Set<Usuario> usuarios = new HashSet<>();
