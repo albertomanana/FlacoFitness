@@ -11,21 +11,6 @@ public class ViewController {
         return "home/index";
     }
 
-    @GetMapping("/usuarios")
-    public String usuariosList() {
-        return "usuarios/list";
-    }
-
-    @GetMapping("/usuarios/nuevo")
-    public String usuariosForm() {
-        return "usuarios/form";
-    }
-
-    @GetMapping("/usuarios/demo")
-    public String usuariosDetail() {
-        return "usuarios/detail";
-    }
-
     @GetMapping("/rutinas")
     public String rutinasList() {
         return "rutinas/list";

@@ -8,7 +8,7 @@ Representa a una persona registrada en el sistema. Puede corresponder a cliente 
 
 Estado actual:
 - entidad JPA inicial implementada con relación a `Rol` y `Plan`
-- campos base definidos: nombre, email, activo y fecha de registro
+- campos ampliados para CRUD MVC: nombre, apellidos, email, telefono, fecha de nacimiento, direccion, activo y fecha de registro
 
 ### Rol
 
@@ -17,7 +17,6 @@ Define el tipo de usuario dentro del sistema, por ejemplo administrador, entrena
 Estado actual:
 - entidad JPA inicial implementada
 - relación `OneToMany` con `Usuario`
-- campo `activo` añadido para gestionar disponibilidad del plan
 
 ### Plan
 
@@ -26,6 +25,7 @@ Modela los planes o membresías del gimnasio, incluyendo nombre, precio, duraci�
 Estado actual:
 - entidad JPA inicial implementada
 - relación `OneToMany` con `Usuario`
+- campo `activo` añadido para gestionar disponibilidad del plan
 
 ### Rutina
 

@@ -8,36 +8,88 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="mb-4">
-                <h1 class="mb-1">Formulario de usuario</h1>
-                <p class="text-muted mb-0">Placeholder para alta y edición de usuarios.</p>
+                <h1 class="mb-1" th:text="${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario'">Formulario de usuario</h1>
+                <p class="text-muted mb-0">Completa los datos básicos del usuario y su asignación de rol y plan.</p>
             </div>
 
             <div class="card shadow-sm border-0">
                 <div class="card-body p-4">
-                    <form>
+                    <form th:object="${usuario}"
+                          th:action="${modoEdicion} ? @{/usuarios/{id}(id=${usuario.id})} : @{/usuarios}"
+                          method="post">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="nombre" class="form-label">Nombre</label>
-                                <input id="nombre" type="text" class="form-control" placeholder="Nombre del usuario">
+                                <input id="nombre" type="text" class="form-control" th:field="*{nombre}"
+                                       placeholder="Nombre del usuario">
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}"
+                                     th:errors="*{nombre}">Error</div>
                             </div>
                             <div class="col-md-6">
-                                <label for="apellido" class="form-label">Apellido</label>
-                                <input id="apellido" type="text" class="form-control" placeholder="Apellido del usuario">
+                                <label for="apellidos" class="form-label">Apellidos</label>
+                                <input id="apellidos" type="text" class="form-control" th:field="*{apellidos}"
+                                       placeholder="Apellidos del usuario">
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('apellidos')}"
+                                     th:errors="*{apellidos}">Error</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email</label>
-                                <input id="email" type="email" class="form-control" placeholder="correo@ejemplo.com">
+                                <input id="email" type="email" class="form-control" th:field="*{email}"
+                                       placeholder="correo@ejemplo.com">
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('email')}"
+                                     th:errors="*{email}">Error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="telefono" class="form-label">Teléfono</label>
+                                <input id="telefono" type="text" class="form-control" th:field="*{telefono}"
+                                       placeholder="600123123">
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('telefono')}"
+                                     th:errors="*{telefono}">Error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="fechaNacimiento" class="form-label">Fecha de nacimiento</label>
+                                <input id="fechaNacimiento" type="date" class="form-control"
+                                       th:field="*{fechaNacimiento}">
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaNacimiento')}"
+                                     th:errors="*{fechaNacimiento}">Error</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="rol" class="form-label">Rol</label>
+                                <select id="rol" class="form-select" th:field="*{rol.id}">
+                                    <option value="">Seleccionar rol</option>
+                                    <option th:each="rol : ${roles}" th:value="${rol.id}" th:text="${rol.nombre}">Rol</option>
+                                </select>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('rol')}"
+                                     th:errors="*{rol}">Error</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="plan" class="form-label">Plan</label>
-                                <select id="plan" class="form-select">
-                                    <option selected>Seleccionar plan</option>
+                                <select id="plan" class="form-select" th:field="*{plan.id}">
+                                    <option value="">Seleccionar plan</option>
+                                    <option th:each="plan : ${planes}" th:value="${plan.id}" th:text="${plan.nombre}">Plan</option>
                                 </select>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('plan')}"
+                                     th:errors="*{plan}">Error</div>
+                            </div>
+                            <div class="col-12">
+                                <label for="direccion" class="form-label">Dirección</label>
+                                <textarea id="direccion" class="form-control" rows="3" th:field="*{direccion}"
+                                          placeholder="Dirección del usuario"></textarea>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('direccion')}"
+                                     th:errors="*{direccion}">Error</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input id="activo" class="form-check-input" type="checkbox" th:field="*{activo}">
+                                    <label for="activo" class="form-check-label">Usuario activo</label>
+                                </div>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('activo')}"
+                                     th:errors="*{activo}">Error</div>
                             </div>
                         </div>
                         <div class="d-flex gap-2 mt-4">
                             <button type="submit" class="btn btn-success">Guardar</button>
-                            <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
+                            <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
                         </div>
                     </form>
                 </div>
