@@ -1,0 +1,28 @@
+-- FlacoFitness
+-- Esquema inicial de referencia
+-- Fecha: 2026-03-23
+--
+-- Este archivo servirá para documentar y, si se decide, versionar el esquema SQL
+-- del proyecto. En esta fase se conserva como guía de trabajo y no como modelo final.
+--
+-- Tablas previstas:
+-- - roles
+-- - usuarios
+-- - planes
+-- - rutinas
+-- - ejercicios
+-- - rutina_ejercicio
+-- - asistencias
+-- - pagos
+--
+-- Convenciones propuestas:
+-- - claves primarias numéricas autoincrementales
+-- - nombres de tablas en minúsculas y snake_case
+-- - columnas de auditoría básicas: created_at, updated_at
+-- - claves foráneas explícitas entre tablas relacionadas
+--
+-- TODO:
+-- 1. Definir atributos por entidad
+-- 2. Confirmar cardinalidades
+-- 3. Establecer restricciones y únicos
+-- 4. Sincronizar este archivo con las entidades JPA cuando el modelo se implemente

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Formulario de usuario')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <h1 class="mb-1">Formulario de usuario</h1>
+                <p class="text-muted mb-0">Placeholder para alta y edición de usuarios.</p>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="nombre" class="form-label">Nombre</label>
+                                <input id="nombre" type="text" class="form-control" placeholder="Nombre del usuario">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="apellido" class="form-label">Apellido</label>
+                                <input id="apellido" type="text" class="form-control" placeholder="Apellido del usuario">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input id="email" type="email" class="form-control" placeholder="correo@ejemplo.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="plan" class="form-label">Plan</label>
+                                <select id="plan" class="form-select">
+                                    <option selected>Seleccionar plan</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

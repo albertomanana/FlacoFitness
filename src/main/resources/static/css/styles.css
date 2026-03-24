@@ -1,0 +1,51 @@
+:root {
+    --ff-primary: #1f6f52;
+    --ff-primary-dark: #164f3b;
+    --ff-accent: #dff6ec;
+    --ff-bg: #f7faf8;
+    --ff-text: #1c2a25;
+}
+
+body {
+    background-color: var(--ff-bg);
+    color: var(--ff-text);
+}
+
+.ff-navbar {
+    background: linear-gradient(135deg, var(--ff-primary-dark), var(--ff-primary));
+}
+
+.ff-hero {
+    background: linear-gradient(135deg, rgba(31, 111, 82, 0.12), rgba(223, 246, 236, 0.9));
+    border: 1px solid rgba(31, 111, 82, 0.15);
+}
+
+.ff-footer {
+    background-color: #ffffff;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+.btn-success {
+    background-color: var(--ff-primary);
+    border-color: var(--ff-primary);
+}
+
+.btn-success:hover,
+.btn-success:focus {
+    background-color: var(--ff-primary-dark);
+    border-color: var(--ff-primary-dark);
+}
+
+.btn-outline-success {
+    color: var(--ff-primary);
+    border-color: var(--ff-primary);
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus {
+    background-color: var(--ff-primary);
+    border-color: var(--ff-primary);
+}

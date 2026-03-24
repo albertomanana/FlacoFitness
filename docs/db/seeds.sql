@@ -1,0 +1,15 @@
+-- FlacoFitness
+-- Datos semilla iniciales de referencia
+-- Fecha: 2026-03-23
+--
+-- Uso previsto:
+-- - poblar roles base
+-- - crear planes de ejemplo
+-- - generar usuarios de demostración
+-- - dejar rutinas y ejercicios mínimos para pruebas
+--
+-- TODO:
+-- 1. Insertar roles como ADMIN, ENTRENADOR y CLIENTE
+-- 2. Añadir al menos dos planes de membresía
+-- 3. Crear usuarios de demostración para defensa
+-- 4. Cargar una rutina ejemplo con ejercicios asociados

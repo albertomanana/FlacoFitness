@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Error 404')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container py-5 text-center">
+    <div class="mx-auto" style="max-width: 720px;">
+        <span class="badge text-bg-warning mb-3">404</span>
+        <h1 class="display-6 fw-bold">La página solicitada no existe.</h1>
+        <p class="lead text-muted">
+            La ruta todavía no está disponible o el recurso no pudo localizarse.
+        </p>
+        <a class="btn btn-success" th:href="@{/}">Volver al inicio</a>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

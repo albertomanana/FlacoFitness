@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Formulario de rutina')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="mb-4">
+                <h1 class="mb-1">Formulario de rutina</h1>
+                <p class="text-muted mb-0">Base para alta y edición de rutinas de entrenamiento.</p>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <form>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label for="nombreRutina" class="form-label">Nombre</label>
+                                <input id="nombreRutina" type="text" class="form-control" placeholder="Rutina fuerza inicial">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="usuarioRutina" class="form-label">Usuario</label>
+                                <select id="usuarioRutina" class="form-select">
+                                    <option selected>Seleccionar usuario</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label for="objetivo" class="form-label">Objetivo</label>
+                                <textarea id="objetivo" class="form-control" rows="4"
+                                          placeholder="Definir objetivo general de la rutina"></textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

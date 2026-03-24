@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Inicio')}"></head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container py-5">
+    <section class="p-4 p-md-5 rounded-4 ff-hero mb-5">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <span class="badge text-bg-success mb-3">Base académica inicial</span>
+                <h1 class="display-5 fw-bold mb-3">Gestión de gimnasio preparada para crecer con orden.</h1>
+                <p class="lead mb-0">
+                    Este repositorio contiene el esqueleto profesional de FlacoFitness: MVC, Spring Boot, Thymeleaf,
+                    MySQL, Docker y documentación viva dentro del propio proyecto.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        <h2 class="h5">Estado actual</h2>
+                        <ul class="mb-0 ps-3">
+                            <li>Arquitectura base creada</li>
+                            <li>Vistas placeholder disponibles</li>
+                            <li>Modelo de dominio pendiente</li>
+                            <li>Docker preparado</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-md-6 col-xl-3">
+            <article class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5">Usuarios</h2>
+                    <p class="text-muted">Gestión de clientes, entrenadores y administración.</p>
+                    <a class="btn btn-outline-success btn-sm" th:href="@{/usuarios}">Ir al módulo</a>
+                </div>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5">Rutinas</h2>
+                    <p class="text-muted">Planificación de entrenamientos y ejercicios asociados.</p>
+                    <a class="btn btn-outline-success btn-sm" th:href="@{/rutinas}">Ir al módulo</a>
+                </div>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5">Pagos</h2>
+                    <p class="text-muted">Seguimiento de cuotas y estado de membresías.</p>
+                    <a class="btn btn-outline-success btn-sm" th:href="@{/pagos}">Ir al módulo</a>
+                </div>
+            </article>
+        </div>
+        <div class="col-md-6 col-xl-3">
+            <article class="card h-100 shadow-sm border-0">
+                <div class="card-body">
+                    <h2 class="h5">Asistencias</h2>
+                    <p class="text-muted">Control de presencia y actividad del gimnasio.</p>
+                    <a class="btn btn-outline-success btn-sm" th:href="@{/asistencias}">Ir al módulo</a>
+                </div>
+            </article>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
