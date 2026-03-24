@@ -1,60 +1,76 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Detalle de pago')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('pagos')}"></div>
 
-<main class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="mb-1">Detalle de pago</h1>
-            <p class="text-muted mb-0">Consulta completa del pago seleccionado.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a class="btn btn-outline-success" th:href="@{/pagos/{id}/editar(id=${pago.id})}">Editar</a>
-            <a class="btn btn-outline-secondary" th:href="@{/pagos}">Volver</a>
-        </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de pago', 'Consulta completa del movimiento seleccionado.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Consulta</span>
+                        <h2 class="ff-section-title">Pago registrado</h2>
+                        <p class="ff-section-subtitle">Informacion financiera asociada al usuario, plan y estado actual del cobro.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-success" th:href="@{/pagos/{id}/editar(id=${pago.id})}">Editar</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/pagos}">Volver</a>
+                    </div>
+                </section>
+
+                <section class="row justify-content-center">
+                    <div class="col-12 col-xl-10">
+                        <div class="ff-surface-card">
+                            <div class="ff-card-body">
+                                <dl class="row mb-0 ff-detail-list">
+                                    <dt class="col-sm-3">Fecha de pago</dt>
+                                    <dd class="col-sm-9" th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">
+                                        Fecha
+                                    </dd>
+
+                                    <dt class="col-sm-3">Monto</dt>
+                                    <dd class="col-sm-9" th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' €' : '-'}">0.00 €</dd>
+
+                                    <dt class="col-sm-3">Metodo de pago</dt>
+                                    <dd class="col-sm-9"
+                                        th:text="${pago.metodoPago != null ? #strings.replace(pago.metodoPago.name(), '_', ' ') : '-'}">
+                                        Metodo
+                                    </dd>
+
+                                    <dt class="col-sm-3">Estado</dt>
+                                    <dd class="col-sm-9">
+                                        <span class="ff-status-badge"
+                                              th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
+                                              th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">
+                                            Estado
+                                        </span>
+                                    </dd>
+
+                                    <dt class="col-sm-3">Referencia</dt>
+                                    <dd class="col-sm-9" th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</dd>
+
+                                    <dt class="col-sm-3">Usuario asociado</dt>
+                                    <dd class="col-sm-9"
+                                        th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null ? ' ' + pago.usuario.apellidos : '') : '-'}">
+                                        Usuario
+                                    </dd>
+
+                                    <dt class="col-sm-3">Plan asociado</dt>
+                                    <dd class="col-sm-9" th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
     </div>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Fecha de pago</dt>
-                <dd class="col-sm-9" th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">
-                    Fecha
-                </dd>
-
-                <dt class="col-sm-3">Monto</dt>
-                <dd class="col-sm-9" th:text="${pago.monto != null ? pago.monto : '-'}">0.00</dd>
-
-                <dt class="col-sm-3">Método de pago</dt>
-                <dd class="col-sm-9"
-                    th:text="${pago.metodoPago != null ? #strings.replace(pago.metodoPago.name(), '_', ' ') : '-'}">
-                    Método
-                </dd>
-
-                <dt class="col-sm-3">Estado</dt>
-                <dd class="col-sm-9"
-                    th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">
-                    Estado
-                </dd>
-
-                <dt class="col-sm-3">Referencia</dt>
-                <dd class="col-sm-9" th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</dd>
-
-                <dt class="col-sm-3">Usuario asociado</dt>
-                <dd class="col-sm-9"
-                    th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null ? ' ' + pago.usuario.apellidos : '') : '-'}">
-                    Usuario
-                </dd>
-
-                <dt class="col-sm-3">Plan asociado</dt>
-                <dd class="col-sm-9" th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</dd>
-            </dl>
-        </div>
-    </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

@@ -1,52 +1,69 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Detalle de rutina')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
-<main class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="mb-1">Detalle de rutina</h1>
-            <p class="text-muted mb-0">Consulta de la información completa de la rutina seleccionada.</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a class="btn btn-outline-success" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
-            <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
-        </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de rutina', 'Consulta completa de la rutina seleccionada.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Consulta</span>
+                        <h2 class="ff-section-title" th:text="${rutina.nombre}">Rutina</h2>
+                        <p class="ff-section-subtitle">Informacion clave sobre objetivo, estado y usuario asociado.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-success" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
+                    </div>
+                </section>
+
+                <section class="row justify-content-center">
+                    <div class="col-12 col-xl-10">
+                        <div class="ff-surface-card">
+                            <div class="ff-card-body">
+                                <dl class="row mb-0 ff-detail-list">
+                                    <dt class="col-sm-3">Nombre</dt>
+                                    <dd class="col-sm-9" th:text="${rutina.nombre}">Nombre</dd>
+
+                                    <dt class="col-sm-3">Descripcion</dt>
+                                    <dd class="col-sm-9" th:text="${#strings.defaultString(rutina.descripcion, '-')}">Descripcion</dd>
+
+                                    <dt class="col-sm-3">Objetivo</dt>
+                                    <dd class="col-sm-9" th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : '-'}">Objetivo</dd>
+
+                                    <dt class="col-sm-3">Fecha de creacion</dt>
+                                    <dd class="col-sm-9"
+                                        th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">
+                                        Fecha
+                                    </dd>
+
+                                    <dt class="col-sm-3">Activa</dt>
+                                    <dd class="col-sm-9">
+                                        <span class="ff-status-badge"
+                                              th:classappend="${rutina.activa} ? ' ff-status-active' : ' ff-status-inactive'"
+                                              th:text="${rutina.activa} ? 'Activa' : 'Inactiva'">Activa</span>
+                                    </dd>
+
+                                    <dt class="col-sm-3">Usuario asociado</dt>
+                                    <dd class="col-sm-9"
+                                        th:text="${rutina.usuario != null ? rutina.usuario.nombre + (rutina.usuario.apellidos != null ? ' ' + rutina.usuario.apellidos : '') : '-'}">
+                                        Usuario
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
     </div>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Nombre</dt>
-                <dd class="col-sm-9" th:text="${rutina.nombre}">Nombre</dd>
-
-                <dt class="col-sm-3">Descripción</dt>
-                <dd class="col-sm-9" th:text="${#strings.defaultString(rutina.descripcion, '-')}">Descripción</dd>
-
-                <dt class="col-sm-3">Objetivo</dt>
-                <dd class="col-sm-9" th:text="${#strings.replace(rutina.objetivo.name(), '_', ' ')}">Objetivo</dd>
-
-                <dt class="col-sm-3">Fecha de creación</dt>
-                <dd class="col-sm-9"
-                    th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">
-                    Fecha
-                </dd>
-
-                <dt class="col-sm-3">Activa</dt>
-                <dd class="col-sm-9" th:text="${rutina.activa ? 'Sí' : 'No'}">Sí</dd>
-
-                <dt class="col-sm-3">Usuario asociado</dt>
-                <dd class="col-sm-9"
-                    th:text="${rutina.usuario != null ? rutina.usuario.nombre + (rutina.usuario.apellidos != null ? ' ' + rutina.usuario.apellidos : '') : '-'}">
-                    Usuario
-                </dd>
-            </dl>
-        </div>
-    </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

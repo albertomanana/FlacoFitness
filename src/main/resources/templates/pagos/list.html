@@ -1,84 +1,127 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Pagos')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('pagos')}"></div>
 
-<main class="container py-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h1 class="mb-1" th:text="${tituloListado ?: 'Pagos'}">Pagos</h1>
-            <p class="text-muted mb-0"
-               th:text="${subtituloListado ?: 'Gestión general de pagos registrados en el sistema.'}">
-                Gestión general de pagos registrados en el sistema.
-            </p>
-        </div>
-        <a class="btn btn-success" th:href="@{/pagos/nuevo}">Nuevo pago</a>
-    </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Pagos'}, ${subtituloListado ?: 'Gestion general de pagos registrados en el sistema.'})}"></div>
 
-    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show" role="alert">
-        <span th:text="${mensajeExito}">Operación completada correctamente.</span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-    </div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
-                    <tr>
-                        <th>Fecha de pago</th>
-                        <th>Usuario</th>
-                        <th>Plan</th>
-                        <th>Monto</th>
-                        <th>Método</th>
-                        <th>Estado</th>
-                        <th>Referencia</th>
-                        <th class="text-end">Acciones</th>
-                    </tr>
-                    </thead>
-                    <tbody th:if="${not #lists.isEmpty(pagos)}">
-                    <tr th:each="pago : ${pagos}">
-                        <td th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">
-                            Fecha
-                        </td>
-                        <td th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null ? ' ' + pago.usuario.apellidos : '') : '-'}">
-                            Usuario
-                        </td>
-                        <td th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</td>
-                        <td th:text="${pago.monto != null ? pago.monto : '-'}">0.00</td>
-                        <td th:text="${pago.metodoPago != null ? #strings.replace(pago.metodoPago.name(), '_', ' ') : '-'}">
-                            Método
-                        </td>
-                        <td>
-                            <span class="badge"
-                                  th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' text-bg-success' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' text-bg-danger' : ' text-bg-warning')"
-                                  th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">
-                                Estado
-                            </span>
-                        </td>
-                        <td th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</td>
-                        <td class="text-end">
-                            <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                <a class="btn btn-outline-secondary btn-sm" th:href="@{/pagos/{id}(id=${pago.id})}">Ver</a>
-                                <a class="btn btn-outline-success btn-sm" th:href="@{/pagos/{id}/editar(id=${pago.id})}">Editar</a>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                    <tbody th:if="${#lists.isEmpty(pagos)}">
-                    <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
-                            Todavía no hay pagos registrados.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Modulo de pagos</span>
+                        <h2 class="ff-section-title">Control de cuotas</h2>
+                        <p class="ff-section-subtitle">Consulta pagos por usuario, estado y referencia sin salir del flujo administrativo.</p>
+                    </div>
+                    <a class="btn btn-success" th:href="@{/pagos/nuevo}">Nuevo pago</a>
+                </section>
+
+                <section class="row g-3">
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Registros</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(pagos)}">0</p>
+                            <p class="ff-stat-note">Pagos cargados en el sistema.</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Pagados</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(pagos.?[estado != null and estado.name() == 'PAGADO'])}">0</p>
+                            <p class="ff-stat-note">Cuotas abonadas correctamente.</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Pendientes</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(pagos.?[estado != null and estado.name() == 'PENDIENTE'])}">0</p>
+                            <p class="ff-stat-note">Cobros aun pendientes de resolver.</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Vencidos</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(pagos.?[estado != null and estado.name() == 'VENCIDO'])}">0</p>
+                            <p class="ff-stat-note">Casos que requieren seguimiento administrativo.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card">
+                    <div class="ff-card-header">
+                        <div>
+                            <h3 class="ff-card-title">Historial de pagos</h3>
+                            <p class="ff-card-subtitle">Listado limpio para revisar montos, metodo de pago y estado de cada movimiento.</p>
+                        </div>
+                    </div>
+                    <div class="ff-card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                    <th>Plan</th>
+                                    <th>Monto</th>
+                                    <th>Metodo</th>
+                                    <th>Estado</th>
+                                    <th>Referencia</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody th:if="${not #lists.isEmpty(pagos)}">
+                                <tr th:each="pago : ${pagos}">
+                                    <td th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">Fecha</td>
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <span class="ff-table-primary"
+                                                  th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null && !pago.usuario.apellidos.isBlank() ? ' ' + pago.usuario.apellidos : '') : '-'}">
+                                                Usuario
+                                            </span>
+                                            <span class="ff-table-secondary"
+                                                  th:text="${pago.usuario != null ? pago.usuario.email : 'Sin email'}">correo@ejemplo.com</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</td>
+                                    <td th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' €' : '-'}">0.00 €</td>
+                                    <td th:text="${pago.metodoPago != null ? #strings.replace(pago.metodoPago.name(), '_', ' ') : '-'}">Metodo</td>
+                                    <td>
+                                        <span class="ff-status-badge"
+                                              th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
+                                              th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">
+                                            Estado
+                                        </span>
+                                    </td>
+                                    <td th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/pagos/{id}(id=${pago.id})}">Ver</a>
+                                            <a class="btn btn-outline-success btn-sm" th:href="@{/pagos/{id}/editar(id=${pago.id})}">Editar</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(pagos)}">
+                                <tr>
+                                    <td colspan="8" class="text-center ff-empty-state">
+                                        Todavia no hay pagos registrados.
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
-        </div>
+        </main>
     </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

@@ -1,76 +1,190 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Inicio')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
 
-<main class="container py-5">
-    <section class="p-4 p-md-5 rounded-4 ff-hero mb-5">
-        <div class="row align-items-center g-4">
-            <div class="col-lg-8">
-                <span class="badge text-bg-success mb-3">Base académica inicial</span>
-                <h1 class="display-5 fw-bold mb-3">Gestión de gimnasio preparada para crecer con orden.</h1>
-                <p class="lead mb-0">
-                    Este repositorio contiene el esqueleto profesional de FlacoFitness: MVC, Spring Boot, Thymeleaf,
-                    MySQL, Docker y documentación viva dentro del propio proyecto.
-                </p>
-            </div>
-            <div class="col-lg-4">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body">
-                        <h2 class="h5">Estado actual</h2>
-                        <ul class="mb-0 ps-3">
-                            <li>Arquitectura base creada</li>
-                            <li>Vistas placeholder disponibles</li>
-                            <li>Modelo de dominio pendiente</li>
-                            <li>Docker preparado</li>
-                        </ul>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Vista general del estado operativo de FlacoFitness.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-hero-card">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-xl-7">
+                            <span class="ff-section-eyebrow">Resumen general</span>
+                            <h2 class="display-6 fw-bold mt-2 mb-3">Un panel administrativo claro para seguir construyendo el proyecto con orden.</h2>
+                            <p class="ff-section-subtitle mb-4">
+                                FlacoFitness ya cuenta con backend MVC, persistencia, CRUD funcionales y documentacion viva.
+                                Este dashboard sirve como base administrativa sobria para seguir refinando el producto.
+                            </p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a class="btn btn-success" th:href="@{/usuarios}">Gestionar usuarios</a>
+                                <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Ver rutinas</a>
+                            </div>
+                        </div>
+                        <div class="col-xl-5">
+                            <div class="row g-3">
+                                <div class="col-sm-6">
+                                    <article class="ff-surface-card ff-stat-card">
+                                        <p class="ff-stat-label">Usuarios activos</p>
+                                        <p class="ff-stat-value" th:text="${usuariosActivos}">0</p>
+                                        <p class="ff-stat-note">Miembros disponibles para operar en el sistema.</p>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6">
+                                    <article class="ff-surface-card ff-stat-card">
+                                        <p class="ff-stat-label">Rutinas activas</p>
+                                        <p class="ff-stat-value" th:text="${rutinasActivas}">0</p>
+                                        <p class="ff-stat-note">Planes de entrenamiento actualmente vigentes.</p>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6">
+                                    <article class="ff-surface-card ff-stat-card">
+                                        <p class="ff-stat-label">Pagos pendientes</p>
+                                        <p class="ff-stat-value" th:text="${pagosPendientes}">0</p>
+                                        <p class="ff-stat-note">Cobros que siguen abiertos en la operativa actual.</p>
+                                    </article>
+                                </div>
+                                <div class="col-sm-6">
+                                    <article class="ff-surface-card ff-stat-card">
+                                        <p class="ff-stat-label">Asistencias</p>
+                                        <p class="ff-stat-value" th:text="${asistenciasRegistradas}">0</p>
+                                        <p class="ff-stat-note">Entradas registradas desde el inicio del proyecto.</p>
+                                    </article>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
+
+                <section class="row g-3">
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Usuarios totales</p>
+                            <p class="ff-stat-value" th:text="${usuariosTotales}">0</p>
+                            <p class="ff-stat-note">Base general de miembros gestionados.</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Pagos registrados</p>
+                            <p class="ff-stat-value" th:text="${pagosRegistrados}">0</p>
+                            <p class="ff-stat-note">Movimientos cargados en el sistema.</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Ingreso acumulado</p>
+                            <p class="ff-stat-value"
+                               th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' €'">0.00 €</p>
+                            <p class="ff-stat-note">Suma de pagos con estado pagado.</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Modulos activos</p>
+                            <p class="ff-stat-value">4</p>
+                            <p class="ff-stat-note">Usuarios, rutinas, pagos y asistencias ya operativos.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="row g-4">
+                    <div class="col-xl-8">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Accesos rapidos</p>
+                                    <h3 class="ff-card-title mt-2">Modulos principales</h3>
+                                    <p class="ff-card-subtitle">Navegacion directa a las areas ya implementadas con CRUD MVC.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <a class="ff-quick-link" th:href="@{/usuarios}">
+                                            <div>
+                                                <strong class="d-block">Usuarios</strong>
+                                                <span class="ff-table-secondary">Miembros, estado, rol y plan asignado</span>
+                                            </div>
+                                            <span class="ff-soft-badge">Abrir</span>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <a class="ff-quick-link" th:href="@{/rutinas}">
+                                            <div>
+                                                <strong class="d-block">Rutinas</strong>
+                                                <span class="ff-table-secondary">Asignacion y seguimiento de objetivos</span>
+                                            </div>
+                                            <span class="ff-soft-badge">Abrir</span>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <a class="ff-quick-link" th:href="@{/pagos}">
+                                            <div>
+                                                <strong class="d-block">Pagos</strong>
+                                                <span class="ff-table-secondary">Cuotas, referencias y estado de cobro</span>
+                                            </div>
+                                            <span class="ff-soft-badge">Abrir</span>
+                                        </a>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <a class="ff-quick-link" th:href="@{/asistencias}">
+                                            <div>
+                                                <strong class="d-block">Asistencias</strong>
+                                                <span class="ff-table-secondary">Control de entradas y observaciones</span>
+                                            </div>
+                                            <span class="ff-soft-badge">Abrir</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-xl-4">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Estado del proyecto</p>
+                                    <h3 class="ff-card-title mt-2">Base tecnica disponible</h3>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="d-flex flex-column gap-3">
+                                    <div class="ff-quick-link">
+                                        <div>
+                                            <strong class="d-block">Arquitectura MVC</strong>
+                                            <span class="ff-table-secondary">Backend, servicios y repositorios conectados</span>
+                                        </div>
+                                        <span class="ff-status-badge ff-status-active">Lista</span>
+                                    </div>
+                                    <div class="ff-quick-link">
+                                        <div>
+                                            <strong class="d-block">Frontend administrativo</strong>
+                                            <span class="ff-table-secondary">Layout coherente para dashboard y modulos</span>
+                                        </div>
+                                        <span class="ff-status-badge ff-status-active">Lista</span>
+                                    </div>
+                                    <div class="ff-quick-link">
+                                        <div>
+                                            <strong class="d-block">Memoria documental</strong>
+                                            <span class="ff-table-secondary">Roadmap, decisiones y backlog en repo</span>
+                                        </div>
+                                        <span class="ff-status-badge ff-status-active">Lista</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
-        </div>
-    </section>
-
-    <section class="row g-4">
-        <div class="col-md-6 col-xl-3">
-            <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5">Usuarios</h2>
-                    <p class="text-muted">Gestión de clientes, entrenadores y administración.</p>
-                    <a class="btn btn-outline-success btn-sm" th:href="@{/usuarios}">Ir al módulo</a>
-                </div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5">Rutinas</h2>
-                    <p class="text-muted">Planificación de entrenamientos y ejercicios asociados.</p>
-                    <a class="btn btn-outline-success btn-sm" th:href="@{/rutinas}">Ir al módulo</a>
-                </div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5">Pagos</h2>
-                    <p class="text-muted">Seguimiento de cuotas y estado de membresías.</p>
-                    <a class="btn btn-outline-success btn-sm" th:href="@{/pagos}">Ir al módulo</a>
-                </div>
-            </article>
-        </div>
-        <div class="col-md-6 col-xl-3">
-            <article class="card h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h2 class="h5">Asistencias</h2>
-                    <p class="text-muted">Control de presencia y actividad del gimnasio.</p>
-                    <a class="btn btn-outline-success btn-sm" th:href="@{/asistencias}">Ir al módulo</a>
-                </div>
-            </article>
-        </div>
-    </section>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+        </main>
+    </div>
+</div>
 </body>
 </html>

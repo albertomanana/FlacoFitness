@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="offcanvas-lg offcanvas-start ff-sidebar" tabindex="-1" id="appSidebar" aria-labelledby="appSidebarLabel"
+       th:fragment="sidebar(activeSection)">
+    <div class="offcanvas-header border-bottom">
+        <div>
+            <span class="ff-sidebar-eyebrow">FlacoFitness</span>
+            <h2 class="offcanvas-title ff-sidebar-title" id="appSidebarLabel">Panel administrativo</h2>
+        </div>
+        <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar"
+                aria-label="Cerrar menu"></button>
+    </div>
+
+    <div class="offcanvas-body d-flex flex-column">
+        <div class="ff-brand-block">
+            <div class="ff-brand-mark">FF</div>
+            <div>
+                <p class="ff-brand-title mb-0">FlacoFitness</p>
+                <p class="ff-brand-subtitle mb-0">Gestion academica del gimnasio</p>
+            </div>
+        </div>
+
+        <nav class="ff-nav flex-grow-1" aria-label="Navegacion principal">
+            <a class="ff-nav-link"
+               th:classappend="${activeSection == 'inicio'} ? ' is-active' : ''"
+               th:href="@{/}">
+                <span class="ff-nav-label">Dashboard</span>
+                <span class="ff-nav-helper">Resumen general</span>
+            </a>
+            <a class="ff-nav-link"
+               th:classappend="${activeSection == 'usuarios'} ? ' is-active' : ''"
+               th:href="@{/usuarios}">
+                <span class="ff-nav-label">Usuarios</span>
+                <span class="ff-nav-helper">Miembros, roles y planes</span>
+            </a>
+            <a class="ff-nav-link"
+               th:classappend="${activeSection == 'rutinas'} ? ' is-active' : ''"
+               th:href="@{/rutinas}">
+                <span class="ff-nav-label">Rutinas</span>
+                <span class="ff-nav-helper">Planificacion de entrenamiento</span>
+            </a>
+            <a class="ff-nav-link"
+               th:classappend="${activeSection == 'pagos'} ? ' is-active' : ''"
+               th:href="@{/pagos}">
+                <span class="ff-nav-label">Pagos</span>
+                <span class="ff-nav-helper">Control de cuotas y estados</span>
+            </a>
+            <a class="ff-nav-link"
+               th:classappend="${activeSection == 'asistencias'} ? ' is-active' : ''"
+               th:href="@{/asistencias}">
+                <span class="ff-nav-label">Asistencias</span>
+                <span class="ff-nav-helper">Registro de entradas</span>
+            </a>
+        </nav>
+
+        <div class="ff-sidebar-note">
+            <span class="ff-sidebar-note-label">Memoria viva</span>
+            <p class="mb-0">Las decisiones, roadmap y estado del setup se mantienen dentro del repositorio.</p>
+        </div>
+    </div>
+</aside>
+</body>
+</html>

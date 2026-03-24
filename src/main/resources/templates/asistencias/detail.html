@@ -1,44 +1,57 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Detalle de asistencia')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
 
-<main class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="mb-1">Detalle de asistencia</h1>
-            <p class="text-muted mb-0">Consulta completa del registro seleccionado.</p>
-        </div>
-        <a class="btn btn-outline-secondary" th:href="@{/asistencias}">Volver</a>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de asistencia', 'Consulta completa del registro seleccionado.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Consulta</span>
+                        <h2 class="ff-section-title">Registro de asistencia</h2>
+                        <p class="ff-section-subtitle">Revision de fecha, hora y observaciones asociadas a la entrada.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/asistencias}">Volver</a>
+                </section>
+
+                <section class="row justify-content-center">
+                    <div class="col-12 col-xl-10">
+                        <div class="ff-surface-card">
+                            <div class="ff-card-body">
+                                <dl class="row mb-0 ff-detail-list">
+                                    <dt class="col-sm-3">Fecha</dt>
+                                    <dd class="col-sm-9" th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">
+                                        Fecha
+                                    </dd>
+
+                                    <dt class="col-sm-3">Hora de entrada</dt>
+                                    <dd class="col-sm-9" th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">
+                                        Hora
+                                    </dd>
+
+                                    <dt class="col-sm-3">Usuario</dt>
+                                    <dd class="col-sm-9"
+                                        th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null ? ' ' + asistencia.usuario.apellidos : '') : '-'}">
+                                        Usuario
+                                    </dd>
+
+                                    <dt class="col-sm-3">Observaciones</dt>
+                                    <dd class="col-sm-9" th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
     </div>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Fecha</dt>
-                <dd class="col-sm-9" th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">
-                    Fecha
-                </dd>
-
-                <dt class="col-sm-3">Hora de entrada</dt>
-                <dd class="col-sm-9" th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">
-                    Hora
-                </dd>
-
-                <dt class="col-sm-3">Usuario</dt>
-                <dd class="col-sm-9"
-                    th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null ? ' ' + asistencia.usuario.apellidos : '') : '-'}">
-                    Usuario
-                </dd>
-
-                <dt class="col-sm-3">Observaciones</dt>
-                <dd class="col-sm-9" th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</dd>
-            </dl>
-        </div>
-    </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

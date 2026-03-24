@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<header class="ff-topbar" th:fragment="topbar(pageTitle, pageHint)">
+    <div class="d-flex align-items-center gap-3">
+        <button class="btn ff-icon-button d-lg-none" type="button" data-bs-toggle="offcanvas"
+                data-bs-target="#appSidebar" aria-controls="appSidebar" aria-label="Abrir menu">
+            <span class="ff-hamburger"></span>
+        </button>
+        <div>
+            <span class="ff-topbar-eyebrow">Panel operativo</span>
+            <h1 class="ff-topbar-title" th:text="${pageTitle}">Panel</h1>
+            <p class="ff-topbar-text" th:text="${pageHint}">Resumen del modulo actual.</p>
+        </div>
+    </div>
+
+    <div class="ff-topbar-meta">
+        <div class="ff-topbar-chip d-none d-md-flex">
+            <span class="ff-chip-dot"></span>
+            MVC · Thymeleaf · Bootstrap 5
+        </div>
+        <div class="ff-topbar-chip">
+            Documentacion viva en <code>docs/agents-memory</code>
+        </div>
+    </div>
+</header>
+</body>
+</html>
