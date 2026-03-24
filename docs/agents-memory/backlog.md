@@ -11,7 +11,7 @@
 - Preparar datos semilla minimos para demostracion
 - Documentar decisiones de modelado y restricciones
 - Crear diagramas de arquitectura y base de datos
-- Revisar y pulir formularios para que todo el CRUD comparta el mismo nivel visual del dashboard
+- Revisar manejo de mensajes globales y feedback visual para formularios complejos
 
 ## Prioridad baja
 

@@ -14,14 +14,20 @@
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
                         <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar pago' : 'Alta de pago'">Formulario de pago</h2>
-                        <p class="ff-section-subtitle">Mantiene la trazabilidad de cobros, metodo de pago y referencia interna.</p>
+                        <p class="ff-section-subtitle">Mantiene la trazabilidad financiera con un flujo visual mas ordenado y legible.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/pagos}">Volver</a>
                 </section>
 
-                <section class="row justify-content-center">
-                    <div class="col-12 col-xl-10">
+                <section class="row g-4 ff-form-layout">
+                    <div class="col-12 col-xl-8">
                         <div class="ff-surface-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Registro del pago</h3>
+                                    <p class="ff-card-subtitle">Los datos se validan antes de guardar y conservan la logica de negocio ya existente.</p>
+                                </div>
+                            </div>
                             <div class="ff-card-body">
                                 <form th:object="${pago}"
                                       th:action="${modoEdicion} ? @{/pagos/{id}(id=${pago.id})} : @{/pagos}"
@@ -30,83 +36,130 @@
                                         <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</div>
                                     </div>
 
-                                    <div class="row g-3">
-                                        <div class="col-md-6">
-                                            <label for="fechaPago" class="form-label">Fecha de pago</label>
-                                            <input id="fechaPago" type="date" class="form-control" th:field="*{fechaPago}">
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPago')}"
-                                                 th:errors="*{fechaPago}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="monto" class="form-label">Monto</label>
-                                            <input id="monto" type="number" step="0.01" min="0.01" class="form-control"
-                                                   th:field="*{monto}" placeholder="39.99">
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('monto')}"
-                                                 th:errors="*{monto}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="metodoPago" class="form-label">Metodo de pago</label>
-                                            <select id="metodoPago" class="form-select" th:field="*{metodoPago}">
-                                                <option value="">Seleccionar metodo</option>
-                                                <option th:each="metodo : ${metodosPago}" th:value="${metodo}"
-                                                        th:text="${#strings.replace(metodo.name(), '_', ' ')}">
-                                                    Metodo
-                                                </option>
-                                            </select>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('metodoPago')}"
-                                                 th:errors="*{metodoPago}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="estado" class="form-label">Estado</label>
-                                            <select id="estado" class="form-select" th:field="*{estado}">
-                                                <option value="">Seleccionar estado</option>
-                                                <option th:each="estado : ${estadosPago}" th:value="${estado}"
-                                                        th:text="${#strings.replace(estado.name(), '_', ' ')}">
-                                                    Estado
-                                                </option>
-                                            </select>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('estado')}"
-                                                 th:errors="*{estado}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="usuario" class="form-label">Usuario</label>
-                                            <select id="usuario" class="form-select" th:field="*{usuario.id}">
-                                                <option value="">Seleccionar usuario</option>
-                                                <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
-                                                        th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
-                                                    Usuario
-                                                </option>
-                                            </select>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
-                                                 th:errors="*{usuario.id}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="plan" class="form-label">Plan</label>
-                                            <select id="plan" class="form-select" th:field="*{plan.id}">
-                                                <option value="">Sin plan asociado</option>
-                                                <option th:each="plan : ${planes}" th:value="${plan.id}" th:text="${plan.nombre}">
-                                                    Plan
-                                                </option>
-                                            </select>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('plan.id')}"
-                                                 th:errors="*{plan.id}">Error</div>
-                                        </div>
-                                        <div class="col-12">
-                                            <label for="referencia" class="form-label">Referencia</label>
-                                            <input id="referencia" type="text" class="form-control" th:field="*{referencia}"
-                                                   placeholder="REC-2026-0001">
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('referencia')}"
-                                                 th:errors="*{referencia}">Error</div>
-                                        </div>
+                                    <div class="d-flex flex-column gap-4">
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Datos del movimiento</h4>
+                                                <p class="ff-form-section-text">Fecha, monto, metodo y estado del cobro.</p>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="fechaPago" class="form-label">Fecha de pago</label>
+                                                    <input id="fechaPago" type="date" class="form-control" th:field="*{fechaPago}">
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPago')}"
+                                                         th:errors="*{fechaPago}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="monto" class="form-label">Monto</label>
+                                                    <input id="monto" type="number" step="0.01" min="0.01" class="form-control"
+                                                           th:field="*{monto}" placeholder="39.99">
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('monto')}"
+                                                         th:errors="*{monto}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="metodoPago" class="form-label">Metodo de pago</label>
+                                                    <select id="metodoPago" class="form-select" th:field="*{metodoPago}">
+                                                        <option value="">Seleccionar metodo</option>
+                                                        <option th:each="metodo : ${metodosPago}" th:value="${metodo}"
+                                                                th:text="${#strings.replace(metodo.name(), '_', ' ')}">
+                                                            Metodo
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('metodoPago')}"
+                                                         th:errors="*{metodoPago}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="estado" class="form-label">Estado</label>
+                                                    <select id="estado" class="form-select" th:field="*{estado}">
+                                                        <option value="">Seleccionar estado</option>
+                                                        <option th:each="estado : ${estadosPago}" th:value="${estado}"
+                                                                th:text="${#strings.replace(estado.name(), '_', ' ')}">
+                                                            Estado
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('estado')}"
+                                                         th:errors="*{estado}">Error</div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="referencia" class="form-label">Referencia</label>
+                                                    <input id="referencia" type="text" class="form-control" th:field="*{referencia}"
+                                                           placeholder="REC-2026-0001">
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('referencia')}"
+                                                         th:errors="*{referencia}">Error</div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Relacion con el sistema</h4>
+                                                <p class="ff-form-section-text">Asocia el cobro con usuario y plan activo cuando corresponda.</p>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="usuario" class="form-label">Usuario</label>
+                                                    <select id="usuario" class="form-select" th:field="*{usuario.id}">
+                                                        <option value="">Seleccionar usuario</option>
+                                                        <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
+                                                                th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
+                                                            Usuario
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
+                                                         th:errors="*{usuario.id}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plan" class="form-label">Plan</label>
+                                                    <select id="plan" class="form-select" th:field="*{plan.id}">
+                                                        <option value="">Sin plan asociado</option>
+                                                        <option th:each="plan : ${planes}" th:value="${plan.id}" th:text="${plan.nombre}">
+                                                            Plan
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('plan.id')}"
+                                                         th:errors="*{plan.id}">Error</div>
+                                                </div>
+                                            </div>
+                                        </section>
                                     </div>
 
-                                    <div class="d-flex gap-2 mt-4">
-                                        <button type="submit" class="btn btn-success">Guardar</button>
-                                        <a class="btn btn-outline-secondary" th:href="@{/pagos}">Cancelar</a>
+                                    <div class="ff-form-actions">
+                                        <p class="ff-form-actions-note">El pago requiere un usuario valido y un monto mayor que cero.</p>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success">Guardar</button>
+                                            <a class="btn btn-outline-secondary" th:href="@{/pagos}">Cancelar</a>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <aside class="ff-surface-card ff-side-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Referencia operativa</h3>
+                                    <p class="ff-card-subtitle">Indicaciones rapidas para cargar el movimiento sin perder contexto.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-side-list">
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Modo</span>
+                                        <span class="ff-side-value" th:text="${modoEdicion} ? 'Edicion' : 'Nuevo registro'">Nuevo registro</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Usuario</span>
+                                        <span class="ff-side-value">Obligatorio para registrar el pago</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Plan</span>
+                                        <span class="ff-side-value">Opcional, pero se valida si se informa</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
                 </section>
 

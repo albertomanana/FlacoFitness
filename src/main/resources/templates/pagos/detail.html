@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title">Pago registrado</h2>
-                        <p class="ff-section-subtitle">Informacion financiera asociada al usuario, plan y estado actual del cobro.</p>
+                        <p class="ff-section-subtitle">Vista de detalle con foco en estado, importe y relacion con usuario y plan.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/pagos/{id}/editar(id=${pago.id})}">Editar</a>
@@ -22,48 +22,81 @@
                     </div>
                 </section>
 
-                <section class="row justify-content-center">
-                    <div class="col-12 col-xl-10">
-                        <div class="ff-surface-card">
-                            <div class="ff-card-body">
-                                <dl class="row mb-0 ff-detail-list">
-                                    <dt class="col-sm-3">Fecha de pago</dt>
-                                    <dd class="col-sm-9" th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">
-                                        Fecha
-                                    </dd>
+                <section class="row g-4 ff-detail-layout">
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-body d-flex flex-column gap-4">
+                                <div class="ff-detail-hero">
+                                    <div>
+                                        <h3 class="ff-detail-hero-title">Resumen financiero</h3>
+                                        <p class="ff-detail-hero-text">Informacion disponible para seguimiento de cobro y trazabilidad interna.</p>
+                                    </div>
+                                    <span class="ff-status-badge"
+                                          th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
+                                          th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">
+                                        Estado
+                                    </span>
+                                </div>
 
-                                    <dt class="col-sm-3">Monto</dt>
-                                    <dd class="col-sm-9" th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' €' : '-'}">0.00 €</dd>
-
-                                    <dt class="col-sm-3">Metodo de pago</dt>
-                                    <dd class="col-sm-9"
-                                        th:text="${pago.metodoPago != null ? #strings.replace(pago.metodoPago.name(), '_', ' ') : '-'}">
-                                        Metodo
-                                    </dd>
-
-                                    <dt class="col-sm-3">Estado</dt>
-                                    <dd class="col-sm-9">
-                                        <span class="ff-status-badge"
-                                              th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
-                                              th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">
-                                            Estado
-                                        </span>
-                                    </dd>
-
-                                    <dt class="col-sm-3">Referencia</dt>
-                                    <dd class="col-sm-9" th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</dd>
-
-                                    <dt class="col-sm-3">Usuario asociado</dt>
-                                    <dd class="col-sm-9"
-                                        th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null ? ' ' + pago.usuario.apellidos : '') : '-'}">
-                                        Usuario
-                                    </dd>
-
-                                    <dt class="col-sm-3">Plan asociado</dt>
-                                    <dd class="col-sm-9" th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</dd>
-                                </dl>
+                                <div class="ff-detail-grid">
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Fecha de pago</span>
+                                        <span class="ff-detail-value" th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Monto</span>
+                                        <span class="ff-detail-value" th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' €' : '-'}">0.00 €</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Metodo de pago</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${pago.metodoPago != null ? #strings.replace(pago.metodoPago.name(), '_', ' ') : '-'}">Metodo</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Referencia</span>
+                                        <span class="ff-detail-value" th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Usuario asociado</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null ? ' ' + pago.usuario.apellidos : '') : '-'}">Usuario</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Plan asociado</span>
+                                        <span class="ff-detail-value" th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </article>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <aside class="ff-surface-card ff-side-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Estado del cobro</h3>
+                                    <p class="ff-card-subtitle">Lectura rapida para gestion administrativa y seguimiento.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-side-list">
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Resultado</span>
+                                        <span class="ff-side-value"
+                                              th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : 'Sin estado'}">Estado</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Usuario</span>
+                                        <span class="ff-side-value"
+                                              th:text="${pago.usuario != null ? pago.usuario.nombre : 'Sin usuario'}">Usuario</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Plan relacionado</span>
+                                        <span class="ff-side-value" th:text="${pago.plan != null ? pago.plan.nombre : 'Sin plan asociado'}">Plan</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
                 </section>
 
