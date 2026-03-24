@@ -1,81 +1,93 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Formulario de rutina')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
-<main class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="mb-4">
-                <h1 class="mb-1" th:text="${modoEdicion} ? 'Editar rutina' : 'Nueva rutina'">Formulario de rutina</h1>
-                <p class="text-muted mb-0">Completa los datos básicos de la rutina y asigna el usuario correspondiente.</p>
-            </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar rutina' : 'Nueva rutina', 'Datos basicos, objetivo y usuario asociado.')}"></div>
 
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <form th:object="${rutina}"
-                          th:action="${modoEdicion} ? @{/rutinas/{id}(id=${rutina.id})} : @{/rutinas}"
-                          method="post">
-                        <div class="row g-3">
-                            <div class="col-md-8">
-                                <label for="nombre" class="form-label">Nombre</label>
-                                <input id="nombre" type="text" class="form-control" th:field="*{nombre}"
-                                       placeholder="Rutina fuerza inicial">
-                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}"
-                                     th:errors="*{nombre}">Error</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="usuario" class="form-label">Usuario</label>
-                                <select id="usuario" class="form-select" th:field="*{usuario.id}">
-                                    <option value="">Seleccionar usuario</option>
-                                    <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
-                                            th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
-                                        Usuario
-                                    </option>
-                                </select>
-                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
-                                     th:errors="*{usuario.id}">Error</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="objetivo" class="form-label">Objetivo</label>
-                                <select id="objetivo" class="form-select" th:field="*{objetivo}">
-                                    <option value="">Seleccionar objetivo</option>
-                                    <option th:each="objetivo : ${objetivos}" th:value="${objetivo}"
-                                            th:text="${#strings.replace(objetivo.name(), '_', ' ')}">
-                                        Objetivo
-                                    </option>
-                                </select>
-                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('objetivo')}"
-                                     th:errors="*{objetivo}">Error</div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check form-switch mt-md-4 pt-md-2">
-                                    <input id="activa" class="form-check-input" type="checkbox" th:field="*{activa}">
-                                    <label for="activa" class="form-check-label">Rutina activa</label>
-                                </div>
-                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('activa')}"
-                                     th:errors="*{activa}">Error</div>
-                            </div>
-                            <div class="col-12">
-                                <label for="descripcion" class="form-label">Descripción</label>
-                                <textarea id="descripcion" class="form-control" rows="4" th:field="*{descripcion}"
-                                          placeholder="Describe brevemente la rutina"></textarea>
-                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}"
-                                     th:errors="*{descripcion}">Error</div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Formulario</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar rutina' : 'Alta de rutina'">Formulario de rutina</h2>
+                        <p class="ff-section-subtitle">Configura el objetivo, el estado activo y la persona responsable de la rutina.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
+                </section>
+
+                <section class="row justify-content-center">
+                    <div class="col-12 col-xl-10">
+                        <div class="ff-surface-card">
+                            <div class="ff-card-body">
+                                <form th:object="${rutina}"
+                                      th:action="${modoEdicion} ? @{/rutinas/{id}(id=${rutina.id})} : @{/rutinas}"
+                                      method="post">
+                                    <div class="row g-3">
+                                        <div class="col-md-8">
+                                            <label for="nombre" class="form-label">Nombre</label>
+                                            <input id="nombre" type="text" class="form-control" th:field="*{nombre}"
+                                                   placeholder="Rutina fuerza inicial">
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}"
+                                                 th:errors="*{nombre}">Error</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="usuario" class="form-label">Usuario</label>
+                                            <select id="usuario" class="form-select" th:field="*{usuario.id}">
+                                                <option value="">Seleccionar usuario</option>
+                                                <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
+                                                        th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
+                                                    Usuario
+                                                </option>
+                                            </select>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
+                                                 th:errors="*{usuario.id}">Error</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="objetivo" class="form-label">Objetivo</label>
+                                            <select id="objetivo" class="form-select" th:field="*{objetivo}">
+                                                <option value="">Seleccionar objetivo</option>
+                                                <option th:each="objetivo : ${objetivos}" th:value="${objetivo}"
+                                                        th:text="${#strings.replace(objetivo.name(), '_', ' ')}">
+                                                    Objetivo
+                                                </option>
+                                            </select>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('objetivo')}"
+                                                 th:errors="*{objetivo}">Error</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check form-switch mt-md-4 pt-md-2">
+                                                <input id="activa" class="form-check-input" type="checkbox" th:field="*{activa}">
+                                                <label for="activa" class="form-check-label">Rutina activa</label>
+                                            </div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('activa')}"
+                                                 th:errors="*{activa}">Error</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label for="descripcion" class="form-label">Descripcion</label>
+                                            <textarea id="descripcion" class="form-control" rows="4" th:field="*{descripcion}"
+                                                      placeholder="Describe brevemente la rutina"></textarea>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}"
+                                                 th:errors="*{descripcion}">Error</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 mt-4">
+                                        <button type="submit" class="btn btn-success">Guardar</button>
+                                        <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Cancelar</a>
+                                    </div>
+                                </form>
                             </div>
                         </div>
-                        <div class="d-flex gap-2 mt-4">
-                            <button type="submit" class="btn btn-success">Guardar</button>
-                            <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
-                        </div>
-                    </form>
-                </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
-        </div>
+        </main>
     </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

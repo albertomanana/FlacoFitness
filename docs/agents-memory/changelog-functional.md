@@ -2,25 +2,26 @@
 
 ## Criterio de uso
 
-Registrar aquí cambios funcionales acumulativos que afecten comportamiento, módulos o alcance del producto. No usarlo para cambios puramente cosméticos o técnicos sin impacto funcional.
+Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modulos o alcance del producto. No usarlo para cambios puramente cosmeticos o tecnicos sin impacto funcional.
 
 ## Historial
 
 ### 2026-03-23
 
-- Se creó la estructura inicial del proyecto FlacoFitness.
-- Se dejaron preparados los módulos base de usuarios, rutinas, pagos y asistencias a nivel de vistas placeholder.
-- Se incorporó la documentación viva del proyecto dentro del repositorio.
+- Se creo la estructura inicial del proyecto FlacoFitness.
+- Se dejaron preparados los modulos base de usuarios, rutinas, pagos y asistencias a nivel de vistas placeholder.
+- Se incorporo la documentacion viva del proyecto dentro del repositorio.
 
 ### 2026-03-24
 
-- Se configuró el repositorio Git con ramas base `main` y `develop`.
-- Se añadieron plantillas y automatizaciones de GitHub para facilitar el trabajo continuo.
+- Se configuro el repositorio Git con ramas base `main` y `develop`.
+- Se anadieron plantillas y automatizaciones de GitHub para facilitar el trabajo continuo.
 - Se implementaron las entidades JPA iniciales `Rol`, `Plan` y `Usuario`.
 - Se implementaron las entidades JPA `Rutina`, `Asistencia` y `Pago`, junto con sus enums de dominio.
-- Se añadió la capa inicial de repositorios Spring Data JPA y la configuración base para validar persistencia con datos semilla.
-- Se añadió la capa de servicios con validaciones de negocio básicas y excepciones personalizadas.
-- Se implementó el primer CRUD MVC completo para `Usuario` con controlador y vistas Thymeleaf reutilizables.
-- Se implementó el CRUD MVC completo para `Rutina`, incluyendo controlador, vistas Thymeleaf, selección de usuarios activos y edición del objetivo mediante enum.
-- Se implementó el CRUD MVC completo para `Pago`, con filtros por usuario, formularios reutilizables y soporte de enums para método y estado del pago.
-- Se implementó el CRUD MVC de `Asistencia`, con registro simple, asignación automática de fecha actual y listado contextual por usuario.
+- Se anadio la capa inicial de repositorios Spring Data JPA y la configuracion base para validar persistencia con datos semilla.
+- Se anadio la capa de servicios con validaciones de negocio basicas y excepciones personalizadas.
+- Se implemento el CRUD MVC completo para `Usuario` con controlador y vistas Thymeleaf reutilizables.
+- Se implemento el CRUD MVC completo para `Rutina`, incluyendo controlador, vistas Thymeleaf, seleccion de usuarios activos y edicion del objetivo mediante enum.
+- Se implemento el CRUD MVC completo para `Pago`, con filtros por usuario, formularios reutilizables y soporte de enums para metodo y estado del pago.
+- Se implemento el CRUD MVC de `Asistencia`, con registro simple, asignacion automatica de fecha actual y listado contextual por usuario.
+- Se incorporo un sistema visual administrativo inspirado en Stitch con sidebar, topbar, dashboard real y tablas unificadas para los modulos principales.
