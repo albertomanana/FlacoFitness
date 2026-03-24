@@ -22,3 +22,4 @@ Registrar aquí cambios funcionales acumulativos que afecten comportamiento, mó
 - Se añadió la capa de servicios con validaciones de negocio básicas y excepciones personalizadas.
 - Se implementó el primer CRUD MVC completo para `Usuario` con controlador y vistas Thymeleaf reutilizables.
 - Se implementó el CRUD MVC completo para `Rutina`, incluyendo controlador, vistas Thymeleaf, selección de usuarios activos y edición del objetivo mediante enum.
+- Se implementó el CRUD MVC completo para `Pago`, con filtros por usuario, formularios reutilizables y soporte de enums para método y estado del pago.

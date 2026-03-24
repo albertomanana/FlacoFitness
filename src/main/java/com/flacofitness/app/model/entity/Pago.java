@@ -13,10 +13,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,10 +35,12 @@ public class Pago {
     private Long id;
 
     @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "fecha_pago", nullable = false)
     private LocalDate fechaPago;
 
     @NotNull
+    @DecimalMin(value = "0.01", message = "El monto debe ser mayor que cero")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal monto;
 

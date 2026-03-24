@@ -11,11 +11,6 @@ public class ViewController {
         return "home/index";
     }
 
-    @GetMapping("/pagos")
-    public String pagosList() {
-        return "pagos/list";
-    }
-
     @GetMapping("/asistencias")
     public String asistenciasList() {
         return "asistencias/list";
