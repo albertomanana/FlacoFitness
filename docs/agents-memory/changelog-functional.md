@@ -19,3 +19,4 @@ Registrar aquí cambios funcionales acumulativos que afecten comportamiento, mó
 - Se implementaron las entidades JPA iniciales `Rol`, `Plan` y `Usuario`.
 - Se implementaron las entidades JPA `Rutina`, `Asistencia` y `Pago`, junto con sus enums de dominio.
 - Se añadió la capa inicial de repositorios Spring Data JPA y la configuración base para validar persistencia con datos semilla.
+- Se añadió la capa de servicios con validaciones de negocio básicas y excepciones personalizadas.
