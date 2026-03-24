@@ -52,6 +52,22 @@ public class PagoService {
         return pagoRepository.save(pago);
     }
 
+    @Transactional
+    public Pago actualizar(Long id, Pago pagoActualizado) {
+        Pago pagoExistente = buscarPorId(id);
+
+        validarMonto(pagoActualizado.getMonto());
+        pagoExistente.setFechaPago(pagoActualizado.getFechaPago());
+        pagoExistente.setMonto(pagoActualizado.getMonto());
+        pagoExistente.setMetodoPago(pagoActualizado.getMetodoPago());
+        pagoExistente.setEstado(pagoActualizado.getEstado());
+        pagoExistente.setReferencia(pagoActualizado.getReferencia());
+        pagoExistente.setUsuario(obtenerUsuarioValido(pagoActualizado.getUsuario()));
+        pagoExistente.setPlan(obtenerPlanValidoSiExiste(pagoActualizado.getPlan()));
+
+        return pagoRepository.save(pagoExistente);
+    }
+
     private void validarMonto(BigDecimal monto) {
         if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessValidationException("El monto del pago debe ser mayor que cero");
