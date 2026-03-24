@@ -3,7 +3,6 @@ target/
 *.class
 *.log
 *.ctxt
-.mvn/
 
 # Spring Boot
 *.pid
@@ -32,3 +31,6 @@ tmp/
 temp/
 *.swp
 *.swo
+
+# Herramientas locales
+.tools/

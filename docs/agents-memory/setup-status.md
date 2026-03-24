@@ -4,7 +4,7 @@ Fecha de referencia: 2026-03-24
 
 | Área | Estado | Detalle |
 | --- | --- | --- |
-| Entorno local | En progreso | Estructura Maven y soporte de repositorio creados; falta validar Maven Wrapper o instalacion local de Maven |
+| Entorno local | En progreso | Maven Wrapper operativo en el repositorio y validación local realizada con JDK 17 |
 | Base de datos | Pendiente | Configuración MySQL definida con variables de entorno, sin esquema final implementado |
 | Docker | Preparado | `Dockerfile` y `docker-compose.yml` creados como base funcional |
 | Backend | En progreso | Proyecto Spring Boot inicializado, entidades JPA, repositorios y servicios base creados con validaciones iniciales |
