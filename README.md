@@ -34,13 +34,13 @@ flacofitness/
 
 ## Ejecución local
 
-1. Instala Java 17, Maven y MySQL.
+1. Instala Java 17 y MySQL.
 2. Crea un archivo `.env` a partir de `.env.example` y ajusta los valores.
 3. Crea la base de datos configurada en MySQL.
 4. Ejecuta la aplicación:
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 La aplicación quedará disponible por defecto en `http://localhost:8080`.
