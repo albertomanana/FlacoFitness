@@ -1,0 +1,32 @@
+name: PR Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch naming
+        shell: bash
+        run: |
+          BRANCH="${GITHUB_HEAD_REF}"
+          if [[ ! "$BRANCH" =~ ^(feature|fix|hotfix|release|docs|refactor|chore)\/[a-z0-9._-]+$ ]]; then
+            echo "Nombre de rama no valido: $BRANCH"
+            exit 1
+          fi
+
+  pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate PR title format
+        shell: bash
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          if [[ ! "$TITLE" =~ ^(feat|fix|docs|refactor|test|chore)(\([a-z0-9._-]+\))?:\ .+ ]]; then
+            echo "Titulo de PR no valido: $TITLE"
+            exit 1
+          fi

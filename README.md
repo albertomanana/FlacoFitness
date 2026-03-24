@@ -75,6 +75,14 @@ Estrategia de ramas propuesta:
 
 El detalle operativo del flujo está documentado en `CONTRIBUTING.md` y `docs/agents-memory/repository-workflow.md`.
 
+Automatizaciones incluidas:
+
+- CI con compilación y test Maven en GitHub Actions
+- validación de nombre de rama y título de Pull Request
+- plantillas de issues y PR
+- autoetiquetado por rutas
+- actualizaciones automáticas con Dependabot
+
 ## Nota académica
 
 Este repositorio corresponde a un proyecto académico final. La estructura actual prioriza orden, mantenibilidad y facilidad de evolución antes de desarrollar toda la lógica de negocio.
