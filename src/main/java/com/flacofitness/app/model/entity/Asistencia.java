@@ -13,6 +13,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -29,9 +30,11 @@ public class Asistencia {
     private Long id;
 
     @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(nullable = false)
     private LocalDate fecha;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.TIME)
     @Column(name = "hora_entrada")
     private LocalTime horaEntrada;
 

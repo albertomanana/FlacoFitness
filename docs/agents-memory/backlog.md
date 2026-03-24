@@ -4,7 +4,6 @@
 
 - Implementar layout base y dashboard inicial
 - Configurar conexión real con MySQL en entorno local
-- Implementar CRUD MVC de `Asistencia`
 
 ## Prioridad media
 
