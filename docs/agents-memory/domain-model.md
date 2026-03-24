@@ -6,13 +6,25 @@
 
 Representa a una persona registrada en el sistema. Puede corresponder a cliente del gimnasio, entrenador o administrador, según su rol y permisos funcionales futuros.
 
+Estado actual:
+- entidad JPA inicial implementada con relación a `Rol` y `Plan`
+- campos base definidos: nombre, email, activo y fecha de registro
+
 ### Rol
 
 Define el tipo de usuario dentro del sistema, por ejemplo administrador, entrenador o cliente. Permitirá organizar responsabilidades y flujos internos sin incorporar todavía seguridad avanzada.
 
+Estado actual:
+- entidad JPA inicial implementada
+- relación `OneToMany` con `Usuario`
+
 ### Plan
 
 Modela los planes o membresías del gimnasio, incluyendo nombre, precio, duración y posibles beneficios asociados.
+
+Estado actual:
+- entidad JPA inicial implementada
+- relación `OneToMany` con `Usuario`
 
 ### Rutina
 

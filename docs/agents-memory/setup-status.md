@@ -1,13 +1,13 @@
 # Setup Status
 
-Fecha de referencia: 2026-03-23
+Fecha de referencia: 2026-03-24
 
 | Área | Estado | Detalle |
 | --- | --- | --- |
 | Entorno local | En progreso | Estructura Maven y soporte de repositorio creados; falta validar Maven Wrapper o instalacion local de Maven |
 | Base de datos | Pendiente | Configuración MySQL definida con variables de entorno, sin esquema final implementado |
 | Docker | Preparado | `Dockerfile` y `docker-compose.yml` creados como base funcional |
-| Backend | Preparado | Proyecto Spring Boot inicializado con paquetes y configuración mínima |
+| Backend | En progreso | Proyecto Spring Boot inicializado y primeras entidades JPA (`Rol`, `Plan`, `Usuario`) implementadas |
 | Frontend | Preparado | Plantillas Thymeleaf y recursos estáticos base disponibles |
 | Documentación | Preparado | Carpeta `docs/agents-memory/` creada con memoria viva inicial |
 | Repositorio Git | Preparado | Ramas `main` y `develop`, CI, plantillas, Dependabot y guías de workflow añadidas |

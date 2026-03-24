@@ -16,3 +16,4 @@ Registrar aquí cambios funcionales acumulativos que afecten comportamiento, mó
 
 - Se configuró el repositorio Git con ramas base `main` y `develop`.
 - Se añadieron plantillas y automatizaciones de GitHub para facilitar el trabajo continuo.
+- Se implementaron las entidades JPA iniciales `Rol`, `Plan` y `Usuario`.
