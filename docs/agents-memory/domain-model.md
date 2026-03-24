@@ -30,6 +30,11 @@ Estado actual:
 
 Agrupa una planificación de entrenamiento asignable a un usuario. Servirá para registrar objetivos y estructura general del entrenamiento.
 
+Estado actual:
+- entidad JPA inicial implementada
+- relación `ManyToOne` con `Usuario`
+- enum `ObjetivoRutina` definido
+
 ### Ejercicio
 
 Describe cada ejercicio individual que puede formar parte de una rutina, con información técnica básica como nombre, grupo muscular y observaciones.
@@ -42,9 +47,18 @@ Entidad intermedia para relacionar rutinas y ejercicios. Permitirá registrar or
 
 Registra la presencia de un usuario en el gimnasio en una fecha y hora determinada. Puede usarse para control de acceso y seguimiento de actividad.
 
+Estado actual:
+- entidad JPA inicial implementada
+- relación `ManyToOne` con `Usuario`
+
 ### Pago
 
 Representa el registro de cobros o pagos asociados a usuarios y planes. Permitirá controlar estado de cuotas, fechas y método de pago.
+
+Estado actual:
+- entidad JPA inicial implementada
+- relación `ManyToOne` con `Usuario` y `Plan`
+- enums `MetodoPago` y `EstadoPago` definidos
 
 ## Nota de modelado
 
