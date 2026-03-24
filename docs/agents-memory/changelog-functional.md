@@ -25,3 +25,4 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se implemento el CRUD MVC completo para `Pago`, con filtros por usuario, formularios reutilizables y soporte de enums para metodo y estado del pago.
 - Se implemento el CRUD MVC de `Asistencia`, con registro simple, asignacion automatica de fecha actual y listado contextual por usuario.
 - Se incorporo un sistema visual administrativo inspirado en Stitch con sidebar, topbar, dashboard real y tablas unificadas para los modulos principales.
+- Se refinaron los formularios y vistas de detalle para que compartan el mismo sistema visual administrativo, con mejor jerarquia, paneles de contexto y grids de informacion.

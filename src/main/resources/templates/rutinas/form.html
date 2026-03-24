@@ -14,73 +14,127 @@
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
                         <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar rutina' : 'Alta de rutina'">Formulario de rutina</h2>
-                        <p class="ff-section-subtitle">Configura el objetivo, el estado activo y la persona responsable de la rutina.</p>
+                        <p class="ff-section-subtitle">Define objetivo, estado y asignacion con el mismo lenguaje visual del resto del sistema.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
                 </section>
 
-                <section class="row justify-content-center">
-                    <div class="col-12 col-xl-10">
+                <section class="row g-4 ff-form-layout">
+                    <div class="col-12 col-xl-8">
                         <div class="ff-surface-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Configuracion de rutina</h3>
+                                    <p class="ff-card-subtitle">Formulario pensado para mantener una asignacion clara entre objetivo y usuario.</p>
+                                </div>
+                            </div>
                             <div class="ff-card-body">
                                 <form th:object="${rutina}"
                                       th:action="${modoEdicion} ? @{/rutinas/{id}(id=${rutina.id})} : @{/rutinas}"
                                       method="post">
-                                    <div class="row g-3">
-                                        <div class="col-md-8">
-                                            <label for="nombre" class="form-label">Nombre</label>
-                                            <input id="nombre" type="text" class="form-control" th:field="*{nombre}"
-                                                   placeholder="Rutina fuerza inicial">
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}"
-                                                 th:errors="*{nombre}">Error</div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="usuario" class="form-label">Usuario</label>
-                                            <select id="usuario" class="form-select" th:field="*{usuario.id}">
-                                                <option value="">Seleccionar usuario</option>
-                                                <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
-                                                        th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
-                                                    Usuario
-                                                </option>
-                                            </select>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
-                                                 th:errors="*{usuario.id}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="objetivo" class="form-label">Objetivo</label>
-                                            <select id="objetivo" class="form-select" th:field="*{objetivo}">
-                                                <option value="">Seleccionar objetivo</option>
-                                                <option th:each="objetivo : ${objetivos}" th:value="${objetivo}"
-                                                        th:text="${#strings.replace(objetivo.name(), '_', ' ')}">
-                                                    Objetivo
-                                                </option>
-                                            </select>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('objetivo')}"
-                                                 th:errors="*{objetivo}">Error</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-check form-switch mt-md-4 pt-md-2">
-                                                <input id="activa" class="form-check-input" type="checkbox" th:field="*{activa}">
-                                                <label for="activa" class="form-check-label">Rutina activa</label>
+                                    <div class="d-flex flex-column gap-4">
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Definicion principal</h4>
+                                                <p class="ff-form-section-text">Nombre, descripcion y objetivo de la rutina.</p>
                                             </div>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('activa')}"
-                                                 th:errors="*{activa}">Error</div>
-                                        </div>
-                                        <div class="col-12">
-                                            <label for="descripcion" class="form-label">Descripcion</label>
-                                            <textarea id="descripcion" class="form-control" rows="4" th:field="*{descripcion}"
-                                                      placeholder="Describe brevemente la rutina"></textarea>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}"
-                                                 th:errors="*{descripcion}">Error</div>
-                                        </div>
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <label for="nombre" class="form-label">Nombre</label>
+                                                    <input id="nombre" type="text" class="form-control" th:field="*{nombre}"
+                                                           placeholder="Rutina fuerza inicial">
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}"
+                                                         th:errors="*{nombre}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="objetivo" class="form-label">Objetivo</label>
+                                                    <select id="objetivo" class="form-select" th:field="*{objetivo}">
+                                                        <option value="">Seleccionar objetivo</option>
+                                                        <option th:each="objetivo : ${objetivos}" th:value="${objetivo}"
+                                                                th:text="${#strings.replace(objetivo.name(), '_', ' ')}">
+                                                            Objetivo
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('objetivo')}"
+                                                         th:errors="*{objetivo}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="form-check form-switch mt-md-4 pt-md-2">
+                                                        <input id="activa" class="form-check-input" type="checkbox" th:field="*{activa}">
+                                                        <label for="activa" class="form-check-label">Rutina activa</label>
+                                                    </div>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('activa')}"
+                                                         th:errors="*{activa}">Error</div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <label for="descripcion" class="form-label">Descripcion</label>
+                                                    <textarea id="descripcion" class="form-control" rows="4" th:field="*{descripcion}"
+                                                              placeholder="Describe brevemente la rutina"></textarea>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}"
+                                                         th:errors="*{descripcion}">Error</div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Asignacion</h4>
+                                                <p class="ff-form-section-text">Vincula la rutina con un usuario activo del sistema.</p>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-8">
+                                                    <label for="usuario" class="form-label">Usuario</label>
+                                                    <select id="usuario" class="form-select" th:field="*{usuario.id}">
+                                                        <option value="">Seleccionar usuario</option>
+                                                        <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
+                                                                th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
+                                                            Usuario
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
+                                                         th:errors="*{usuario.id}">Error</div>
+                                                </div>
+                                            </div>
+                                        </section>
                                     </div>
-                                    <div class="d-flex gap-2 mt-4">
-                                        <button type="submit" class="btn btn-success">Guardar</button>
-                                        <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Cancelar</a>
+
+                                    <div class="ff-form-actions">
+                                        <p class="ff-form-actions-note">El servicio valida la existencia del usuario antes de guardar la rutina.</p>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success">Guardar</button>
+                                            <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Cancelar</a>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <aside class="ff-surface-card ff-side-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Apoyo rapido</h3>
+                                    <p class="ff-card-subtitle">Referencia visual breve mientras completas la configuracion.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-side-list">
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Modo</span>
+                                        <span class="ff-side-value" th:text="${modoEdicion} ? 'Edicion' : 'Nueva rutina'">Nueva rutina</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Estado recomendado</span>
+                                        <span class="ff-side-value">Activa cuando la rutina ya este lista para usarse</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Objetivos</span>
+                                        <span class="ff-side-value">Los valores se cargan desde el enum `ObjetivoRutina`</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
                     </div>
                 </section>
 
