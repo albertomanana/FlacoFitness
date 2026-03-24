@@ -2,19 +2,18 @@
 
 ## Prioridad alta
 
-- Modelar las entidades JPA iniciales del dominio
-- Definir relaciones entre `Usuario`, `Rol`, `Plan`, `Rutina` y `Pago`
-- Crear primeros controladores MVC para navegación principal
 - Implementar layout base y dashboard inicial
 - Configurar conexión real con MySQL en entorno local
+- Implementar CRUD MVC de `Pago`
+- Implementar CRUD MVC de `Asistencia`
 
 ## Prioridad media
 
-- Diseñar formularios CRUD de usuarios y rutinas
 - Añadir validaciones con Bean Validation
 - Preparar datos semilla mínimos para demostración
 - Documentar decisiones de modelado y restricciones
 - Crear diagramas de arquitectura y base de datos
+- Añadir manejo global de errores para excepciones de negocio y recursos no encontrados
 
 ## Prioridad baja
 

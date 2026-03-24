@@ -8,27 +8,41 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="mb-1">Detalle de rutina</h1>
-            <p class="text-muted mb-0">Ficha base para la futura vista detallada de una rutina.</p>
+            <p class="text-muted mb-0">Consulta de la información completa de la rutina seleccionada.</p>
         </div>
-        <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver al listado</a>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-success" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
+            <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
+        </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-5">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h2 class="h5">Resumen</h2>
-                    <p class="text-muted mb-0">Los datos específicos se incorporarán al conectar el dominio real.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-7">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h2 class="h5">Ejercicios asociados</h2>
-                    <p class="text-muted mb-0">Se mostrará aquí la composición de `RutinaEjercicio`.</p>
-                </div>
-            </div>
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Nombre</dt>
+                <dd class="col-sm-9" th:text="${rutina.nombre}">Nombre</dd>
+
+                <dt class="col-sm-3">Descripción</dt>
+                <dd class="col-sm-9" th:text="${#strings.defaultString(rutina.descripcion, '-')}">Descripción</dd>
+
+                <dt class="col-sm-3">Objetivo</dt>
+                <dd class="col-sm-9" th:text="${#strings.replace(rutina.objetivo.name(), '_', ' ')}">Objetivo</dd>
+
+                <dt class="col-sm-3">Fecha de creación</dt>
+                <dd class="col-sm-9"
+                    th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">
+                    Fecha
+                </dd>
+
+                <dt class="col-sm-3">Activa</dt>
+                <dd class="col-sm-9" th:text="${rutina.activa ? 'Sí' : 'No'}">Sí</dd>
+
+                <dt class="col-sm-3">Usuario asociado</dt>
+                <dd class="col-sm-9"
+                    th:text="${rutina.usuario != null ? rutina.usuario.nombre + (rutina.usuario.apellidos != null ? ' ' + rutina.usuario.apellidos : '') : '-'}">
+                    Usuario
+                </dd>
+            </dl>
         </div>
     </div>
 </main>

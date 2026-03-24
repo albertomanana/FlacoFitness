@@ -11,21 +11,6 @@ public class ViewController {
         return "home/index";
     }
 
-    @GetMapping("/rutinas")
-    public String rutinasList() {
-        return "rutinas/list";
-    }
-
-    @GetMapping("/rutinas/nueva")
-    public String rutinasForm() {
-        return "rutinas/form";
-    }
-
-    @GetMapping("/rutinas/demo")
-    public String rutinasDetail() {
-        return "rutinas/detail";
-    }
-
     @GetMapping("/pagos")
     public String pagosList() {
         return "pagos/list";
