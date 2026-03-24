@@ -23,3 +23,4 @@ Registrar aquí cambios funcionales acumulativos que afecten comportamiento, mó
 - Se implementó el primer CRUD MVC completo para `Usuario` con controlador y vistas Thymeleaf reutilizables.
 - Se implementó el CRUD MVC completo para `Rutina`, incluyendo controlador, vistas Thymeleaf, selección de usuarios activos y edición del objetivo mediante enum.
 - Se implementó el CRUD MVC completo para `Pago`, con filtros por usuario, formularios reutilizables y soporte de enums para método y estado del pago.
+- Se implementó el CRUD MVC de `Asistencia`, con registro simple, asignación automática de fecha actual y listado contextual por usuario.

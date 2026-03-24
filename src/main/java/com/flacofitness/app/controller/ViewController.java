@@ -10,9 +10,4 @@ public class ViewController {
     public String home() {
         return "home/index";
     }
-
-    @GetMapping("/asistencias")
-    public String asistenciasList() {
-        return "asistencias/list";
-    }
 }
