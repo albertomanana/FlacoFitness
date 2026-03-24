@@ -45,6 +45,22 @@ flacofitness/
 
 La aplicación quedará disponible por defecto en `http://localhost:8080`.
 
+### Vista rápida sin MySQL
+
+Si solo quieres abrir la interfaz y navegar por el proyecto sin depender de MySQL, arranca con el perfil local:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+En Windows PowerShell:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+Esto levantará una base H2 en memoria y dejará la aplicación disponible en `http://localhost:8080`.
+
 ## Ejecución con Docker
 
 1. Crea el archivo `.env` a partir de `.env.example`.
