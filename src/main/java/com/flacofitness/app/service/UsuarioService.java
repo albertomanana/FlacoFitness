@@ -45,7 +45,11 @@ public class UsuarioService {
         validarEmailDuplicado(usuarioActualizado.getEmail(), id);
 
         usuarioExistente.setNombre(usuarioActualizado.getNombre());
+        usuarioExistente.setApellidos(usuarioActualizado.getApellidos());
         usuarioExistente.setEmail(usuarioActualizado.getEmail());
+        usuarioExistente.setTelefono(usuarioActualizado.getTelefono());
+        usuarioExistente.setFechaNacimiento(usuarioActualizado.getFechaNacimiento());
+        usuarioExistente.setDireccion(usuarioActualizado.getDireccion());
         usuarioExistente.setActivo(usuarioActualizado.getActivo());
         usuarioExistente.setRol(usuarioActualizado.getRol());
         usuarioExistente.setPlan(usuarioActualizado.getPlan());

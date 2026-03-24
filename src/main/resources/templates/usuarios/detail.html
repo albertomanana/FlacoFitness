@@ -8,25 +8,52 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="mb-1">Detalle de usuario</h1>
-            <p class="text-muted mb-0">Vista de referencia para la ficha individual del usuario.</p>
+            <p class="text-muted mb-0">Consulta de la información completa del usuario seleccionado.</p>
         </div>
-        <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver al listado</a>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-success" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
+            <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0">
         <div class="card-body p-4">
             <dl class="row mb-0">
                 <dt class="col-sm-3">Nombre</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
+                <dd class="col-sm-9" th:text="${usuario.nombre}">Nombre</dd>
+
+                <dt class="col-sm-3">Apellidos</dt>
+                <dd class="col-sm-9" th:text="${#strings.defaultString(usuario.apellidos, '-')}">Apellidos</dd>
+
+                <dt class="col-sm-3">Email</dt>
+                <dd class="col-sm-9" th:text="${usuario.email}">correo@ejemplo.com</dd>
+
+                <dt class="col-sm-3">Teléfono</dt>
+                <dd class="col-sm-9" th:text="${#strings.defaultString(usuario.telefono, '-')}">Teléfono</dd>
+
+                <dt class="col-sm-3">Fecha de nacimiento</dt>
+                <dd class="col-sm-9"
+                    th:text="${usuario.fechaNacimiento != null ? #temporals.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : '-'}">
+                    Fecha
+                </dd>
+
+                <dt class="col-sm-3">Dirección</dt>
+                <dd class="col-sm-9" th:text="${#strings.defaultString(usuario.direccion, '-')}">Dirección</dd>
 
                 <dt class="col-sm-3">Rol</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
+                <dd class="col-sm-9" th:text="${usuario.rol != null ? usuario.rol.nombre : '-'}">Rol</dd>
 
                 <dt class="col-sm-3">Plan</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
+                <dd class="col-sm-9" th:text="${usuario.plan != null ? usuario.plan.nombre : '-'}">Plan</dd>
 
-                <dt class="col-sm-3">Estado</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
+                <dt class="col-sm-3">Activo</dt>
+                <dd class="col-sm-9" th:text="${usuario.activo ? 'Sí' : 'No'}">Sí</dd>
+
+                <dt class="col-sm-3">Fecha de registro</dt>
+                <dd class="col-sm-9"
+                    th:text="${usuario.fechaRegistro != null ? #temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : '-'}">
+                    Fecha registro
+                </dd>
             </dl>
         </div>
     </div>
