@@ -2,6 +2,8 @@ package com.flacofitness.app.service;
 
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.AsistenciaDiariaStatsItem;
+import com.flacofitness.app.model.dto.AsistenciaMensualStatsItem;
 import com.flacofitness.app.model.entity.Asistencia;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.AsistenciaRepository;
@@ -9,6 +11,7 @@ import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -31,6 +34,20 @@ public class AsistenciaService {
         return asistenciaRepository.findByUsuarioId(usuarioId);
     }
 
+    public List<AsistenciaDiariaStatsItem> obtenerAsistenciasPorDia() {
+        return asistenciaRepository.countGroupedByFecha().stream()
+                .map(item -> new AsistenciaDiariaStatsItem(item.getFecha(), item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
+    }
+
+    public List<AsistenciaMensualStatsItem> obtenerAsistenciasMensuales() {
+        return asistenciaRepository.countGroupedByMes().stream()
+                .map(item -> new AsistenciaMensualStatsItem(
+                        YearMonth.of(item.getAnio(), item.getMes()).toString(),
+                        item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
+    }
+
     public Asistencia buscarPorId(Long id) {
         return asistenciaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Asistencia no encontrada con id: " + id));
@@ -44,7 +61,7 @@ public class AsistenciaService {
 
     private Usuario obtenerUsuarioValido(Usuario usuario) {
         if (usuario == null || usuario.getId() == null) {
-            throw new BusinessValidationException("La asistencia debe estar asociada a un usuario válido");
+            throw new BusinessValidationException("La asistencia debe estar asociada a un usuario valido");
         }
 
         return usuarioRepository.findById(usuario.getId())

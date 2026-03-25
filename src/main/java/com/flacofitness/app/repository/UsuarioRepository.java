@@ -21,4 +21,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @EntityGraph(attributePaths = {"rol", "plan"})
     List<Usuario> findByActivoTrue();
+
+    long countByActivoTrue();
 }

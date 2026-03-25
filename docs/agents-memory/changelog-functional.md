@@ -38,3 +38,4 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se simplifico `Pago` para derivar automaticamente `monto` desde `Plan` y generar `referencia` UUID sin entrada manual.
 - Se simplifico `Asistencia` para asignar la fecha automaticamente y reducir la logica manual del registro.
 - Se implemento la subida de fotos de usuario, almacenando archivos en `uploads/users/`, guardando `fotoPath` en base de datos y sirviendo las imagenes desde la aplicacion.
+- Se incorporaron endpoints JSON de estadisticas en `/stats` para usuarios, pagos, asistencias y rutinas, listos para alimentar graficos reales del dashboard.

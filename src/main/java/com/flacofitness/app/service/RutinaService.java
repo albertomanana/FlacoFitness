@@ -35,6 +35,10 @@ public class RutinaService {
         return rutinaRepository.findByUsuarioId(usuarioId);
     }
 
+    public long contarActivas() {
+        return rutinaRepository.countByActivaTrue();
+    }
+
     public Rutina buscarPorId(Long id) {
         return rutinaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Rutina no encontrada con id: " + id));

@@ -5,12 +5,14 @@ import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoPago;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -35,6 +37,14 @@ public class PagoService {
 
     public List<Pago> listarPorUsuario(Long usuarioId) {
         return pagoRepository.findByUsuarioId(usuarioId);
+    }
+
+    public BigDecimal calcularIngresosTotales() {
+        return pagoRepository.sumMontoByEstado(EstadoPago.PAGADO);
+    }
+
+    public long contarPagosPendientes() {
+        return pagoRepository.countByEstado(EstadoPago.PENDIENTE);
     }
 
     public Pago buscarPorId(Long id) {

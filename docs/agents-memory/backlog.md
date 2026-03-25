@@ -2,8 +2,8 @@
 
 ## Prioridad alta
 
-- Configurar conexion real con MySQL en entorno local
 - Anadir manejo global de errores MVC con vistas consistentes para 404, 500 y excepciones de negocio
+- Conectar el dashboard visual a los nuevos endpoints `/stats` para renderizar graficos reales
 
 ## Prioridad media
 
