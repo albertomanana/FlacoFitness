@@ -10,11 +10,13 @@
 
         <main class="ff-content">
             <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</h2>
-                        <p class="ff-section-subtitle">Vista consolidada con identidad, contacto, relacion y estado actual.</p>
+                        <p class="ff-section-subtitle">Vista consolidada con identidad, contacto, relacion, estado actual y foto de perfil.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
@@ -44,6 +46,10 @@
                                     <div class="ff-detail-item">
                                         <span class="ff-detail-label">Apellidos</span>
                                         <span class="ff-detail-value" th:text="${#strings.defaultString(usuario.apellidos, '-')}">Apellidos</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">DNI</span>
+                                        <span class="ff-detail-value" th:text="${#strings.defaultString(usuario.dni, '-')}">DNI</span>
                                     </div>
                                     <div class="ff-detail-item">
                                         <span class="ff-detail-label">Email</span>
@@ -81,30 +87,72 @@
                     </div>
 
                     <div class="col-12 col-xl-4">
-                        <aside class="ff-surface-card ff-side-card">
-                            <div class="ff-card-header">
-                                <div>
-                                    <h3 class="ff-card-title">Resumen rapido</h3>
-                                    <p class="ff-card-subtitle">Indicadores utiles para ubicar el registro dentro de la operativa.</p>
-                                </div>
-                            </div>
-                            <div class="ff-card-body">
-                                <div class="ff-side-list">
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Estado</span>
-                                        <span class="ff-side-value" th:text="${usuario.activo} ? 'Disponible para operar' : 'Baja logica aplicada'">Estado</span>
-                                    </div>
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Plan actual</span>
-                                        <span class="ff-side-value" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan asignado'}">Plan</span>
-                                    </div>
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Rol actual</span>
-                                        <span class="ff-side-value" th:text="${usuario.rol != null ? usuario.rol.nombre : 'Sin rol asignado'}">Rol</span>
+                        <div class="d-flex flex-column gap-4">
+                            <aside class="ff-surface-card ff-side-card ff-side-card-static">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Foto del usuario</h3>
+                                        <p class="ff-card-subtitle">Carga una imagen valida y guarda su ruta en la base de datos.</p>
                                     </div>
                                 </div>
-                            </div>
-                        </aside>
+                                <div class="ff-card-body">
+                                    <div class="ff-user-photo-frame">
+                                        <img th:if="${usuario.fotoPath != null and !usuario.fotoPath.isBlank()}"
+                                             th:src="@{'/' + ${usuario.fotoPath}}"
+                                             th:alt="${'Foto de ' + usuario.nombre}"
+                                             class="ff-user-photo">
+                                        <div th:unless="${usuario.fotoPath != null and !usuario.fotoPath.isBlank()}" class="ff-user-photo-placeholder">
+                                            Sin foto
+                                        </div>
+                                    </div>
+
+                                    <form class="d-flex flex-column gap-3 mt-4"
+                                          th:action="@{/usuarios/{id}/foto(id=${usuario.id})}"
+                                          method="post"
+                                          enctype="multipart/form-data">
+                                        <div>
+                                            <label for="foto" class="form-label">Imagen</label>
+                                            <input id="foto"
+                                                   name="foto"
+                                                   type="file"
+                                                   class="form-control"
+                                                   accept="image/png,image/jpeg,image/gif,image/webp">
+                                        </div>
+                                        <p class="ff-form-actions-note">Formatos permitidos: JPG, PNG, GIF y WEBP. Tamano maximo: 5 MB.</p>
+                                        <button type="submit" class="btn btn-success">Subir foto</button>
+                                    </form>
+                                </div>
+                            </aside>
+
+                            <aside class="ff-surface-card ff-side-card ff-side-card-static">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Resumen rapido</h3>
+                                        <p class="ff-card-subtitle">Indicadores utiles para ubicar el registro dentro de la operativa.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-side-list">
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Estado</span>
+                                            <span class="ff-side-value" th:text="${usuario.activo} ? 'Disponible para operar' : 'Baja logica aplicada'">Estado</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Plan actual</span>
+                                            <span class="ff-side-value" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan asignado'}">Plan</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Rol actual</span>
+                                            <span class="ff-side-value" th:text="${usuario.rol != null ? usuario.rol.nombre : 'Sin rol asignado'}">Rol</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Ruta de imagen</span>
+                                            <span class="ff-side-value" th:text="${#strings.defaultString(usuario.fotoPath, 'Sin imagen almacenada')}">Ruta</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
                     </div>
                 </section>
 

@@ -51,12 +51,21 @@ public class UsuarioService {
         usuarioExistente.setTelefono(usuarioActualizado.getTelefono());
         usuarioExistente.setFechaNacimiento(usuarioActualizado.getFechaNacimiento());
         usuarioExistente.setDireccion(usuarioActualizado.getDireccion());
-        usuarioExistente.setFotoPath(usuarioActualizado.getFotoPath());
+        if (usuarioActualizado.getFotoPath() != null) {
+            usuarioExistente.setFotoPath(usuarioActualizado.getFotoPath());
+        }
         usuarioExistente.setActivo(usuarioActualizado.getActivo());
         usuarioExistente.setRol(usuarioActualizado.getRol());
         usuarioExistente.setPlan(usuarioActualizado.getPlan());
 
         return usuarioRepository.save(usuarioExistente);
+    }
+
+    @Transactional
+    public Usuario actualizarFotoPath(Long id, String fotoPath) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setFotoPath(fotoPath);
+        return usuarioRepository.save(usuario);
     }
 
     @Transactional

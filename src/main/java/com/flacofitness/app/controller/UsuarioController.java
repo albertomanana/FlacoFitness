@@ -1,11 +1,13 @@
 package com.flacofitness.app.controller;
 
+import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.DuplicateResourceException;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Rol;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.RolRepository;
+import com.flacofitness.app.service.UserPhotoStorageService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
@@ -16,7 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -24,13 +28,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final UserPhotoStorageService userPhotoStorageService;
     private final RolRepository rolRepository;
     private final PlanRepository planRepository;
 
     public UsuarioController(UsuarioService usuarioService,
+                             UserPhotoStorageService userPhotoStorageService,
                              RolRepository rolRepository,
                              PlanRepository planRepository) {
         this.usuarioService = usuarioService;
+        this.userPhotoStorageService = userPhotoStorageService;
         this.rolRepository = rolRepository;
         this.planRepository = planRepository;
     }
@@ -84,6 +91,23 @@ public class UsuarioController {
     public String verDetalle(@PathVariable Long id, Model model) {
         model.addAttribute("usuario", usuarioService.buscarPorId(id));
         return "usuarios/detail";
+    }
+
+    @PostMapping("/{id}/foto")
+    public String subirFoto(@PathVariable Long id,
+                            @RequestParam("foto") MultipartFile foto,
+                            RedirectAttributes redirectAttributes) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+
+        try {
+            String fotoPath = userPhotoStorageService.guardarFotoUsuario(id, foto, usuario.getFotoPath());
+            usuarioService.actualizarFotoPath(id, fotoPath);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Foto actualizada correctamente.");
+        } catch (BusinessValidationException ex) {
+            redirectAttributes.addFlashAttribute("mensajeError", ex.getMessage());
+        }
+
+        return "redirect:/usuarios/" + id;
     }
 
     @GetMapping("/{id}/editar")
