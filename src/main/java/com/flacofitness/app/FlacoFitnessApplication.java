@@ -1,5 +1,6 @@
 package com.flacofitness.app;
 
+import com.flacofitness.app.config.DatabaseConnectionFailureListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FlacoFitnessApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FlacoFitnessApplication.class, args);
+        SpringApplication application = new SpringApplication(FlacoFitnessApplication.class);
+        application.addListeners(new DatabaseConnectionFailureListener());
+        application.run(args);
     }
 }

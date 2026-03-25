@@ -33,9 +33,16 @@ public class Plan {
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    @Column(columnDefinition = "TEXT")
+    private String descripcion;
+
     @NotNull
     @Column(name = "precio_mensual", nullable = false, precision = 10, scale = 2)
     private BigDecimal precioMensual;
+
+    @NotNull
+    @Column(name = "duracion_dias", nullable = false)
+    private Integer duracionDias;
 
     @NotNull
     @Column(nullable = false)

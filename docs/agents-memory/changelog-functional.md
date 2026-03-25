@@ -26,3 +26,10 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se implemento el CRUD MVC de `Asistencia`, con registro simple, asignacion automatica de fecha actual y listado contextual por usuario.
 - Se incorporo un sistema visual administrativo inspirado en Stitch con sidebar, topbar, dashboard real y tablas unificadas para los modulos principales.
 - Se refinaron los formularios y vistas de detalle para que compartan el mismo sistema visual administrativo, con mejor jerarquia, paneles de contexto y grids de informacion.
+
+### 2026-03-25
+
+- Se corrigio la configuracion de conexion a MySQL para arrancar correctamente en entorno local.
+- Se alineo la entidad `Plan` y los datos semilla con el esquema real de la base `flacofitness`.
+- Se anadieron logs claros de diagnostico para errores de conexion y confirmacion explicita del datasource al iniciar la aplicacion.
+- Se documento un script SQL para crear la base de datos si no existe.
