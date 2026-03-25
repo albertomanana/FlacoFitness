@@ -12,8 +12,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "pagos")
@@ -39,8 +41,6 @@ public class Pago {
     @Column(name = "fecha_pago", nullable = false)
     private LocalDate fechaPago;
 
-    @NotNull
-    @DecimalMin(value = "0.01", message = "El monto debe ser mayor que cero")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal monto;
 
@@ -54,7 +54,7 @@ public class Pago {
     @Column(nullable = false, length = 20)
     private EstadoPago estado;
 
-    @Column(length = 120)
+    @Column(nullable = false, unique = true, length = 36)
     private String referencia;
 
     @NotNull
@@ -65,4 +65,16 @@ public class Pago {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @PrePersist
+    @PreUpdate
+    private void sincronizarDatosDerivados() {
+        if (plan != null && plan.getPrecioMensual() != null) {
+            monto = plan.getPrecioMensual();
+        }
+
+        if (referencia == null || referencia.isBlank()) {
+            referencia = UUID.randomUUID().toString();
+        }
+    }
 }

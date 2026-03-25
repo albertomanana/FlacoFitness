@@ -1,8 +1,19 @@
 INSERT INTO roles (nombre)
-SELECT 'ADMIN'
+SELECT 'STAFF'
 WHERE NOT EXISTS (
-    SELECT 1 FROM roles WHERE nombre = 'ADMIN'
+    SELECT 1 FROM roles WHERE nombre = 'STAFF'
 );
+
+UPDATE usuarios
+SET rol_id = (
+    SELECT id FROM roles WHERE nombre = 'STAFF' ORDER BY id ASC LIMIT 1
+)
+WHERE rol_id IN (
+    SELECT id FROM roles WHERE nombre = 'ADMIN'
+);
+
+DELETE FROM roles
+WHERE nombre = 'ADMIN';
 
 INSERT INTO roles (nombre)
 SELECT 'CLIENTE'

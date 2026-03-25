@@ -33,3 +33,7 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se alineo la entidad `Plan` y los datos semilla con el esquema real de la base `flacofitness`.
 - Se anadieron logs claros de diagnostico para errores de conexion y confirmacion explicita del datasource al iniciar la aplicacion.
 - Se documento un script SQL para crear la base de datos si no existe.
+- Se refactorizo el modelo para ampliar `Usuario` con `dni` y `fotoPath`, renombrar el rol base `ADMIN` a `STAFF` y actualizar las semillas asociadas.
+- Se transformo `Rutina` para soportar relacion `ManyToMany` con `Usuario` mediante `usuario_rutina`, incorporando tambien el enum `TipoRutina`.
+- Se simplifico `Pago` para derivar automaticamente `monto` desde `Plan` y generar `referencia` UUID sin entrada manual.
+- Se simplifico `Asistencia` para asignar la fecha automaticamente y reducir la logica manual del registro.
