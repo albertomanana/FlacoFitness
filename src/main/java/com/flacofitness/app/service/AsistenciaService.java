@@ -9,7 +9,6 @@ import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -40,11 +39,6 @@ public class AsistenciaService {
     @Transactional
     public Asistencia registrar(Asistencia asistencia) {
         asistencia.setUsuario(obtenerUsuarioValido(asistencia.getUsuario()));
-
-        if (asistencia.getFecha() == null) {
-            asistencia.setFecha(LocalDate.now());
-        }
-
         return asistenciaRepository.save(asistencia);
     }
 

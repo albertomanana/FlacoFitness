@@ -7,9 +7,7 @@ import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.SmartValidator;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,22 +15,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-
 @Controller
 @RequestMapping("/asistencias")
 public class AsistenciaController {
 
     private final AsistenciaService asistenciaService;
     private final UsuarioService usuarioService;
-    private final SmartValidator validator;
 
     public AsistenciaController(AsistenciaService asistenciaService,
-                                UsuarioService usuarioService,
-                                SmartValidator validator) {
+                                UsuarioService usuarioService) {
         this.asistenciaService = asistenciaService;
         this.usuarioService = usuarioService;
-        this.validator = validator;
     }
 
     @GetMapping
@@ -57,13 +50,11 @@ public class AsistenciaController {
                                     BindingResult bindingResult,
                                     Model model,
                                     RedirectAttributes redirectAttributes) {
-        BindingResult currentResult = ajustarValidacionFechaPorDefecto(asistencia, bindingResult);
-        validarUsuarioSeleccionado(asistencia, currentResult);
+        validarUsuarioSeleccionado(asistencia, bindingResult);
 
-        if (currentResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             prepararRelaciones(asistencia);
             model.addAttribute("usuarios", usuarioService.listarActivos());
-            model.addAttribute(BindingResult.MODEL_KEY_PREFIX + "asistencia", currentResult);
             return "asistencias/form";
         }
 
@@ -85,17 +76,6 @@ public class AsistenciaController {
         model.addAttribute("tituloListado", "Asistencias del usuario");
         model.addAttribute("subtituloListado", "Historial de asistencias de " + construirNombreUsuario(usuario) + ".");
         return "asistencias/list";
-    }
-
-    private BindingResult ajustarValidacionFechaPorDefecto(Asistencia asistencia, BindingResult bindingResult) {
-        if (asistencia.getFecha() != null) {
-            return bindingResult;
-        }
-
-        asistencia.setFecha(LocalDate.now());
-        BeanPropertyBindingResult revalidatedResult = new BeanPropertyBindingResult(asistencia, "asistencia");
-        validator.validate(asistencia, revalidatedResult);
-        return revalidatedResult;
     }
 
     private void prepararRelaciones(Asistencia asistencia) {

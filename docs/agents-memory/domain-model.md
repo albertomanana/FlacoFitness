@@ -8,11 +8,11 @@ Representa a una persona registrada en el sistema. Puede corresponder a cliente 
 
 Estado actual:
 - entidad JPA inicial implementada con relación a `Rol` y `Plan`
-- campos ampliados para CRUD MVC: nombre, apellidos, email, telefono, fecha de nacimiento, direccion, activo y fecha de registro
+- campos ampliados para CRUD MVC: nombre, apellidos, dni, email, telefono, fecha de nacimiento, direccion, fotoPath, activo y fecha de registro
 
 ### Rol
 
-Define el tipo de usuario dentro del sistema, por ejemplo administrador, entrenador o cliente. Permitirá organizar responsabilidades y flujos internos sin incorporar todavía seguridad avanzada.
+Define el tipo de usuario dentro del sistema, por ejemplo staff o cliente. Permitirá organizar responsabilidades y flujos internos sin incorporar todavía seguridad avanzada.
 
 Estado actual:
 - entidad JPA inicial implementada
@@ -29,12 +29,12 @@ Estado actual:
 
 ### Rutina
 
-Agrupa una planificación de entrenamiento asignable a un usuario. Servirá para registrar objetivos y estructura general del entrenamiento.
+Agrupa una planificación de entrenamiento asignable a uno o varios usuarios. Servirá para registrar objetivos, tipo de rutina y estructura general del entrenamiento.
 
 Estado actual:
 - entidad JPA inicial implementada
-- relación `ManyToOne` con `Usuario`
-- enum `ObjetivoRutina` definido
+- relación `ManyToMany` con `Usuario` mediante la tabla intermedia `usuario_rutina`
+- enums `ObjetivoRutina` y `TipoRutina` definidos
 
 ### Ejercicio
 
@@ -51,6 +51,7 @@ Registra la presencia de un usuario en el gimnasio en una fecha y hora determina
 Estado actual:
 - entidad JPA inicial implementada
 - relación `ManyToOne` con `Usuario`
+- fecha automatica al persistir el registro
 
 ### Pago
 
@@ -60,6 +61,8 @@ Estado actual:
 - entidad JPA inicial implementada
 - relación `ManyToOne` con `Usuario` y `Plan`
 - enums `MetodoPago` y `EstadoPago` definidos
+- monto sincronizado automaticamente desde el `Plan`
+- referencia automatica generada con UUID
 
 ## Nota de modelado
 

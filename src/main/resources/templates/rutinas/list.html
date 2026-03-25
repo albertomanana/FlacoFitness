@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Planificacion y seguimiento de rutinas asignadas a usuarios.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Planificacion y seguimiento de rutinas vinculadas a varios usuarios.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -16,7 +16,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Modulo de rutinas</span>
                         <h2 class="ff-section-title">Listado general</h2>
-                        <p class="ff-section-subtitle">Controla objetivos, responsables y estado de activacion de cada rutina.</p>
+                        <p class="ff-section-subtitle">Controla objetivo, tipo, usuarios asociados y estado de activacion de cada rutina.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
                 </section>
@@ -32,22 +32,22 @@
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Activas</p>
-                            <p class="ff-stat-value" th:text="${#lists.size(rutinas.?[activa == true])}">0</p>
-                            <p class="ff-stat-note">Rutinas en uso dentro de la operativa actual.</p>
+                            <p class="ff-stat-value" th:text="${rutinas.?[activa == true].size()}">0</p>
+                            <p class="ff-stat-note">Rutinas actualmente disponibles.</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Inactivas</p>
-                            <p class="ff-stat-value" th:text="${#lists.size(rutinas.?[activa == false])}">0</p>
-                            <p class="ff-stat-note">Rutinas conservadas para historico o revision.</p>
+                            <p class="ff-stat-label">Personalizadas</p>
+                            <p class="ff-stat-value" th:text="${rutinas.?[tipoRutina != null and tipoRutina.name() == 'PERSONALIZADA'].size()}">0</p>
+                            <p class="ff-stat-note">Rutinas adaptadas a usuarios concretos.</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Con usuario</p>
-                            <p class="ff-stat-value" th:text="${#lists.size(rutinas.?[usuario != null])}">0</p>
-                            <p class="ff-stat-note">Rutinas correctamente asignadas a miembros.</p>
+                            <p class="ff-stat-label">Con usuarios</p>
+                            <p class="ff-stat-value" th:text="${rutinas.?[usuarios != null and !usuarios.isEmpty()].size()}">0</p>
+                            <p class="ff-stat-note">Rutinas ya vinculadas a miembros del sistema.</p>
                         </article>
                     </div>
                 </section>
@@ -56,7 +56,7 @@
                     <div class="ff-card-header">
                         <div>
                             <h3 class="ff-card-title">Panel de rutinas</h3>
-                            <p class="ff-card-subtitle">Visualiza el objetivo de trabajo, el usuario asignado y las acciones disponibles.</p>
+                            <p class="ff-card-subtitle">Visualiza tipo, objetivo y usuarios asociados sin romper el flujo administrativo.</p>
                         </div>
                     </div>
                     <div class="ff-card-body">
@@ -66,7 +66,7 @@
                                 <tr>
                                     <th>Rutina</th>
                                     <th>Objetivo</th>
-                                    <th>Usuario</th>
+                                    <th>Usuarios</th>
                                     <th>Fecha de creacion</th>
                                     <th>Estado</th>
                                     <th class="text-end">Acciones</th>
@@ -78,7 +78,7 @@
                                         <div class="ff-table-meta">
                                             <span class="ff-table-primary" th:text="${rutina.nombre}">Nombre</span>
                                             <span class="ff-table-secondary"
-                                                  th:text="${#strings.defaultString(rutina.descripcion, 'Sin descripcion')}">Descripcion</span>
+                                                  th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin tipo'}">Tipo</span>
                                         </div>
                                     </td>
                                     <td>
@@ -87,8 +87,18 @@
                                             Objetivo
                                         </span>
                                     </td>
-                                    <td th:text="${rutina.usuario != null ? rutina.usuario.nombre + (rutina.usuario.apellidos != null && !rutina.usuario.apellidos.isBlank() ? ' ' + rutina.usuario.apellidos : '') : '-'}">
-                                        Usuario
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <span class="ff-table-primary" th:text="${rutina.usuarios != null ? rutina.usuarios.size() : 0} + ' usuario(s)'">0 usuario(s)</span>
+                                            <span class="ff-table-secondary">
+                                                <th:block th:if="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">
+                                                    <th:block th:each="usuario, stat : ${rutina.usuarios}">
+                                                        <span th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '') + (stat.last ? '' : ', ')}">Usuario</span>
+                                                    </th:block>
+                                                </th:block>
+                                                <th:block th:unless="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">Sin usuarios asociados</th:block>
+                                            </span>
+                                        </div>
                                     </td>
                                     <td th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">
                                         Fecha

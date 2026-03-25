@@ -46,10 +46,12 @@ public class UsuarioService {
 
         usuarioExistente.setNombre(usuarioActualizado.getNombre());
         usuarioExistente.setApellidos(usuarioActualizado.getApellidos());
+        usuarioExistente.setDni(usuarioActualizado.getDni());
         usuarioExistente.setEmail(usuarioActualizado.getEmail());
         usuarioExistente.setTelefono(usuarioActualizado.getTelefono());
         usuarioExistente.setFechaNacimiento(usuarioActualizado.getFechaNacimiento());
         usuarioExistente.setDireccion(usuarioActualizado.getDireccion());
+        usuarioExistente.setFotoPath(usuarioActualizado.getFotoPath());
         usuarioExistente.setActivo(usuarioActualizado.getActivo());
         usuarioExistente.setRol(usuarioActualizado.getRol());
         usuarioExistente.setPlan(usuarioActualizado.getPlan());

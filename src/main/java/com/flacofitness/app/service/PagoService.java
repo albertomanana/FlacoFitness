@@ -11,7 +11,6 @@ import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -45,54 +44,56 @@ public class PagoService {
 
     @Transactional
     public Pago guardar(Pago pago) {
-        validarMonto(pago.getMonto());
-        pago.setUsuario(obtenerUsuarioValido(pago.getUsuario()));
-        pago.setPlan(obtenerPlanValidoSiExiste(pago.getPlan()));
-
+        Usuario usuario = obtenerUsuarioValido(pago.getUsuario());
+        pago.setUsuario(usuario);
+        pago.setPlan(resolverPlan(pago.getPlan(), usuario));
         return pagoRepository.save(pago);
     }
 
     @Transactional
     public Pago actualizar(Long id, Pago pagoActualizado) {
         Pago pagoExistente = buscarPorId(id);
+        Usuario usuario = obtenerUsuarioValido(pagoActualizado.getUsuario());
+        Plan plan = resolverPlan(pagoActualizado.getPlan(), usuario);
 
-        validarMonto(pagoActualizado.getMonto());
         pagoExistente.setFechaPago(pagoActualizado.getFechaPago());
-        pagoExistente.setMonto(pagoActualizado.getMonto());
         pagoExistente.setMetodoPago(pagoActualizado.getMetodoPago());
         pagoExistente.setEstado(pagoActualizado.getEstado());
-        pagoExistente.setReferencia(pagoActualizado.getReferencia());
-        pagoExistente.setUsuario(obtenerUsuarioValido(pagoActualizado.getUsuario()));
-        pagoExistente.setPlan(obtenerPlanValidoSiExiste(pagoActualizado.getPlan()));
+        pagoExistente.setUsuario(usuario);
+        pagoExistente.setPlan(plan);
 
         return pagoRepository.save(pagoExistente);
     }
 
-    private void validarMonto(BigDecimal monto) {
-        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessValidationException("El monto del pago debe ser mayor que cero");
-        }
-    }
-
     private Usuario obtenerUsuarioValido(Usuario usuario) {
         if (usuario == null || usuario.getId() == null) {
-            throw new BusinessValidationException("El pago debe estar asociado a un usuario válido");
+            throw new BusinessValidationException("El pago debe estar asociado a un usuario valido");
         }
 
         return usuarioRepository.findById(usuario.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + usuario.getId()));
     }
 
-    private Plan obtenerPlanValidoSiExiste(Plan plan) {
-        if (plan == null) {
-            return null;
+    private Plan resolverPlan(Plan planSeleccionado, Usuario usuario) {
+        if (planSeleccionado != null && planSeleccionado.getId() != null) {
+            return obtenerPlanValido(planSeleccionado.getId());
         }
 
-        if (plan.getId() == null) {
-            throw new BusinessValidationException("El plan asociado al pago debe ser válido");
+        if (usuario.getPlan() != null && usuario.getPlan().getId() != null) {
+            return obtenerPlanValido(usuario.getPlan().getId());
         }
 
-        return planRepository.findById(plan.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Plan no encontrado con id: " + plan.getId()));
+        throw new BusinessValidationException("El pago debe estar asociado a un plan valido o a un usuario con plan asignado");
+    }
+
+    private Plan obtenerPlanValido(Long planId) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new ResourceNotFoundException("Plan no encontrado con id: " + planId));
+
+        if (!Boolean.TRUE.equals(plan.getActivo())) {
+            throw new BusinessValidationException("El plan asociado al pago debe estar activo");
+        }
+
+        return plan;
     }
 }

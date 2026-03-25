@@ -3,6 +3,7 @@ package com.flacofitness.app.controller;
 import com.flacofitness.app.model.entity.Rutina;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.model.enums.ObjetivoRutina;
+import com.flacofitness.app.model.enums.TipoRutina;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -14,7 +15,13 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/rutinas")
@@ -38,9 +45,11 @@ public class RutinaController {
     public String mostrarFormularioNueva(Model model) {
         Rutina rutina = new Rutina();
         rutina.setActiva(true);
+        rutina.setTipoRutina(TipoRutina.GENERAL);
         prepararRelaciones(rutina);
         cargarCatalogos(model);
         model.addAttribute("rutina", rutina);
+        model.addAttribute("usuariosSeleccionados", obtenerUsuariosSeleccionados(rutina));
         model.addAttribute("modoEdicion", false);
         return "rutinas/form";
     }
@@ -48,13 +57,16 @@ public class RutinaController {
     @PostMapping
     public String guardarRutina(@Valid @ModelAttribute("rutina") Rutina rutina,
                                 BindingResult bindingResult,
+                                @RequestParam(name = "usuarioIds", required = false) List<Long> usuarioIds,
                                 Model model,
                                 RedirectAttributes redirectAttributes) {
-        validarUsuarioSeleccionado(rutina, bindingResult);
+        aplicarUsuariosSeleccionados(rutina, usuarioIds);
+        validarUsuariosSeleccionados(rutina, bindingResult);
 
         if (bindingResult.hasErrors()) {
             prepararRelaciones(rutina);
             cargarCatalogos(model);
+            model.addAttribute("usuariosSeleccionados", obtenerUsuariosSeleccionados(rutina));
             model.addAttribute("modoEdicion", false);
             return "rutinas/form";
         }
@@ -76,6 +88,7 @@ public class RutinaController {
         prepararRelaciones(rutina);
         cargarCatalogos(model);
         model.addAttribute("rutina", rutina);
+        model.addAttribute("usuariosSeleccionados", obtenerUsuariosSeleccionados(rutina));
         model.addAttribute("modoEdicion", true);
         return "rutinas/form";
     }
@@ -84,13 +97,16 @@ public class RutinaController {
     public String actualizarRutina(@PathVariable Long id,
                                    @Valid @ModelAttribute("rutina") Rutina rutina,
                                    BindingResult bindingResult,
+                                   @RequestParam(name = "usuarioIds", required = false) List<Long> usuarioIds,
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
-        validarUsuarioSeleccionado(rutina, bindingResult);
+        aplicarUsuariosSeleccionados(rutina, usuarioIds);
+        validarUsuariosSeleccionados(rutina, bindingResult);
 
         if (bindingResult.hasErrors()) {
             prepararRelaciones(rutina);
             cargarCatalogos(model);
+            model.addAttribute("usuariosSeleccionados", obtenerUsuariosSeleccionados(rutina));
             model.addAttribute("modoEdicion", true);
             return "rutinas/form";
         }
@@ -110,17 +126,43 @@ public class RutinaController {
     private void cargarCatalogos(Model model) {
         model.addAttribute("usuarios", usuarioService.listarActivos());
         model.addAttribute("objetivos", ObjetivoRutina.values());
+        model.addAttribute("tiposRutina", TipoRutina.values());
     }
 
     private void prepararRelaciones(Rutina rutina) {
-        if (rutina.getUsuario() == null) {
-            rutina.setUsuario(new Usuario());
+        if (rutina.getUsuarios() == null) {
+            rutina.setUsuarios(new LinkedHashSet<>());
         }
     }
 
-    private void validarUsuarioSeleccionado(Rutina rutina, BindingResult bindingResult) {
-        if (rutina.getUsuario() == null || rutina.getUsuario().getId() == null) {
-            bindingResult.rejectValue("usuario.id", "required", "Debes seleccionar un usuario.");
+    private void aplicarUsuariosSeleccionados(Rutina rutina, List<Long> usuarioIds) {
+        LinkedHashSet<Usuario> usuarios = new LinkedHashSet<>();
+
+        if (usuarioIds != null) {
+            for (Long usuarioId : usuarioIds) {
+                if (usuarioId == null) {
+                    continue;
+                }
+
+                Usuario usuario = new Usuario();
+                usuario.setId(usuarioId);
+                usuarios.add(usuario);
+            }
         }
+
+        rutina.setUsuarios(usuarios);
+    }
+
+    private void validarUsuariosSeleccionados(Rutina rutina, BindingResult bindingResult) {
+        if (rutina.getUsuarios() == null || rutina.getUsuarios().isEmpty()) {
+            bindingResult.rejectValue("usuarios", "required", "Debes seleccionar al menos un usuario.");
+        }
+    }
+
+    private List<Long> obtenerUsuariosSeleccionados(Rutina rutina) {
+        return rutina.getUsuarios().stream()
+                .map(Usuario::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

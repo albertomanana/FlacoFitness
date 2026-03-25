@@ -9,7 +9,11 @@ import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,21 +42,22 @@ public class RutinaService {
 
     @Transactional
     public Rutina guardar(Rutina rutina) {
-        Usuario usuario = obtenerUsuarioValido(rutina.getUsuario());
-        rutina.setUsuario(usuario);
+        rutina.setUsuarios(obtenerUsuariosValidos(rutina.getUsuarios()));
         return rutinaRepository.save(rutina);
     }
 
     @Transactional
     public Rutina actualizar(Long id, Rutina rutinaActualizada) {
         Rutina rutinaExistente = buscarPorId(id);
-        Usuario usuario = obtenerUsuarioValido(rutinaActualizada.getUsuario());
+        Set<Usuario> usuarios = obtenerUsuariosValidos(rutinaActualizada.getUsuarios());
 
         rutinaExistente.setNombre(rutinaActualizada.getNombre());
         rutinaExistente.setDescripcion(rutinaActualizada.getDescripcion());
         rutinaExistente.setObjetivo(rutinaActualizada.getObjetivo());
+        rutinaExistente.setTipoRutina(rutinaActualizada.getTipoRutina());
         rutinaExistente.setActiva(rutinaActualizada.getActiva());
-        rutinaExistente.setUsuario(usuario);
+        rutinaExistente.getUsuarios().clear();
+        rutinaExistente.getUsuarios().addAll(usuarios);
 
         return rutinaRepository.save(rutinaExistente);
     }
@@ -64,12 +69,35 @@ public class RutinaService {
         rutinaRepository.save(rutina);
     }
 
-    private Usuario obtenerUsuarioValido(Usuario usuario) {
-        if (usuario == null || usuario.getId() == null) {
-            throw new BusinessValidationException("La rutina debe estar asociada a un usuario válido");
+    private Set<Usuario> obtenerUsuariosValidos(Set<Usuario> usuarios) {
+        if (usuarios == null || usuarios.isEmpty()) {
+            throw new BusinessValidationException("La rutina debe estar asociada al menos a un usuario valido");
         }
 
-        return usuarioRepository.findById(usuario.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + usuario.getId()));
+        Set<Long> usuarioIds = usuarios.stream()
+                .map(Usuario::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        if (usuarioIds.isEmpty()) {
+            throw new BusinessValidationException("La rutina debe estar asociada al menos a un usuario valido");
+        }
+
+        List<Usuario> usuariosValidados = usuarioRepository.findAllById(usuarioIds);
+
+        if (usuariosValidados.size() != usuarioIds.size()) {
+            Set<Long> idsEncontrados = usuariosValidados.stream()
+                    .map(Usuario::getId)
+                    .collect(Collectors.toSet());
+
+            Long usuarioFaltante = usuarioIds.stream()
+                    .filter(id -> !idsEncontrados.contains(id))
+                    .findFirst()
+                    .orElse(null);
+
+            throw new ResourceNotFoundException("Usuario no encontrado con id: " + usuarioFaltante);
+        }
+
+        return new LinkedHashSet<>(usuariosValidados);
     }
 }

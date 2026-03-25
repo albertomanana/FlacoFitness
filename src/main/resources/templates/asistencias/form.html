@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Nueva asistencia', 'Registro manual de entradas para usuarios activos.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Nueva asistencia', 'Registro simple con fecha automatica y usuario obligatorio.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
                         <h2 class="ff-section-title">Alta de asistencia</h2>
-                        <p class="ff-section-subtitle">Flujo simple y consistente para registrar entradas con el mismo lenguaje visual del panel.</p>
+                        <p class="ff-section-subtitle">Flujo simplificado para registrar entradas sin pedir la fecha manualmente.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/asistencias}">Volver</a>
                 </section>
@@ -25,7 +25,7 @@
                             <div class="ff-card-header">
                                 <div>
                                     <h3 class="ff-card-title">Registro de entrada</h3>
-                                    <p class="ff-card-subtitle">Formulario ligero para capturar fecha, hora, usuario y observaciones.</p>
+                                    <p class="ff-card-subtitle">Selecciona usuario, registra la hora si aplica y anade observaciones opcionales.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -34,23 +34,16 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Datos del acceso</h4>
-                                                <p class="ff-form-section-text">Campos minimos necesarios para registrar la asistencia.</p>
+                                                <p class="ff-form-section-text">La fecha se asigna automaticamente en el momento del registro.</p>
                                             </div>
                                             <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    <label for="fecha" class="form-label">Fecha</label>
-                                                    <input id="fecha" type="date" class="form-control" th:field="*{fecha}">
-                                                    <div class="form-text">Si se deja vacio, se registrara la fecha actual.</div>
-                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fecha')}"
-                                                         th:errors="*{fecha}">Error</div>
-                                                </div>
                                                 <div class="col-md-6">
                                                     <label for="horaEntrada" class="form-label">Hora de entrada</label>
                                                     <input id="horaEntrada" type="time" class="form-control" th:field="*{horaEntrada}">
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('horaEntrada')}"
                                                          th:errors="*{horaEntrada}">Error</div>
                                                 </div>
-                                                <div class="col-12">
+                                                <div class="col-md-6">
                                                     <label for="usuario" class="form-label">Usuario</label>
                                                     <select id="usuario" class="form-select" th:field="*{usuario.id}">
                                                         <option value="">Seleccionar usuario</option>
@@ -74,7 +67,7 @@
                                     </div>
 
                                     <div class="ff-form-actions">
-                                        <p class="ff-form-actions-note">Si la fecha no llega informada, el servicio asigna automaticamente la actual.</p>
+                                        <p class="ff-form-actions-note">La fecha del registro se completara automaticamente al persistir la asistencia.</p>
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-success">Guardar</button>
                                             <a class="btn btn-outline-secondary" th:href="@{/asistencias}">Cancelar</a>
@@ -90,22 +83,22 @@
                             <div class="ff-card-header">
                                 <div>
                                     <h3 class="ff-card-title">Referencia rapida</h3>
-                                    <p class="ff-card-subtitle">Ayuda visual minima para mantener el formulario claro y directo.</p>
+                                    <p class="ff-card-subtitle">Resumen de la version simplificada del registro.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-side-list">
                                     <div class="ff-side-item">
                                         <span class="ff-side-label">Usuario</span>
-                                        <span class="ff-side-value">Debe existir y estar disponible en el listado activo</span>
+                                        <span class="ff-side-value">Obligatorio para registrar la asistencia</span>
                                     </div>
                                     <div class="ff-side-item">
                                         <span class="ff-side-label">Fecha</span>
-                                        <span class="ff-side-value">Opcional, con relleno automatico si se omite</span>
+                                        <span class="ff-side-value">Se asigna automaticamente</span>
                                     </div>
                                     <div class="ff-side-item">
                                         <span class="ff-side-label">Observaciones</span>
-                                        <span class="ff-side-value">Campo libre para notas de control interno</span>
+                                        <span class="ff-side-value">Campo libre para control interno</span>
                                     </div>
                                 </div>
                             </div>

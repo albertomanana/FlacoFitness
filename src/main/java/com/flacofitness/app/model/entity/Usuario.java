@@ -39,6 +39,9 @@ public class Usuario {
     @Column(length = 150)
     private String apellidos;
 
+    @Column(length = 20)
+    private String dni;
+
     @NotBlank
     @Email
     @Column(nullable = false, unique = true, length = 150)
@@ -53,6 +56,9 @@ public class Usuario {
 
     @Column(length = 255)
     private String direccion;
+
+    @Column(name = "foto_path", length = 255)
+    private String fotoPath;
 
     @NotNull
     @Column(nullable = false)
