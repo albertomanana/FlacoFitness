@@ -28,6 +28,14 @@ public class UsuarioService {
         return usuarioRepository.findByActivoTrue();
     }
 
+    public long contarTotal() {
+        return usuarioRepository.count();
+    }
+
+    public long contarActivos() {
+        return usuarioRepository.countByActivoTrue();
+    }
+
     public Usuario buscarPorId(Long id) {
         return usuarioRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));

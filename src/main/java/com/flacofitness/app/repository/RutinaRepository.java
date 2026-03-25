@@ -25,4 +25,6 @@ public interface RutinaRepository extends JpaRepository<Rutina, Long> {
 
     @EntityGraph(attributePaths = {"usuarios"})
     List<Rutina> findByActivaTrue();
+
+    long countByActivaTrue();
 }
