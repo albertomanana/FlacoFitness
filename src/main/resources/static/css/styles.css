@@ -643,6 +643,10 @@ textarea.form-control {
     top: 7rem;
 }
 
+.ff-side-card-static {
+    position: static;
+}
+
 .ff-side-list {
     display: flex;
     flex-direction: column;
@@ -736,6 +740,34 @@ textarea.form-control {
 
 .ff-detail-full {
     grid-column: 1 / -1;
+}
+
+.ff-user-photo-frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 260px;
+    border-radius: 1.2rem;
+    background: #fbfcfd;
+    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+    overflow: hidden;
+}
+
+.ff-user-photo {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+}
+
+.ff-user-photo-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 260px;
+    color: var(--ff-text-muted);
+    font-weight: 600;
+    letter-spacing: 0.03em;
 }
 
 .ff-detail-list dt {

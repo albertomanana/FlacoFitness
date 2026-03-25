@@ -33,3 +33,9 @@ temp/
 
 # Herramientas locales
 .tools/
+
+# Uploads locales
+uploads/*
+!uploads/users/
+uploads/users/*
+!uploads/users/.gitkeep
