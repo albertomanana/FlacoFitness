@@ -1,0 +1,109 @@
+package com.flacofitness.app.service;
+
+import com.flacofitness.app.model.entity.Pago;
+import com.flacofitness.app.model.entity.Plan;
+import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoPago;
+import com.flacofitness.app.model.enums.MetodoPago;
+import com.flacofitness.app.repository.PagoRepository;
+import com.flacofitness.app.repository.PlanRepository;
+import com.flacofitness.app.repository.UsuarioRepository;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class PagoServiceTest {
+
+    @Mock
+    private PagoRepository pagoRepository;
+
+    @Mock
+    private UsuarioRepository usuarioRepository;
+
+    @Mock
+    private PlanRepository planRepository;
+
+    @InjectMocks
+    private PagoService pagoService;
+
+    @Test
+    void generarPagosMensuales_creaPagoPendienteYAvanzaFechaProxima() {
+        LocalDate hoy = LocalDate.now();
+        LocalDate fechaVencida = hoy.minusDays(1);
+        Usuario usuario = crearUsuario(1L, fechaVencida);
+
+        when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
+        when(pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaVencida)).thenReturn(false);
+        when(pagoRepository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        int pagosGenerados = pagoService.generarPagosMensuales();
+
+        ArgumentCaptor<Pago> pagoCaptor = ArgumentCaptor.forClass(Pago.class);
+        verify(pagoRepository).save(pagoCaptor.capture());
+
+        Pago pagoGenerado = pagoCaptor.getValue();
+        assertThat(pagosGenerados).isEqualTo(1);
+        assertThat(pagoGenerado.getUsuario()).isSameAs(usuario);
+        assertThat(pagoGenerado.getPlan()).isSameAs(usuario.getPlan());
+        assertThat(pagoGenerado.getFechaPago()).isEqualTo(fechaVencida);
+        assertThat(pagoGenerado.getEstado()).isEqualTo(EstadoPago.PENDIENTE);
+        assertThat(pagoGenerado.getMetodoPago()).isEqualTo(MetodoPago.TRANSFERENCIA);
+        assertThat(usuario.getFechaProximoPago()).isEqualTo(fechaVencida.plusDays(usuario.getPlan().getDuracionDias()));
+    }
+
+    @Test
+    void generarPagosMensuales_reutilizaUltimoPagoSiNoHayFechaProximaYEvitaDuplicados() {
+        LocalDate hoy = LocalDate.now();
+        Usuario usuario = crearUsuario(2L, null);
+        LocalDate ultimaFechaPago = hoy.minusDays(35);
+
+        Pago ultimoPago = new Pago();
+        ultimoPago.setId(10L);
+        ultimoPago.setFechaPago(ultimaFechaPago);
+
+        LocalDate fechaEsperada = ultimaFechaPago.plusDays(usuario.getPlan().getDuracionDias());
+
+        when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
+        when(pagoRepository.findTopByUsuarioIdOrderByFechaPagoDescIdDesc(usuario.getId())).thenReturn(Optional.of(ultimoPago));
+        when(pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaEsperada)).thenReturn(true);
+
+        int pagosGenerados = pagoService.generarPagosMensuales();
+
+        assertThat(pagosGenerados).isZero();
+        assertThat(usuario.getFechaProximoPago()).isEqualTo(fechaEsperada.plusDays(usuario.getPlan().getDuracionDias()));
+        verify(pagoRepository, never()).save(any(Pago.class));
+    }
+
+    private Usuario crearUsuario(Long id, LocalDate fechaProximoPago) {
+        Plan plan = new Plan();
+        plan.setId(1L);
+        plan.setNombre("Premium");
+        plan.setPrecioMensual(new BigDecimal("49.90"));
+        plan.setDuracionDias(30);
+        plan.setActivo(true);
+
+        Usuario usuario = new Usuario();
+        usuario.setId(id);
+        usuario.setNombre("Usuario " + id);
+        usuario.setEmail("usuario" + id + "@mail.com");
+        usuario.setActivo(true);
+        usuario.setPlan(plan);
+        usuario.setFechaProximoPago(fechaProximoPago);
+        return usuario;
+    }
+}

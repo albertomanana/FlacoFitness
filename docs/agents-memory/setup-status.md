@@ -1,13 +1,13 @@
 # Setup Status
 
-Fecha de referencia: 2026-03-25
+Fecha de referencia: 2026-03-26
 
 | Area | Estado | Detalle |
 | --- | --- | --- |
 | Entorno local | Preparado | Maven Wrapper operativo, validacion local realizada con JDK 17 y perfil `local` disponible para levantar la UI con H2 |
 | Base de datos | Preparado | Conexion MySQL validada en `localhost:3306/flacofitness`, script `docs/db/create-database.sql` anadido y soporte de `foto_path` operativo para usuarios |
 | Docker | Preparado | `Dockerfile` y `docker-compose.yml` creados como base funcional |
-| Backend | En progreso | Proyecto Spring Boot inicializado, entidades JPA, repositorios, servicios y controladores MVC base para usuarios, rutinas, pagos y asistencias, con almacenamiento local de fotos de usuario habilitado y endpoints JSON de estadisticas en `/stats`, incluyendo serie mensual de ingresos |
+| Backend | En progreso | Proyecto Spring Boot inicializado, entidades JPA, repositorios, servicios y controladores MVC base para usuarios, rutinas, pagos y asistencias, con almacenamiento local de fotos de usuario habilitado, endpoints JSON de estadisticas en `/stats`, serie mensual de ingresos y automatizacion de pagos mensuales con scheduler configurable |
 | Frontend | En progreso | CRUD MVC de usuarios, rutinas, pagos y asistencias implementados con formularios, listados y vistas de detalle, ademas de un layout administrativo coherente con sidebar, topbar, detalle visual unificado, carga de foto de usuario y dashboard interactivo con Chart.js |
 | Documentacion | Preparado | Carpeta `docs/agents-memory/` creada con memoria viva inicial y documentacion de base de datos actualizada |
 | Repositorio Git | Preparado | Ramas `main` y `develop`, CI, plantillas, Dependabot y guias de workflow anadidas |

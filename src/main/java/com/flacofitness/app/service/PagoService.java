@@ -7,19 +7,25 @@ import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.model.enums.EstadoPago;
+import com.flacofitness.app.model.enums.MetodoPago;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
 public class PagoService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PagoService.class);
 
     private final PagoRepository pagoRepository;
     private final UsuarioRepository usuarioRepository;
@@ -51,6 +57,32 @@ public class PagoService {
 
     public long contarPagosPendientes() {
         return pagoRepository.countByEstado(EstadoPago.PENDIENTE);
+    }
+
+    @Transactional
+    public int generarPagosMensuales() {
+        LocalDate fechaReferencia = LocalDate.now();
+        List<Usuario> usuariosConPagoPendiente = usuarioRepository.findUsuariosConPagoPendiente(fechaReferencia);
+        int pagosGenerados = 0;
+
+        for (Usuario usuario : usuariosConPagoPendiente) {
+            Plan plan = usuario.getPlan();
+            LocalDate fechaProximoPago = resolverFechaProximoPago(usuario, plan, fechaReferencia);
+
+            while (fechaProximoPago != null && !fechaProximoPago.isAfter(fechaReferencia)) {
+                if (!pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaProximoPago)) {
+                    pagoRepository.save(crearPagoAutomatico(usuario, plan, fechaProximoPago));
+                    pagosGenerados++;
+                }
+
+                fechaProximoPago = calcularSiguienteFechaPago(fechaProximoPago, plan);
+            }
+
+            usuario.setFechaProximoPago(fechaProximoPago);
+        }
+
+        LOGGER.info("Proceso de pagos automáticos completado. Pagos generados: {}", pagosGenerados);
+        return pagosGenerados;
     }
 
     public List<IngresoMensualStatsItem> obtenerIngresosMensuales() {
@@ -119,5 +151,29 @@ public class PagoService {
         }
 
         return plan;
+    }
+
+    private LocalDate resolverFechaProximoPago(Usuario usuario, Plan plan, LocalDate fechaReferencia) {
+        if (usuario.getFechaProximoPago() != null) {
+            return usuario.getFechaProximoPago();
+        }
+
+        return pagoRepository.findTopByUsuarioIdOrderByFechaPagoDescIdDesc(usuario.getId())
+                .map(pago -> calcularSiguienteFechaPago(pago.getFechaPago(), plan))
+                .orElseGet(() -> calcularSiguienteFechaPago(fechaReferencia, plan));
+    }
+
+    private Pago crearPagoAutomatico(Usuario usuario, Plan plan, LocalDate fechaPago) {
+        Pago pago = new Pago();
+        pago.setUsuario(usuario);
+        pago.setPlan(plan);
+        pago.setFechaPago(fechaPago);
+        pago.setMetodoPago(MetodoPago.TRANSFERENCIA);
+        pago.setEstado(EstadoPago.PENDIENTE);
+        return pago;
+    }
+
+    private LocalDate calcularSiguienteFechaPago(LocalDate fechaBase, Plan plan) {
+        return fechaBase.plusDays(Math.max(plan.getDuracionDias(), 1));
     }
 }

@@ -42,5 +42,6 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 ### 2026-03-26
 
-- Se amplió `/stats/pagos` con una serie mensual de ingresos para soportar visualizacion temporal real en el dashboard.
+- Se amplio `/stats/pagos` con una serie mensual de ingresos para soportar visualizacion temporal real en el dashboard.
 - Se conecto el dashboard principal con los endpoints `/stats/*` mediante `fetch` y se anadieron graficos responsivos con Chart.js para usuarios, ingresos y asistencias.
+- Se automatizo la generacion de pagos mensuales a partir del plan activo del usuario, incorporando `fechaProximoPago`, referencias UUID y scheduler configurable para ejecucion periodica.
