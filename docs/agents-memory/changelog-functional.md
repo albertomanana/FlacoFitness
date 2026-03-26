@@ -39,3 +39,8 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se simplifico `Asistencia` para asignar la fecha automaticamente y reducir la logica manual del registro.
 - Se implemento la subida de fotos de usuario, almacenando archivos en `uploads/users/`, guardando `fotoPath` en base de datos y sirviendo las imagenes desde la aplicacion.
 - Se incorporaron endpoints JSON de estadisticas en `/stats` para usuarios, pagos, asistencias y rutinas, listos para alimentar graficos reales del dashboard.
+
+### 2026-03-26
+
+- Se amplió `/stats/pagos` con una serie mensual de ingresos para soportar visualizacion temporal real en el dashboard.
+- Se conecto el dashboard principal con los endpoints `/stats/*` mediante `fetch` y se anadieron graficos responsivos con Chart.js para usuarios, ingresos y asistencias.

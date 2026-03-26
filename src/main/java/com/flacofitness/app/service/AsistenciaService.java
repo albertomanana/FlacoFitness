@@ -34,6 +34,10 @@ public class AsistenciaService {
         return asistenciaRepository.findByUsuarioId(usuarioId);
     }
 
+    public long contarTodas() {
+        return asistenciaRepository.count();
+    }
+
     public List<AsistenciaDiariaStatsItem> obtenerAsistenciasPorDia() {
         return asistenciaRepository.countGroupedByFecha().stream()
                 .map(item -> new AsistenciaDiariaStatsItem(item.getFecha(), item.getTotal() == null ? 0L : item.getTotal()))

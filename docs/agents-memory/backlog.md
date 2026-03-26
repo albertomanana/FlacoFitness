@@ -12,6 +12,7 @@
 - Documentar decisiones de modelado y restricciones
 - Crear diagramas de arquitectura y base de datos
 - Revisar manejo de mensajes globales y feedback visual para formularios complejos
+- Incorporar filtros de periodo para refinar las series del dashboard
 
 ## Prioridad baja
 

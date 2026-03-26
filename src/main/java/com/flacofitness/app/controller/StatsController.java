@@ -43,7 +43,8 @@ public class StatsController {
     public PagosStatsResponse obtenerEstadisticasPagos() {
         return new PagosStatsResponse(
                 pagoService.calcularIngresosTotales(),
-                pagoService.contarPagosPendientes()
+                pagoService.contarPagosPendientes(),
+                pagoService.obtenerIngresosMensuales()
         );
     }
 

@@ -2,6 +2,7 @@ package com.flacofitness.app.service;
 
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.IngresoMensualStatsItem;
 import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.YearMonth;
 import java.util.List;
 
 @Service
@@ -39,12 +41,24 @@ public class PagoService {
         return pagoRepository.findByUsuarioId(usuarioId);
     }
 
+    public long contarTodos() {
+        return pagoRepository.count();
+    }
+
     public BigDecimal calcularIngresosTotales() {
         return pagoRepository.sumMontoByEstado(EstadoPago.PAGADO);
     }
 
     public long contarPagosPendientes() {
         return pagoRepository.countByEstado(EstadoPago.PENDIENTE);
+    }
+
+    public List<IngresoMensualStatsItem> obtenerIngresosMensuales() {
+        return pagoRepository.sumMontoGroupedByMes(EstadoPago.PAGADO).stream()
+                .map(item -> new IngresoMensualStatsItem(
+                        YearMonth.of(item.getAnio(), item.getMes()).toString(),
+                        item.getTotal()))
+                .toList();
     }
 
     public Pago buscarPorId(Long id) {
