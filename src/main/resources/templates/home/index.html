@@ -9,15 +9,20 @@
         <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Vista general del estado operativo de FlacoFitness.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack"
+                 data-dashboard
+                 th:attr="data-stats-usuarios-url=@{/stats/usuarios},
+                          data-stats-pagos-url=@{/stats/pagos},
+                          data-stats-asistencias-url=@{/stats/asistencias},
+                          data-stats-rutinas-url=@{/stats/rutinas}">
                 <section class="ff-hero-card">
                     <div class="row g-4 align-items-center">
                         <div class="col-xl-7">
                             <span class="ff-section-eyebrow">Resumen general</span>
-                            <h2 class="display-6 fw-bold mt-2 mb-3">Un panel administrativo claro para seguir construyendo el proyecto con orden.</h2>
+                            <h2 class="display-6 fw-bold mt-2 mb-3">Un panel administrativo claro con metricas reales para seguir construyendo el proyecto con orden.</h2>
                             <p class="ff-section-subtitle mb-4">
-                                FlacoFitness ya cuenta con backend MVC, persistencia, CRUD funcionales y documentacion viva.
-                                Este dashboard sirve como base administrativa sobria para seguir refinando el producto.
+                                FlacoFitness ya cuenta con backend MVC, persistencia, CRUD funcionales, endpoints de estadisticas
+                                y un dashboard preparado para visualizar la evolucion del proyecto en tiempo real.
                             </p>
                             <div class="d-flex flex-wrap gap-2">
                                 <a class="btn btn-success" th:href="@{/usuarios}">Gestionar usuarios</a>
@@ -29,28 +34,28 @@
                                 <div class="col-sm-6">
                                     <article class="ff-surface-card ff-stat-card">
                                         <p class="ff-stat-label">Usuarios activos</p>
-                                        <p class="ff-stat-value" th:text="${usuariosActivos}">0</p>
+                                        <p class="ff-stat-value" data-stat="usuariosActivos" th:text="${usuariosActivos}">0</p>
                                         <p class="ff-stat-note">Miembros disponibles para operar en el sistema.</p>
                                     </article>
                                 </div>
                                 <div class="col-sm-6">
                                     <article class="ff-surface-card ff-stat-card">
                                         <p class="ff-stat-label">Rutinas activas</p>
-                                        <p class="ff-stat-value" th:text="${rutinasActivas}">0</p>
+                                        <p class="ff-stat-value" data-stat="rutinasActivas" th:text="${rutinasActivas}">0</p>
                                         <p class="ff-stat-note">Planes de entrenamiento actualmente vigentes.</p>
                                     </article>
                                 </div>
                                 <div class="col-sm-6">
                                     <article class="ff-surface-card ff-stat-card">
                                         <p class="ff-stat-label">Pagos pendientes</p>
-                                        <p class="ff-stat-value" th:text="${pagosPendientes}">0</p>
+                                        <p class="ff-stat-value" data-stat="pagosPendientes" th:text="${pagosPendientes}">0</p>
                                         <p class="ff-stat-note">Cobros que siguen abiertos en la operativa actual.</p>
                                     </article>
                                 </div>
                                 <div class="col-sm-6">
                                     <article class="ff-surface-card ff-stat-card">
                                         <p class="ff-stat-label">Asistencias</p>
-                                        <p class="ff-stat-value" th:text="${asistenciasRegistradas}">0</p>
+                                        <p class="ff-stat-value" data-stat="asistenciasRegistradas" th:text="${asistenciasRegistradas}">0</p>
                                         <p class="ff-stat-note">Entradas registradas desde el inicio del proyecto.</p>
                                     </article>
                                 </div>
@@ -63,14 +68,14 @@
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Usuarios totales</p>
-                            <p class="ff-stat-value" th:text="${usuariosTotales}">0</p>
+                            <p class="ff-stat-value" data-stat="usuariosTotales" th:text="${usuariosTotales}">0</p>
                             <p class="ff-stat-note">Base general de miembros gestionados.</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Pagos registrados</p>
-                            <p class="ff-stat-value" th:text="${pagosRegistrados}">0</p>
+                            <p class="ff-stat-value" data-stat="pagosRegistrados" th:text="${pagosRegistrados}">0</p>
                             <p class="ff-stat-note">Movimientos cargados en el sistema.</p>
                         </article>
                     </div>
@@ -78,7 +83,9 @@
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Ingreso acumulado</p>
                             <p class="ff-stat-value"
-                               th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' €'">0.00 €</p>
+                               data-stat="ingresosRegistrados"
+                               data-format="currency"
+                               th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
                             <p class="ff-stat-note">Suma de pagos con estado pagado.</p>
                         </article>
                     </div>
@@ -87,6 +94,69 @@
                             <p class="ff-stat-label">Modulos activos</p>
                             <p class="ff-stat-value">4</p>
                             <p class="ff-stat-note">Usuarios, rutinas, pagos y asistencias ya operativos.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-dashboard-alert d-none" data-dashboard-alert>
+                    <div class="ff-card-body py-3">
+                        <strong class="d-block mb-1">No se pudieron cargar todas las estadisticas del dashboard.</strong>
+                        <span class="ff-table-secondary">Se muestran los datos disponibles. Revisa la consola si el problema persiste.</span>
+                    </div>
+                </section>
+
+                <section class="row g-4">
+                    <div class="col-xl-4">
+                        <article class="ff-surface-card ff-chart-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Usuarios</p>
+                                    <h3 class="ff-card-title mt-2">Estado de miembros</h3>
+                                    <p class="ff-card-subtitle">Comparativa entre usuarios activos e inactivos.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-chart-canvas-wrap">
+                                    <canvas id="usuariosChart" aria-label="Grafico de usuarios activos" role="img"></canvas>
+                                </div>
+                                <p class="ff-chart-empty d-none" data-chart-empty="usuarios">Todavia no hay datos suficientes para este grafico.</p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-xl-8">
+                        <article class="ff-surface-card ff-chart-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Ingresos</p>
+                                    <h3 class="ff-card-title mt-2">Evolucion mensual de cobros</h3>
+                                    <p class="ff-card-subtitle">Serie temporal construida con pagos marcados como pagados.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-chart-canvas-wrap">
+                                    <canvas id="ingresosChart" aria-label="Grafico de ingresos mensuales" role="img"></canvas>
+                                </div>
+                                <p class="ff-chart-empty d-none" data-chart-empty="ingresos">Todavia no hay pagos pagados para mostrar tendencia.</p>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-12">
+                        <article class="ff-surface-card ff-chart-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Asistencias</p>
+                                    <h3 class="ff-card-title mt-2">Actividad diaria del gimnasio</h3>
+                                    <p class="ff-card-subtitle">Seguimiento diario de registros de asistencia disponibles en el sistema.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-chart-canvas-wrap ff-chart-canvas-wrap-wide">
+                                    <canvas id="asistenciasChart" aria-label="Grafico de asistencias diarias" role="img"></canvas>
+                                </div>
+                                <p class="ff-chart-empty d-none" data-chart-empty="asistencias">Todavia no hay asistencias registradas para este grafico.</p>
+                            </div>
                         </article>
                     </div>
                 </section>
@@ -181,6 +251,7 @@
                     </div>
                 </section>
 
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                 <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
         </main>
