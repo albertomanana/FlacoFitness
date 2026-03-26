@@ -15,7 +15,8 @@ import com.flacofitness.app.repository.UsuarioRepository;
         "spring.autoconfigure.exclude=" +
                 "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration," +
                 "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration",
-        "spring.sql.init.mode=never"
+        "spring.sql.init.mode=never",
+        "app.pagos.scheduler.enabled=false"
 })
 class FlacoFitnessApplicationTests {
 

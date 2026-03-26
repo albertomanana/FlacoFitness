@@ -2,12 +2,15 @@ package com.flacofitness.app.service;
 
 import com.flacofitness.app.exception.DuplicateResourceException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -44,6 +47,7 @@ public class UsuarioService {
     @Transactional
     public Usuario guardar(Usuario usuario) {
         validarEmailDuplicado(usuario.getEmail(), null);
+        inicializarFechaProximoPago(usuario);
         return usuarioRepository.save(usuario);
     }
 
@@ -51,6 +55,7 @@ public class UsuarioService {
     public Usuario actualizar(Long id, Usuario usuarioActualizado) {
         Usuario usuarioExistente = buscarPorId(id);
         validarEmailDuplicado(usuarioActualizado.getEmail(), id);
+        Long planAnteriorId = usuarioExistente.getPlan() != null ? usuarioExistente.getPlan().getId() : null;
 
         usuarioExistente.setNombre(usuarioActualizado.getNombre());
         usuarioExistente.setApellidos(usuarioActualizado.getApellidos());
@@ -65,6 +70,7 @@ public class UsuarioService {
         usuarioExistente.setActivo(usuarioActualizado.getActivo());
         usuarioExistente.setRol(usuarioActualizado.getRol());
         usuarioExistente.setPlan(usuarioActualizado.getPlan());
+        sincronizarFechaProximoPago(usuarioExistente, planAnteriorId);
 
         return usuarioRepository.save(usuarioExistente);
     }
@@ -80,6 +86,7 @@ public class UsuarioService {
     public void desactivar(Long id) {
         Usuario usuario = buscarPorId(id);
         usuario.setActivo(false);
+        usuario.setFechaProximoPago(null);
         usuarioRepository.save(usuario);
     }
 
@@ -93,5 +100,34 @@ public class UsuarioService {
                 .ifPresent(usuario -> {
                     throw new DuplicateResourceException("Ya existe un usuario con email: " + email);
                 });
+    }
+
+    private void inicializarFechaProximoPago(Usuario usuario) {
+        if (!Boolean.TRUE.equals(usuario.getActivo()) || usuario.getPlan() == null) {
+            usuario.setFechaProximoPago(null);
+            return;
+        }
+
+        if (usuario.getFechaProximoPago() == null) {
+            usuario.setFechaProximoPago(LocalDate.now().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
+        }
+    }
+
+    private void sincronizarFechaProximoPago(Usuario usuario, Long planAnteriorId) {
+        if (!Boolean.TRUE.equals(usuario.getActivo()) || usuario.getPlan() == null) {
+            usuario.setFechaProximoPago(null);
+            return;
+        }
+
+        Long planActualId = usuario.getPlan().getId();
+        boolean planCambio = !Objects.equals(planAnteriorId, planActualId);
+
+        if (planCambio || usuario.getFechaProximoPago() == null) {
+            usuario.setFechaProximoPago(LocalDate.now().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
+        }
+    }
+
+    private long obtenerFrecuenciaCobro(Plan plan) {
+        return Math.max(plan.getDuracionDias(), 1);
     }
 }

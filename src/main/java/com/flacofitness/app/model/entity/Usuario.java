@@ -68,6 +68,10 @@ public class Usuario {
     @Column(name = "fecha_registro", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaRegistro;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "fecha_proximo_pago")
+    private LocalDate fechaProximoPago;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "rol_id")
     private Rol rol;
