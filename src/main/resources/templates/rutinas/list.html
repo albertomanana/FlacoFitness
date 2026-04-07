@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Planificacion y seguimiento de rutinas vinculadas a varios usuarios.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Planificacion, objetivos y usuarios asociados a cada rutina.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -15,7 +15,7 @@
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Modulo de rutinas</span>
-                        <h2 class="ff-section-title">Listado general</h2>
+                        <h2 class="ff-section-title">Biblioteca de rutinas</h2>
                         <p class="ff-section-subtitle">Controla objetivo, tipo, usuarios asociados y estado de activacion de cada rutina.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
@@ -33,35 +33,43 @@
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Activas</p>
                             <p class="ff-stat-value" th:text="${rutinas.?[activa == true].size()}">0</p>
-                            <p class="ff-stat-note">Rutinas actualmente disponibles.</p>
+                            <p class="ff-stat-note">Rutinas disponibles para operar.</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Personalizadas</p>
                             <p class="ff-stat-value" th:text="${rutinas.?[tipoRutina != null and tipoRutina.name() == 'PERSONALIZADA'].size()}">0</p>
-                            <p class="ff-stat-note">Rutinas adaptadas a usuarios concretos.</p>
+                            <p class="ff-stat-note">Adaptadas a usuarios concretos.</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Con usuarios</p>
                             <p class="ff-stat-value" th:text="${rutinas.?[usuarios != null and !usuarios.isEmpty()].size()}">0</p>
-                            <p class="ff-stat-note">Rutinas ya vinculadas a miembros del sistema.</p>
+                            <p class="ff-stat-note">Rutinas ya asociadas a miembros.</p>
                         </article>
                     </div>
                 </section>
 
                 <section class="ff-surface-card">
                     <div class="ff-card-header">
-                        <div>
-                            <h3 class="ff-card-title">Panel de rutinas</h3>
-                            <p class="ff-card-subtitle">Visualiza tipo, objetivo y usuarios asociados sin romper el flujo administrativo.</p>
+                        <div class="ff-card-toolbar w-100">
+                            <div>
+                                <h3 class="ff-card-title">Panel de rutinas</h3>
+                                <p class="ff-card-subtitle">Tabla interactiva para consultar objetivo, usuarios asociados y estado sin perder el flujo administrativo.</p>
+                            </div>
+                            <span class="ff-card-toolbar-note">Responsive, ordenable y paginada.</span>
                         </div>
                     </div>
-                    <div class="ff-card-body">
+                    <div class="ff-card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-hover align-middle"
+                                   data-ff-datatable
+                                   data-page-length="10"
+                                   data-order-column="0"
+                                   data-order-direction="asc"
+                                   data-search-placeholder="Buscar rutina, objetivo o usuario...">
                                 <thead>
                                 <tr>
                                     <th>Rutina</th>
@@ -69,7 +77,7 @@
                                     <th>Usuarios</th>
                                     <th>Fecha de creacion</th>
                                     <th>Estado</th>
-                                    <th class="text-end">Acciones</th>
+                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(rutinas)}">
@@ -83,9 +91,7 @@
                                     </td>
                                     <td>
                                         <span class="ff-soft-badge"
-                                              th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : '-'}">
-                                            Objetivo
-                                        </span>
+                                              th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : '-'}">Objetivo</span>
                                     </td>
                                     <td>
                                         <div class="ff-table-meta">
@@ -100,9 +106,7 @@
                                             </span>
                                         </div>
                                     </td>
-                                    <td th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">
-                                        Fecha
-                                    </td>
+                                    <td th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</td>
                                     <td>
                                         <span class="ff-status-badge"
                                               th:classappend="${rutina.activa} ? ' ff-status-active' : ' ff-status-inactive'"
@@ -110,13 +114,14 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                            <a class="btn btn-outline-secondary btn-sm"
-                                               th:href="@{/rutinas/{id}(id=${rutina.id})}">Ver</a>
-                                            <a class="btn btn-outline-success btn-sm"
-                                               th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
-                                            <form th:if="${rutina.activa}" th:action="@{/rutinas/{id}/desactivar(id=${rutina.id})}"
-                                                  method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-outline-danger btn-sm"
+                                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/rutinas/{id}(id=${rutina.id})}">Ver</a>
+                                            <a class="btn btn-outline-success btn-sm" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
+                                            <form th:if="${rutina.activa}"
+                                                  th:action="@{/rutinas/{id}/desactivar(id=${rutina.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger btn-sm"
                                                         onclick="return confirm('¿Deseas desactivar esta rutina?');">
                                                     Desactivar
                                                 </button>

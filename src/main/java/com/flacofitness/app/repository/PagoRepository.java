@@ -29,10 +29,19 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
 
     Optional<Pago> findTopByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
 
+    @EntityGraph(attributePaths = {"usuario", "plan"})
+    List<Pago> findTop8ByOrderByFechaPagoDescIdDesc();
+
     long countByEstado(EstadoPago estado);
 
     @Query("select coalesce(sum(pago.monto), 0) from Pago pago where pago.estado = :estado")
     BigDecimal sumMontoByEstado(@Param("estado") EstadoPago estado);
+
+    @Query("select coalesce(sum(pago.monto), 0) from Pago pago " +
+            "where pago.estado = :estado and year(pago.fechaPago) = :anio and month(pago.fechaPago) = :mes")
+    BigDecimal sumMontoByEstadoAndPeriodo(@Param("estado") EstadoPago estado,
+                                          @Param("anio") int anio,
+                                          @Param("mes") int mes);
 
     @Query("select year(pago.fechaPago) as anio, month(pago.fechaPago) as mes, coalesce(sum(pago.monto), 0) as total " +
             "from Pago pago where pago.estado = :estado " +

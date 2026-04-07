@@ -55,8 +55,17 @@ public class PagoService {
         return pagoRepository.sumMontoByEstado(EstadoPago.PAGADO);
     }
 
+    public BigDecimal calcularIngresosMesActual() {
+        LocalDate hoy = LocalDate.now();
+        return pagoRepository.sumMontoByEstadoAndPeriodo(EstadoPago.PAGADO, hoy.getYear(), hoy.getMonthValue());
+    }
+
     public long contarPagosPendientes() {
         return pagoRepository.countByEstado(EstadoPago.PENDIENTE);
+    }
+
+    public List<Pago> listarRecientes() {
+        return pagoRepository.findTop8ByOrderByFechaPagoDescIdDesc();
     }
 
     @Transactional

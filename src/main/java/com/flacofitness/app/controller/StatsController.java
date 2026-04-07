@@ -1,9 +1,11 @@
 package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.dto.AsistenciasStatsResponse;
+import com.flacofitness.app.model.dto.DashboardStatsResponse;
 import com.flacofitness.app.model.dto.PagosStatsResponse;
 import com.flacofitness.app.model.dto.RutinasStatsResponse;
 import com.flacofitness.app.model.dto.UsuariosStatsResponse;
+import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.AsistenciaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.RutinaService;
@@ -17,15 +19,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class StatsController {
 
     private final UsuarioService usuarioService;
+    private final PlanService planService;
     private final PagoService pagoService;
     private final AsistenciaService asistenciaService;
     private final RutinaService rutinaService;
 
     public StatsController(UsuarioService usuarioService,
+                           PlanService planService,
                            PagoService pagoService,
                            AsistenciaService asistenciaService,
                            RutinaService rutinaService) {
         this.usuarioService = usuarioService;
+        this.planService = planService;
         this.pagoService = pagoService;
         this.asistenciaService = asistenciaService;
         this.rutinaService = rutinaService;
@@ -59,5 +64,22 @@ public class StatsController {
     @GetMapping("/rutinas")
     public RutinasStatsResponse obtenerEstadisticasRutinas() {
         return new RutinasStatsResponse(rutinaService.contarActivas());
+    }
+
+    @GetMapping("/dashboard")
+    public DashboardStatsResponse obtenerEstadisticasDashboard() {
+        return new DashboardStatsResponse(
+                usuarioService.contarTotal(),
+                usuarioService.contarActivos(),
+                planService.contarActivos(),
+                pagoService.contarPagosPendientes(),
+                pagoService.calcularIngresosMesActual(),
+                asistenciaService.contarHoy(),
+                rutinaService.contarActivas(),
+                asistenciaService.obtenerAsistenciasUltimosDias(14),
+                pagoService.obtenerIngresosMensuales(),
+                usuarioService.obtenerDistribucionPorPlan(),
+                usuarioService.obtenerAltasMensuales()
+        );
     }
 }

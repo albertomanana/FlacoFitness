@@ -26,6 +26,10 @@ public class PlanService {
         return planRepository.findByActivoTrue();
     }
 
+    public long contarActivos() {
+        return planRepository.countByActivoTrue();
+    }
+
     public Plan buscarPorId(Long id) {
         return planRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan no encontrado con id: " + id));

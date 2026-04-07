@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de usuario', 'Consulta completa de la ficha del usuario seleccionado.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de usuario', 'Consulta completa de la ficha del miembro seleccionado.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -15,8 +15,9 @@
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
-                        <h2 class="ff-section-title" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</h2>
-                        <p class="ff-section-subtitle">Vista consolidada con identidad, contacto, relacion, estado actual y foto de perfil.</p>
+                        <h2 class="ff-section-title"
+                            th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</h2>
+                        <p class="ff-section-subtitle">Vista consolidada con identidad, contacto, plan, estado actual y fotografia de perfil.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
@@ -29,9 +30,16 @@
                         <article class="ff-surface-card">
                             <div class="ff-card-body d-flex flex-column gap-4">
                                 <div class="ff-detail-hero">
-                                    <div>
-                                        <h3 class="ff-detail-hero-title">Ficha del miembro</h3>
-                                        <p class="ff-detail-hero-text">Informacion disponible para gestion administrativa y seguimiento interno.</p>
+                                    <div class="ff-photo-inline">
+                                        <span class="ff-avatar-ring">
+                                            <img class="ff-avatar ff-avatar-xl"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                 th:alt="${'Foto de ' + usuario.nombre}">
+                                        </span>
+                                        <div class="ff-photo-inline-body">
+                                            <h3 class="ff-detail-hero-title">Ficha del miembro</h3>
+                                            <p class="ff-detail-hero-text">Registro administrativo completo para seguimiento academico y gestion diaria.</p>
+                                        </div>
                                     </div>
                                     <span class="ff-status-badge"
                                           th:classappend="${usuario.activo} ? ' ff-status-active' : ' ff-status-inactive'"
@@ -70,6 +78,11 @@
                                               th:text="${usuario.fechaRegistro != null ? #temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</span>
                                     </div>
                                     <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Proximo pago</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                    </div>
+                                    <div class="ff-detail-item">
                                         <span class="ff-detail-label">Rol</span>
                                         <span class="ff-detail-value" th:text="${usuario.rol != null ? usuario.rol.nombre : '-'}">Rol</span>
                                     </div>
@@ -92,26 +105,25 @@
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Foto del usuario</h3>
-                                        <p class="ff-card-subtitle">Carga una imagen valida y guarda su ruta en la base de datos.</p>
+                                        <p class="ff-card-subtitle">La imagen se almacena localmente y se publica mediante el handler de recursos configurado en Spring.</p>
                                     </div>
                                 </div>
-                                <div class="ff-card-body">
-                                    <div class="ff-user-photo-frame">
-                                        <img th:if="${usuario.fotoPath != null and !usuario.fotoPath.isBlank()}"
-                                             th:src="@{'/' + ${usuario.fotoPath}}"
-                                             th:alt="${'Foto de ' + usuario.nombre}"
-                                             class="ff-user-photo">
-                                        <div th:unless="${usuario.fotoPath != null and !usuario.fotoPath.isBlank()}" class="ff-user-photo-placeholder">
-                                            Sin foto
-                                        </div>
-                                    </div>
+                                <div class="ff-card-body d-flex flex-column gap-4">
+                                    <img class="ff-user-photo-preview"
+                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                         th:alt="${'Foto de ' + usuario.nombre}">
 
-                                    <form class="d-flex flex-column gap-3 mt-4"
+                                    <p class="ff-user-photo-caption"
+                                       th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada cargada correctamente.' : 'Se esta usando el avatar por defecto del sistema.'">
+                                        Se esta usando el avatar por defecto del sistema.
+                                    </p>
+
+                                    <form class="d-flex flex-column gap-3"
                                           th:action="@{/usuarios/{id}/foto(id=${usuario.id})}"
                                           method="post"
                                           enctype="multipart/form-data">
                                         <div>
-                                            <label for="foto" class="form-label">Imagen</label>
+                                            <label for="foto" class="form-label">Actualizar imagen</label>
                                             <input id="foto"
                                                    name="foto"
                                                    type="file"
@@ -128,7 +140,7 @@
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Resumen rapido</h3>
-                                        <p class="ff-card-subtitle">Indicadores utiles para ubicar el registro dentro de la operativa.</p>
+                                        <p class="ff-card-subtitle">Indicadores utiles para ubicar el registro dentro de la operativa diaria.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">
@@ -147,7 +159,8 @@
                                         </div>
                                         <div class="ff-side-item">
                                             <span class="ff-side-label">Ruta de imagen</span>
-                                            <span class="ff-side-value" th:text="${#strings.defaultString(usuario.fotoPath, 'Sin imagen almacenada')}">Ruta</span>
+                                            <span class="ff-side-value"
+                                                  th:text="${#strings.defaultString(usuario.fotoPath, @userPhotoUrlResolver.getDefaultAvatarUrl())}">Ruta</span>
                                         </div>
                                     </div>
                                 </div>

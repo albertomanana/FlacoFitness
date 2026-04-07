@@ -99,7 +99,12 @@ public class UserPhotoStorageService {
             return;
         }
 
-        Path fotoAnterior = Paths.get(fotoActualPath).toAbsolutePath().normalize();
+        String normalizedPath = fotoActualPath.trim().replace("\\", "/");
+        if (normalizedPath.startsWith("/")) {
+            normalizedPath = normalizedPath.substring(1);
+        }
+
+        Path fotoAnterior = Paths.get(normalizedPath).toAbsolutePath().normalize();
 
         if (fotoAnterior.startsWith(usersUploadPath) && !fotoAnterior.equals(nuevaFoto)) {
             Files.deleteIfExists(fotoAnterior);

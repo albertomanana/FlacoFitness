@@ -11,6 +11,7 @@ import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -38,8 +39,19 @@ public class AsistenciaService {
         return asistenciaRepository.count();
     }
 
+    public long contarHoy() {
+        return asistenciaRepository.countByFecha(LocalDate.now());
+    }
+
     public List<AsistenciaDiariaStatsItem> obtenerAsistenciasPorDia() {
         return asistenciaRepository.countGroupedByFecha().stream()
+                .map(item -> new AsistenciaDiariaStatsItem(item.getFecha(), item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
+    }
+
+    public List<AsistenciaDiariaStatsItem> obtenerAsistenciasUltimosDias(int dias) {
+        LocalDate fechaDesde = LocalDate.now().minusDays(Math.max(dias - 1, 0));
+        return asistenciaRepository.countGroupedByFechaDesde(fechaDesde).stream()
                 .map(item -> new AsistenciaDiariaStatsItem(item.getFecha(), item.getTotal() == null ? 0L : item.getTotal()))
                 .toList();
     }
