@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Vista general del estado operativo de FlacoFitness.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Vista general del estado operativo.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack"
@@ -15,111 +15,182 @@
                           data-stats-pagos-url=@{/stats/pagos},
                           data-stats-asistencias-url=@{/stats/asistencias},
                           data-stats-rutinas-url=@{/stats/rutinas}">
-                <section class="ff-hero-card">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-xl-7">
-                            <span class="ff-section-eyebrow">Resumen general</span>
-                            <h2 class="display-6 fw-bold mt-2 mb-3">Un panel administrativo claro con metricas reales para seguir construyendo el proyecto con orden.</h2>
-                            <p class="ff-section-subtitle mb-4">
-                                FlacoFitness ya cuenta con backend MVC, persistencia, CRUD funcionales, endpoints de estadisticas
-                                y un dashboard preparado para visualizar la evolucion del proyecto en tiempo real.
-                            </p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a class="btn btn-success" th:href="@{/usuarios}">Gestionar usuarios</a>
-                                <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Ver rutinas</a>
+
+                <!-- ── KPI Cards Row ── -->
+                <section class="row g-3">
+
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
+                        <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon">
+                                    <!-- Users icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    </svg>
+                                </div>
+                                <span class="ff-stat-trend ff-stat-trend-up">↑ Activos</span>
                             </div>
-                        </div>
-                        <div class="col-xl-5">
-                            <div class="row g-3">
-                                <div class="col-sm-6">
-                                    <article class="ff-surface-card ff-stat-card">
-                                        <p class="ff-stat-label">Usuarios activos</p>
-                                        <p class="ff-stat-value" data-stat="usuariosActivos" th:text="${usuariosActivos}">0</p>
-                                        <p class="ff-stat-note">Miembros disponibles para operar en el sistema.</p>
-                                    </article>
-                                </div>
-                                <div class="col-sm-6">
-                                    <article class="ff-surface-card ff-stat-card">
-                                        <p class="ff-stat-label">Rutinas activas</p>
-                                        <p class="ff-stat-value" data-stat="rutinasActivas" th:text="${rutinasActivas}">0</p>
-                                        <p class="ff-stat-note">Planes de entrenamiento actualmente vigentes.</p>
-                                    </article>
-                                </div>
-                                <div class="col-sm-6">
-                                    <article class="ff-surface-card ff-stat-card">
-                                        <p class="ff-stat-label">Pagos pendientes</p>
-                                        <p class="ff-stat-value" data-stat="pagosPendientes" th:text="${pagosPendientes}">0</p>
-                                        <p class="ff-stat-note">Cobros que siguen abiertos en la operativa actual.</p>
-                                    </article>
-                                </div>
-                                <div class="col-sm-6">
-                                    <article class="ff-surface-card ff-stat-card">
-                                        <p class="ff-stat-label">Asistencias</p>
-                                        <p class="ff-stat-value" data-stat="asistenciasRegistradas" th:text="${asistenciasRegistradas}">0</p>
-                                        <p class="ff-stat-note">Entradas registradas desde el inicio del proyecto.</p>
-                                    </article>
-                                </div>
-                            </div>
-                        </div>
+                            <p class="ff-stat-label">Usuarios activos</p>
+                            <p class="ff-stat-value" data-stat="usuariosActivos" th:text="${usuariosActivos}">0</p>
+                            <p class="ff-stat-note">Miembros habilitados en el sistema</p>
+                        </article>
                     </div>
+
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
+                        <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon">
+                                    <!-- Dumbbell/Rutinas icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+                                    </svg>
+                                </div>
+                                <span class="ff-stat-trend ff-stat-trend-neutral">Vigentes</span>
+                            </div>
+                            <p class="ff-stat-label">Rutinas activas</p>
+                            <p class="ff-stat-value" data-stat="rutinasActivas" th:text="${rutinasActivas}">0</p>
+                            <p class="ff-stat-note">Planes de entrenamiento activos</p>
+                        </article>
+                    </div>
+
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
+                        <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon" style="background: rgba(251,146,60,0.12); color: #ea580c;">
+                                    <!-- Alert / Pagos icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                </div>
+                                <span class="ff-stat-trend ff-stat-trend-down">Pendientes</span>
+                            </div>
+                            <p class="ff-stat-label">Pagos pendientes</p>
+                            <p class="ff-stat-value" data-stat="pagosPendientes" th:text="${pagosPendientes}">0</p>
+                            <p class="ff-stat-note">Cobros abiertos a resolver</p>
+                        </article>
+                    </div>
+
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
+                        <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon">
+                                    <!-- Calendar / Asistencias icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                                        <line x1="3" y1="10" x2="21" y2="10"/>
+                                        <path d="M9 16l2 2 4-4"/>
+                                    </svg>
+                                </div>
+                                <span class="ff-stat-trend ff-stat-trend-up">↑ Total</span>
+                            </div>
+                            <p class="ff-stat-label">Asistencias</p>
+                            <p class="ff-stat-value" data-stat="asistenciasRegistradas" th:text="${asistenciasRegistradas}">0</p>
+                            <p class="ff-stat-note">Entradas registradas en total</p>
+                        </article>
+                    </div>
+
                 </section>
 
+                <!-- ── Secondary KPIs ── -->
                 <section class="row g-3">
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
                         <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                    </svg>
+                                </div>
+                            </div>
                             <p class="ff-stat-label">Usuarios totales</p>
                             <p class="ff-stat-value" data-stat="usuariosTotales" th:text="${usuariosTotales}">0</p>
-                            <p class="ff-stat-note">Base general de miembros gestionados.</p>
+                            <p class="ff-stat-note">Base completa de miembros</p>
                         </article>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
                         <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                                    </svg>
+                                </div>
+                            </div>
                             <p class="ff-stat-label">Pagos registrados</p>
                             <p class="ff-stat-value" data-stat="pagosRegistrados" th:text="${pagosRegistrados}">0</p>
-                            <p class="ff-stat-note">Movimientos cargados en el sistema.</p>
+                            <p class="ff-stat-note">Movimientos en el sistema</p>
                         </article>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
                         <article class="ff-surface-card ff-stat-card">
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon" style="background: rgba(34,197,94,0.12); color: #16a34a;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                    </svg>
+                                </div>
+                                <span class="ff-stat-trend ff-stat-trend-up">EUR</span>
+                            </div>
                             <p class="ff-stat-label">Ingreso acumulado</p>
                             <p class="ff-stat-value"
                                data-stat="ingresosRegistrados"
                                data-format="currency"
-                               th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
-                            <p class="ff-stat-note">Suma de pagos con estado pagado.</p>
+                               th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' €'">0.00 €</p>
+                            <p class="ff-stat-note">Suma de pagos abonados</p>
                         </article>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3 ff-animate-in">
                         <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Modulos activos</p>
+                            <div class="ff-stat-card-header">
+                                <div class="ff-stat-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                                    </svg>
+                                </div>
+                                <span class="ff-stat-trend ff-stat-trend-up">Online</span>
+                            </div>
+                            <p class="ff-stat-label">Módulos activos</p>
                             <p class="ff-stat-value">4</p>
-                            <p class="ff-stat-note">Usuarios, rutinas, pagos y asistencias ya operativos.</p>
+                            <p class="ff-stat-note">Usuarios, rutinas, pagos, asistencias</p>
                         </article>
                     </div>
                 </section>
 
+                <!-- Alert si fallan stats -->
                 <section class="ff-surface-card ff-dashboard-alert d-none" data-dashboard-alert>
                     <div class="ff-card-body py-3">
-                        <strong class="d-block mb-1">No se pudieron cargar todas las estadisticas del dashboard.</strong>
+                        <strong class="d-block mb-1">No se pudieron cargar todas las estadísticas.</strong>
                         <span class="ff-table-secondary">Se muestran los datos disponibles. Revisa la consola si el problema persiste.</span>
                     </div>
                 </section>
 
-                <section class="row g-4">
+                <!-- ── Charts Row ── -->
+                <section class="row g-4 ff-animate-in">
                     <div class="col-xl-4">
                         <article class="ff-surface-card ff-chart-card h-100">
                             <div class="ff-card-header">
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Usuarios</p>
-                                    <h3 class="ff-card-title mt-2">Estado de miembros</h3>
-                                    <p class="ff-card-subtitle">Comparativa entre usuarios activos e inactivos.</p>
+                                    <h3 class="ff-card-title mt-1">Estado de miembros</h3>
+                                    <p class="ff-card-subtitle">Activos vs. inactivos</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-chart-canvas-wrap">
-                                    <canvas id="usuariosChart" aria-label="Grafico de usuarios activos" role="img"></canvas>
+                                    <canvas id="usuariosChart" aria-label="Gráfico de usuarios activos" role="img"></canvas>
                                 </div>
-                                <p class="ff-chart-empty d-none" data-chart-empty="usuarios">Todavia no hay datos suficientes para este grafico.</p>
+                                <p class="ff-chart-empty d-none" data-chart-empty="usuarios">No hay datos registrados aún.</p>
                             </div>
                         </article>
                     </div>
@@ -129,15 +200,15 @@
                             <div class="ff-card-header">
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Ingresos</p>
-                                    <h3 class="ff-card-title mt-2">Evolucion mensual de cobros</h3>
-                                    <p class="ff-card-subtitle">Serie temporal construida con pagos marcados como pagados.</p>
+                                    <h3 class="ff-card-title mt-1">Evolución mensual de cobros</h3>
+                                    <p class="ff-card-subtitle">Tendencia de pagos abonados</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-chart-canvas-wrap">
-                                    <canvas id="ingresosChart" aria-label="Grafico de ingresos mensuales" role="img"></canvas>
+                                    <canvas id="ingresosChart" aria-label="Gráfico de ingresos mensuales" role="img"></canvas>
                                 </div>
-                                <p class="ff-chart-empty d-none" data-chart-empty="ingresos">Todavia no hay pagos pagados para mostrar tendencia.</p>
+                                <p class="ff-chart-empty d-none" data-chart-empty="ingresos">No hay datos registrados aún.</p>
                             </div>
                         </article>
                     </div>
@@ -147,66 +218,107 @@
                             <div class="ff-card-header">
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Asistencias</p>
-                                    <h3 class="ff-card-title mt-2">Actividad diaria del gimnasio</h3>
-                                    <p class="ff-card-subtitle">Seguimiento diario de registros de asistencia disponibles en el sistema.</p>
+                                    <h3 class="ff-card-title mt-1">Actividad diaria del gimnasio</h3>
+                                    <p class="ff-card-subtitle">Registros de entrada por día</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-chart-canvas-wrap ff-chart-canvas-wrap-wide">
-                                    <canvas id="asistenciasChart" aria-label="Grafico de asistencias diarias" role="img"></canvas>
+                                    <canvas id="asistenciasChart" aria-label="Gráfico de asistencias diarias" role="img"></canvas>
                                 </div>
-                                <p class="ff-chart-empty d-none" data-chart-empty="asistencias">Todavia no hay asistencias registradas para este grafico.</p>
+                                <p class="ff-chart-empty d-none" data-chart-empty="asistencias">No hay datos registrados aún.</p>
                             </div>
                         </article>
                     </div>
                 </section>
 
-                <section class="row g-4">
+                <!-- ── Quick Access Modules ── -->
+                <section class="row g-4 ff-animate-in">
                     <div class="col-xl-8">
                         <article class="ff-surface-card h-100">
                             <div class="ff-card-header">
                                 <div>
-                                    <p class="ff-section-eyebrow mb-0">Accesos rapidos</p>
-                                    <h3 class="ff-card-title mt-2">Modulos principales</h3>
-                                    <p class="ff-card-subtitle">Navegacion directa a las areas ya implementadas con CRUD MVC.</p>
+                                    <p class="ff-section-eyebrow mb-0">Accesos rápidos</p>
+                                    <h3 class="ff-card-title mt-1">Módulos principales</h3>
+                                    <p class="ff-card-subtitle">Navega directamente a cada área del sistema</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <a class="ff-quick-link" th:href="@{/usuarios}">
-                                            <div>
-                                                <strong class="d-block">Usuarios</strong>
-                                                <span class="ff-table-secondary">Miembros, estado, rol y plan asignado</span>
+                                        <a class="ff-module-card" th:href="@{/usuarios}">
+                                            <div class="ff-module-card-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                                </svg>
                                             </div>
-                                            <span class="ff-soft-badge">Abrir</span>
+                                            <div class="ff-module-card-body">
+                                                <span class="ff-module-card-title">Usuarios</span>
+                                                <span class="ff-module-card-desc">Miembros, estado, rol y plan asignado</span>
+                                            </div>
+                                            <svg class="ff-module-card-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                                            </svg>
                                         </a>
                                     </div>
                                     <div class="col-md-6">
-                                        <a class="ff-quick-link" th:href="@{/rutinas}">
-                                            <div>
-                                                <strong class="d-block">Rutinas</strong>
-                                                <span class="ff-table-secondary">Asignacion y seguimiento de objetivos</span>
+                                        <a class="ff-module-card" th:href="@{/rutinas}">
+                                            <div class="ff-module-card-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
+                                                </svg>
                                             </div>
-                                            <span class="ff-soft-badge">Abrir</span>
+                                            <div class="ff-module-card-body">
+                                                <span class="ff-module-card-title">Rutinas</span>
+                                                <span class="ff-module-card-desc">Asignación y seguimiento de objetivos</span>
+                                            </div>
+                                            <svg class="ff-module-card-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                                            </svg>
                                         </a>
                                     </div>
                                     <div class="col-md-6">
-                                        <a class="ff-quick-link" th:href="@{/pagos}">
-                                            <div>
-                                                <strong class="d-block">Pagos</strong>
-                                                <span class="ff-table-secondary">Cuotas, referencias y estado de cobro</span>
+                                        <a class="ff-module-card" th:href="@{/pagos}">
+                                            <div class="ff-module-card-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+                                                </svg>
                                             </div>
-                                            <span class="ff-soft-badge">Abrir</span>
+                                            <div class="ff-module-card-body">
+                                                <span class="ff-module-card-title">Pagos</span>
+                                                <span class="ff-module-card-desc">Cuotas, referencias y estado de cobro</span>
+                                            </div>
+                                            <svg class="ff-module-card-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                                            </svg>
                                         </a>
                                     </div>
                                     <div class="col-md-6">
-                                        <a class="ff-quick-link" th:href="@{/asistencias}">
-                                            <div>
-                                                <strong class="d-block">Asistencias</strong>
-                                                <span class="ff-table-secondary">Control de entradas y observaciones</span>
+                                        <a class="ff-module-card" th:href="@{/asistencias}">
+                                            <div class="ff-module-card-icon">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                                    <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+                                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                                    <path d="M9 16l2 2 4-4"/>
+                                                </svg>
                                             </div>
-                                            <span class="ff-soft-badge">Abrir</span>
+                                            <div class="ff-module-card-body">
+                                                <span class="ff-module-card-title">Asistencias</span>
+                                                <span class="ff-module-card-desc">Control de entradas y observaciones</span>
+                                            </div>
+                                            <svg class="ff-module-card-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                                            </svg>
                                         </a>
                                     </div>
                                 </div>
@@ -218,8 +330,8 @@
                         <article class="ff-surface-card h-100">
                             <div class="ff-card-header">
                                 <div>
-                                    <p class="ff-section-eyebrow mb-0">Estado del proyecto</p>
-                                    <h3 class="ff-card-title mt-2">Base tecnica disponible</h3>
+                                    <p class="ff-section-eyebrow mb-0">Estado</p>
+                                    <h3 class="ff-card-title mt-1">Base técnica</h3>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -227,21 +339,21 @@
                                     <div class="ff-quick-link">
                                         <div>
                                             <strong class="d-block">Arquitectura MVC</strong>
-                                            <span class="ff-table-secondary">Backend, servicios y repositorios conectados</span>
+                                            <span class="ff-table-secondary">Backend, servicios y repositorios</span>
                                         </div>
                                         <span class="ff-status-badge ff-status-active">Lista</span>
                                     </div>
                                     <div class="ff-quick-link">
                                         <div>
-                                            <strong class="d-block">Frontend administrativo</strong>
-                                            <span class="ff-table-secondary">Layout coherente para dashboard y modulos</span>
+                                            <strong class="d-block">Frontend SaaS</strong>
+                                            <span class="ff-table-secondary">Layout coherente para todos los módulos</span>
                                         </div>
                                         <span class="ff-status-badge ff-status-active">Lista</span>
                                     </div>
                                     <div class="ff-quick-link">
                                         <div>
-                                            <strong class="d-block">Memoria documental</strong>
-                                            <span class="ff-table-secondary">Roadmap, decisiones y backlog en repo</span>
+                                            <strong class="d-block">Persistencia BD</strong>
+                                            <span class="ff-table-secondary">JPA + Spring Data operativos</span>
                                         </div>
                                         <span class="ff-status-badge ff-status-active">Lista</span>
                                     </div>

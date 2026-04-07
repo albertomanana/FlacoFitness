@@ -45,3 +45,12 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se amplio `/stats/pagos` con una serie mensual de ingresos para soportar visualizacion temporal real en el dashboard.
 - Se conecto el dashboard principal con los endpoints `/stats/*` mediante `fetch` y se anadieron graficos responsivos con Chart.js para usuarios, ingresos y asistencias.
 - Se automatizo la generacion de pagos mensuales a partir del plan activo del usuario, incorporando `fechaProximoPago`, referencias UUID y scheduler configurable para ejecucion periodica.
+
+### 2026-04-07
+
+- Se reparo MariaDB local y se restablecio el acceso desde phpMyAdmin y desde la aplicacion.
+- Se anadio una alineacion automatica de esquema para migrar el legado `rutinas.usuario_id` hacia la tabla intermedia `usuario_rutina`.
+- Se corrigio el error 500 al crear rutinas asociadas a usuarios en la base MySQL real.
+- Se mejoraron los datos semilla para evitar dependencia de IDs fijos en roles y planes.
+- Se reforzo el contraste visual del logo en sidebar y de textos clave del dashboard para mejorar legibilidad.
+- Se mantuvo el perfil `local` con H2 sembrado para desarrollo rapido sin dependencia de MySQL.
