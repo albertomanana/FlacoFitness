@@ -6,7 +6,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     initializeDashboardCharts();
+    initTableSearch();
 });
+
+/* ── Inline table search ── */
+function initTableSearch() {
+    const searches = [
+        { inputId: "usuariosSearch",    tableId: "usuariosTable" },
+        { inputId: "pagosSearch",       tableId: "pagosTable" },
+        { inputId: "asistenciasSearch", tableId: "asistenciasTable" },
+        { inputId: "rutinasSearch",     tableId: "rutinasTable" }
+    ];
+
+    searches.forEach(({ inputId, tableId }) => {
+        const input = document.getElementById(inputId);
+        const table = document.getElementById(tableId);
+        if (!input || !table) return;
+
+        input.addEventListener("input", () => {
+            const query = input.value.toLowerCase().trim();
+            const rows  = table.querySelectorAll("tbody tr");
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = query === "" || text.includes(query) ? "" : "none";
+            });
+        });
+    });
+}
 
 async function initializeDashboardCharts() {
     const dashboard = document.querySelector("[data-dashboard]");
@@ -276,7 +302,7 @@ function createChart(canvasId, type, data, options) {
                     labels: {
                         usePointStyle: true,
                         boxWidth: 8,
-                        color: "#667085"
+                        color: "#475569"
                     }
                 },
                 tooltip: {
@@ -290,7 +316,7 @@ function createChart(canvasId, type, data, options) {
             scales: {
                 x: {
                     ticks: {
-                        color: "#667085"
+                        color: "#475569"
                     },
                     grid: {
                         display: false
@@ -298,7 +324,7 @@ function createChart(canvasId, type, data, options) {
                 },
                 y: {
                     ticks: {
-                        color: "#667085"
+                        color: "#475569"
                     },
                     grid: {
                         color: "rgba(148, 163, 184, 0.18)"

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" fill="none">
+  <!-- Icon group centered vertically. Dimensions matching visual grid spacing. -->
+  <g fill="#22c55e">
+    <!-- Horizontal connection bar -->
+    <rect x="18" y="27" width="46" height="6" rx="0" />
+    
+    <!-- Vertical bars from left to right -->
+    <!-- Col 1 -->
+    <rect x="8" y="18" width="6" height="24" rx="0" />
+    <!-- Col 2 -->
+    <rect x="18" y="10" width="6" height="40" rx="0" />
+    <!-- Col 3 -->
+    <rect x="28" y="16" width="6" height="17" rx="0" />
+    <!-- Col 4 -->
+    <rect x="38" y="27" width="6" height="17" rx="0" />
+    <!-- Col 5 -->
+    <rect x="48" y="4" width="6" height="29" rx="0" />
+    <!-- Col 6 -->
+    <rect x="58" y="10" width="6" height="40" rx="0" />
+    <!-- Col 7 -->
+    <rect x="68" y="18" width="6" height="24" rx="0" />
+  </g>
+  
+  <!-- Text: dark enough for light surfaces, the sidebar panel provides the contrast -->
+  <text x="86" y="41" font-family="'Inter', 'Manrope', system-ui, sans-serif" font-size="28" font-weight="700" fill="#0f172a" letter-spacing="-0.02em">FlacoFitness</text>
+</svg>
