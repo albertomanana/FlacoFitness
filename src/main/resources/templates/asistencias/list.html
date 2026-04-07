@@ -4,20 +4,26 @@
 <body class="ff-app">
 <div class="ff-app-shell">
     <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
+
     <div class="ff-main">
         <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Asistencias'}, ${subtituloListado ?: 'Registro general de asistencias del gimnasio.'})}"></div>
+
         <main class="ff-content">
             <div class="ff-content-stack">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
-                        <span class="ff-section-eyebrow">Módulo de asistencias</span>
+                        <span class="ff-section-eyebrow">Modulo de asistencias</span>
                         <h2 class="ff-section-title">Registro de entradas</h2>
-                        <p class="ff-section-subtitle">Visualiza accesos recientes y consulta el historial por usuario.</p>
+                        <p class="ff-section-subtitle">Visualiza accesos recientes y consulta el historial por usuario con una tabla mas util y legible.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/asistencias/nueva}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
                         Nueva asistencia
                     </a>
                 </section>
@@ -25,16 +31,6 @@
                 <section class="row g-3 ff-animate-in">
                     <div class="col-sm-6 col-xl-4">
                         <article class="ff-surface-card ff-stat-card">
-                            <div class="ff-stat-card-header">
-                                <div class="ff-stat-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                                        <line x1="3" y1="10" x2="21" y2="10"/>
-                                    </svg>
-                                </div>
-                                <span class="ff-stat-trend ff-stat-trend-up">Total</span>
-                            </div>
                             <p class="ff-stat-label">Asistencias totales</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias)}">0</p>
                             <p class="ff-stat-note">Registros disponibles para consulta</p>
@@ -42,13 +38,6 @@
                     </div>
                     <div class="col-sm-6 col-xl-4">
                         <article class="ff-surface-card ff-stat-card">
-                            <div class="ff-stat-card-header">
-                                <div class="ff-stat-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                                    </svg>
-                                </div>
-                            </div>
                             <p class="ff-stat-label">Con hora de entrada</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[horaEntrada != null])}">0</p>
                             <p class="ff-stat-note">Entradas con hora registrada</p>
@@ -56,15 +45,6 @@
                     </div>
                     <div class="col-sm-6 col-xl-4">
                         <article class="ff-surface-card ff-stat-card">
-                            <div class="ff-stat-card-header">
-                                <div class="ff-stat-icon" style="background:rgba(251,191,36,.15);color:#d97706;">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                                        <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
-                                        <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
-                                    </svg>
-                                </div>
-                            </div>
                             <p class="ff-stat-label">Con observaciones</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[observaciones != null and !observaciones.isBlank()])}">0</p>
                             <p class="ff-stat-note">Incidencias o notas asociadas</p>
@@ -73,20 +53,30 @@
                 </section>
 
                 <section class="ff-surface-card ff-animate-in">
-                    <div class="ff-table-toolbar">
-                        <h3 class="ff-card-title mb-0">Historial de asistencias</h3>
-                        <div class="ff-table-search ms-auto">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                            <input type="text" id="asistenciasSearch" placeholder="Buscar asistencia..." autocomplete="off">
+                    <div class="ff-card-header">
+                        <div class="ff-card-toolbar w-100">
+                            <div>
+                                <h3 class="ff-card-title">Historial de asistencias</h3>
+                                <p class="ff-card-subtitle">Busqueda, ordenacion y paginacion para revisar entradas y observaciones por usuario.</p>
+                            </div>
+                            <span class="ff-card-toolbar-note">Pensado para uso real sin dejar de ser facil de defender academicamente.</span>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle" id="asistenciasTable">
+                            <table class="table table-hover align-middle"
+                                   data-ff-datatable
+                                   data-page-length="10"
+                                   data-order-column="0"
+                                   data-order-direction="desc"
+                                   data-search-placeholder="Buscar asistencia o usuario...">
                                 <thead>
                                 <tr>
-                                    <th>Fecha</th><th>Hora</th><th>Usuario</th>
-                                    <th>Observaciones</th><th class="text-end">Acciones</th>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Observaciones</th>
+                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(asistencias)}">
@@ -94,24 +84,36 @@
                                     <td th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">Fecha</td>
                                     <td th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">Hora</td>
                                     <td>
-                                        <div class="ff-table-meta">
-                                            <span class="ff-table-primary"
-                                                  th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null && !asistencia.usuario.apellidos.isBlank() ? ' ' + asistencia.usuario.apellidos : '') : '-'}">Usuario</span>
-                                            <span class="ff-table-secondary"
-                                                  th:text="${asistencia.usuario != null ? asistencia.usuario.email : 'Sin email'}">email</span>
+                                        <div class="ff-user-cell">
+                                            <img class="ff-avatar ff-avatar-sm"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(asistencia.usuario != null ? asistencia.usuario.fotoPath : null)}"
+                                                 alt="Avatar del usuario">
+                                            <div class="ff-user-cell-body ff-table-meta">
+                                                <span class="ff-table-primary"
+                                                      th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null && !asistencia.usuario.apellidos.isBlank() ? ' ' + asistencia.usuario.apellidos : '') : '-'}">Usuario</span>
+                                                <span class="ff-table-secondary"
+                                                      th:text="${asistencia.usuario != null ? asistencia.usuario.email : 'Sin email'}">email</span>
+                                            </div>
                                         </div>
                                     </td>
                                     <td th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</td>
                                     <td class="text-end">
                                         <a class="btn btn-outline-secondary btn-sm ff-btn-icon"
-                                           th:href="@{/asistencias/{id}(id=${asistencia.id})}" title="Ver detalle">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                           th:href="@{/asistencias/{id}(id=${asistencia.id})}"
+                                           title="Ver detalle">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
                                         </a>
                                     </td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(asistencias)}">
-                                <tr><td colspan="5" class="text-center ff-empty-state">Todavía no hay asistencias registradas.</td></tr>
+                                <tr>
+                                    <td colspan="5" class="text-center ff-empty-state">Todavia no hay asistencias registradas.</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>

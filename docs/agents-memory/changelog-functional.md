@@ -54,3 +54,8 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se mejoraron los datos semilla para evitar dependencia de IDs fijos en roles y planes.
 - Se reforzo el contraste visual del logo en sidebar y de textos clave del dashboard para mejorar legibilidad.
 - Se mantuvo el perfil `local` con H2 sembrado para desarrollo rapido sin dependencia de MySQL.
+- Se refactorizo la interfaz para consolidar un sistema visual SaaS coherente en dashboard, sidebar, tablas y vistas de usuario.
+- Se anadieron tablas interactivas con DataTables en usuarios, pagos, asistencias, rutinas y actividad reciente del dashboard.
+- Se rehizo el dashboard principal con KPIs mas utiles, graficos de ingresos, asistencias, usuarios por plan y altas recientes.
+- Se corrigio la visualizacion de fotos de usuario con fallback de avatar por defecto y preview consistente en lista, detalle y formulario.
+- Se incorporo un resolver dedicado para `fotoPath`, evitando fallos por rutas relativas o inconsistentes en registros ya existentes.

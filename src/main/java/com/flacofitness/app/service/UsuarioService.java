@@ -2,6 +2,8 @@ package com.flacofitness.app.service;
 
 import com.flacofitness.app.exception.DuplicateResourceException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.PlanDistribucionStatsItem;
+import com.flacofitness.app.model.dto.UsuarioAltaMensualStatsItem;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.UsuarioRepository;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,6 +40,26 @@ public class UsuarioService {
 
     public long contarActivos() {
         return usuarioRepository.countByActivoTrue();
+    }
+
+    public List<Usuario> listarRecientes() {
+        return usuarioRepository.findTop8ByOrderByFechaRegistroDescIdDesc();
+    }
+
+    public List<PlanDistribucionStatsItem> obtenerDistribucionPorPlan() {
+        return usuarioRepository.countGroupedByPlan().stream()
+                .map(item -> new PlanDistribucionStatsItem(
+                        item.getPlanNombre() == null || item.getPlanNombre().isBlank() ? "Sin plan" : item.getPlanNombre(),
+                        item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
+    }
+
+    public List<UsuarioAltaMensualStatsItem> obtenerAltasMensuales() {
+        return usuarioRepository.countAltasGroupedByMes().stream()
+                .map(item -> new UsuarioAltaMensualStatsItem(
+                        YearMonth.of(item.getAnio(), item.getMes()).toString(),
+                        item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
     }
 
     public Usuario buscarPorId(Long id) {

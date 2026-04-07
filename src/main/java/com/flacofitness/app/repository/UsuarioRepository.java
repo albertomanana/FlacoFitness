@@ -25,7 +25,21 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @EntityGraph(attributePaths = {"rol", "plan"})
     List<Usuario> findByActivoTrue();
 
+    @EntityGraph(attributePaths = {"rol", "plan"})
+    List<Usuario> findTop8ByOrderByFechaRegistroDescIdDesc();
+
     long countByActivoTrue();
+
+    @Query("select coalesce(plan.nombre, 'Sin plan') as planNombre, count(usuario) as total " +
+            "from Usuario usuario left join usuario.plan plan " +
+            "group by plan.nombre order by count(usuario) desc, plan.nombre asc")
+    List<UsuarioPorPlanView> countGroupedByPlan();
+
+    @Query("select year(usuario.fechaRegistro) as anio, month(usuario.fechaRegistro) as mes, count(usuario) as total " +
+            "from Usuario usuario " +
+            "group by year(usuario.fechaRegistro), month(usuario.fechaRegistro) " +
+            "order by year(usuario.fechaRegistro), month(usuario.fechaRegistro)")
+    List<UsuarioAltaPorMesView> countAltasGroupedByMes();
 
     @EntityGraph(attributePaths = {"plan"})
     @Query("select usuario from Usuario usuario join usuario.plan plan " +
