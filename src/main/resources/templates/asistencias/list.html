@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Asistencias'}, ${subtituloListado ?: 'Registro general de asistencias del gimnasio.'})}"></div>
+        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Asistencias'}, ${subtituloListado ?: 'Control de accesos.'})}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,9 +14,9 @@
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
-                        <span class="ff-section-eyebrow">Modulo de asistencias</span>
+                        <span class="ff-section-eyebrow">Asistencias</span>
                         <h2 class="ff-section-title">Registro de entradas</h2>
-                        <p class="ff-section-subtitle">Visualiza accesos recientes y consulta el historial por usuario con una tabla mas util y legible.</p>
+                        <p class="ff-section-subtitle">Entradas recientes y detalle por usuario.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/asistencias/nueva}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -33,21 +33,21 @@
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Asistencias totales</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias)}">0</p>
-                            <p class="ff-stat-note">Registros disponibles para consulta</p>
+                            <p class="ff-stat-note">Registros totales</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-4">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Con hora de entrada</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[horaEntrada != null])}">0</p>
-                            <p class="ff-stat-note">Entradas con hora registrada</p>
+                            <p class="ff-stat-note">Con hora</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-4">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Con observaciones</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[observaciones != null and !observaciones.isBlank()])}">0</p>
-                            <p class="ff-stat-note">Incidencias o notas asociadas</p>
+                            <p class="ff-stat-note">Con observaciones</p>
                         </article>
                     </div>
                 </section>
@@ -57,9 +57,9 @@
                         <div class="ff-card-toolbar w-100">
                             <div>
                                 <h3 class="ff-card-title">Historial de asistencias</h3>
-                                <p class="ff-card-subtitle">Busqueda, ordenacion y paginacion para revisar entradas y observaciones por usuario.</p>
+                                <p class="ff-card-subtitle">Busqueda, orden y detalle.</p>
                             </div>
-                            <span class="ff-card-toolbar-note">Pensado para uso real sin dejar de ser facil de defender academicamente.</span>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">

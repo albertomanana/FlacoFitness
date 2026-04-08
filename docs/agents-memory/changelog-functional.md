@@ -59,3 +59,12 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se rehizo el dashboard principal con KPIs mas utiles, graficos de ingresos, asistencias, usuarios por plan y altas recientes.
 - Se corrigio la visualizacion de fotos de usuario con fallback de avatar por defecto y preview consistente en lista, detalle y formulario.
 - Se incorporo un resolver dedicado para `fotoPath`, evitando fallos por rutas relativas o inconsistentes en registros ya existentes.
+
+### 2026-04-08
+
+- Se corrigio la carga real de Chart.js, DataTables y scripts propios refactorizando el fragmento `footer` para que las librerias entren en todas las vistas.
+- Se soluciono el fallo de DataTables en navegador anadiendo la dependencia requerida de `jQuery`, recuperando busqueda, paginacion y ordenacion en los listados.
+- Se reforzo el contraste del sidebar y del bloque de operaciones para mejorar la legibilidad del menu lateral.
+- Se simplifico el copy visual del dashboard, listados, formularios y vistas detail para que la interfaz se perciba mas cercana a un panel SaaS real.
+- Se mejoraron microinteracciones de tablas, tarjetas, avatares y vistas con animaciones suaves de entrada y hover.
+- Se fijo la tarjeta de foto de usuario en detalle para que permanezca estable durante el desplazamiento en escritorio.

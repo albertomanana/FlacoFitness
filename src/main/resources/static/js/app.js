@@ -50,6 +50,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         updateCurrentYear();
         initializeTopbarSearch();
+        initializeRevealBlocks();
     });
 
     function updateCurrentYear() {
@@ -76,6 +77,38 @@
 
         searchInput.addEventListener("input", (event) => {
             syncSearch(event.target.value.trim());
+        });
+    }
+
+    function initializeRevealBlocks() {
+        const revealTargets = document.querySelectorAll(".ff-animate-in, .ff-surface-card, .ff-section-header");
+
+        if (revealTargets.length === 0) {
+            return;
+        }
+
+        if (!("IntersectionObserver" in window)) {
+            revealTargets.forEach((element) => element.classList.add("is-visible"));
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+
+                entry.target.classList.add("is-visible");
+                observer.unobserve(entry.target);
+            });
+        }, {
+            threshold: 0.15,
+            rootMargin: "0px 0px -40px 0px"
+        });
+
+        revealTargets.forEach((element) => {
+            element.classList.add("ff-reveal");
+            observer.observe(element);
         });
     }
 })();
