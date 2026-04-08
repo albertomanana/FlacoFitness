@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de usuario', 'Consulta completa de la ficha del miembro seleccionado.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de usuario', 'Perfil del miembro.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -17,7 +17,7 @@
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title"
                             th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</h2>
-                        <p class="ff-section-subtitle">Vista consolidada con identidad, contacto, plan, estado actual y fotografia de perfil.</p>
+                        <p class="ff-section-subtitle">Perfil, plan y actividad.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
@@ -38,7 +38,7 @@
                                         </span>
                                         <div class="ff-photo-inline-body">
                                             <h3 class="ff-detail-hero-title">Ficha del miembro</h3>
-                                            <p class="ff-detail-hero-text">Registro administrativo completo para seguimiento academico y gestion diaria.</p>
+                                            <p class="ff-detail-hero-text">Ficha del usuario.</p>
                                         </div>
                                     </div>
                                     <span class="ff-status-badge"
@@ -101,11 +101,11 @@
 
                     <div class="col-12 col-xl-4">
                         <div class="d-flex flex-column gap-4">
-                            <aside class="ff-surface-card ff-side-card ff-side-card-static">
+                            <aside class="ff-surface-card ff-side-card">
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Foto del usuario</h3>
-                                        <p class="ff-card-subtitle">La imagen se almacena localmente y se publica mediante el handler de recursos configurado en Spring.</p>
+                                        <p class="ff-card-subtitle">Vista previa del avatar.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body d-flex flex-column gap-4">
@@ -114,8 +114,8 @@
                                          th:alt="${'Foto de ' + usuario.nombre}">
 
                                     <p class="ff-user-photo-caption"
-                                       th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada cargada correctamente.' : 'Se esta usando el avatar por defecto del sistema.'">
-                                        Se esta usando el avatar por defecto del sistema.
+                                       th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
+                                        Avatar por defecto.
                                     </p>
 
                                     <form class="d-flex flex-column gap-3"
@@ -139,8 +139,8 @@
                             <aside class="ff-surface-card ff-side-card ff-side-card-static">
                                 <div class="ff-card-header">
                                     <div>
-                                        <h3 class="ff-card-title">Resumen rapido</h3>
-                                        <p class="ff-card-subtitle">Indicadores utiles para ubicar el registro dentro de la operativa diaria.</p>
+                                        <h3 class="ff-card-title">Resumen</h3>
+                                        <p class="ff-card-subtitle">Estado y datos clave.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">

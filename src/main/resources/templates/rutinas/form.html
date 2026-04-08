@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar rutina' : 'Nueva rutina', 'Configuracion general, tipo y usuarios asociados.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar rutina' : 'Nueva rutina', 'Configuracion de la rutina.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
                         <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar rutina' : 'Alta de rutina'">Formulario de rutina</h2>
-                        <p class="ff-section-subtitle">La rutina puede asociarse a uno o varios usuarios sin salir del flujo administrativo.</p>
+                        <p class="ff-section-subtitle">Objetivo, tipo y usuarios.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
                 </section>
@@ -25,7 +25,7 @@
                             <div class="ff-card-header">
                                 <div>
                                     <h3 class="ff-card-title">Configuracion de rutina</h3>
-                                    <p class="ff-card-subtitle">Define objetivo, tipo y usuarios vinculados con una estructura clara.</p>
+                                    <p class="ff-card-subtitle">Datos principales de la rutina.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -36,7 +36,7 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Definicion principal</h4>
-                                                <p class="ff-form-section-text">Nombre, objetivo, tipo y descripcion general.</p>
+                                                <p class="ff-form-section-text">Nombre, objetivo, tipo y descripcion.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-12">
@@ -91,7 +91,7 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Usuarios asociados</h4>
-                                                <p class="ff-form-section-text">Selecciona uno o varios usuarios activos para vincular la rutina.</p>
+                                                <p class="ff-form-section-text">Selecciona uno o varios usuarios activos.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-12">
@@ -114,7 +114,7 @@
                                     </div>
 
                                     <div class="ff-form-actions">
-                                        <p class="ff-form-actions-note">La relacion se persiste en la tabla intermedia <code>usuario_rutina</code>.</p>
+                                        <p class="ff-form-actions-note">Puedes asignar varios usuarios.</p>
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-success">Guardar</button>
                                             <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Cancelar</a>
@@ -129,8 +129,8 @@
                         <aside class="ff-surface-card ff-side-card">
                             <div class="ff-card-header">
                                 <div>
-                                    <h3 class="ff-card-title">Apoyo rapido</h3>
-                                    <p class="ff-card-subtitle">Resumen corto del nuevo modelo de rutina.</p>
+                                    <h3 class="ff-card-title">Resumen</h3>
+                                    <p class="ff-card-subtitle">Estado del formulario.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">

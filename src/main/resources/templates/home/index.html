@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Resumen operativo del gimnasio con metricas y actividad reciente.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Metricas y actividad.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack"
@@ -15,9 +15,9 @@
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
-                        <span class="ff-section-eyebrow">Vision general</span>
-                        <h2 class="ff-section-title">Panel ejecutivo de FlacoFitness</h2>
-                        <p class="ff-section-subtitle">Indicadores clave, actividad reciente y accesos directos para operar sin salir del flujo MVC del proyecto.</p>
+                        <span class="ff-section-eyebrow">Dashboard</span>
+                        <h2 class="ff-section-title">Resumen general</h2>
+                        <p class="ff-section-subtitle">Metricas, actividad y accesos rapidos.</p>
                     </div>
                 </section>
 
@@ -37,7 +37,7 @@
                         <p class="ff-stat-label">Usuarios totales</p>
                         <p class="ff-stat-value" data-stat="totalUsuarios" th:text="${usuariosTotales}">0</p>
                         <div class="ff-kpi-meta">
-                            <span class="ff-stat-note">Base completa de miembros</span>
+                            <span class="ff-stat-note">Miembros registrados</span>
                             <span class="ff-kpi-highlight">Sistema vivo</span>
                         </div>
                     </article>
@@ -55,7 +55,7 @@
                         <p class="ff-stat-label">Usuarios activos</p>
                         <p class="ff-stat-value" data-stat="usuariosActivos" th:text="${usuariosActivos}">0</p>
                         <div class="ff-kpi-meta">
-                            <span class="ff-stat-note">Miembros habilitados para operar</span>
+                            <span class="ff-stat-note">Miembros activos</span>
                             <span class="ff-kpi-highlight">Actualizado</span>
                         </div>
                     </article>
@@ -75,7 +75,7 @@
                         <p class="ff-stat-label">Asistencias de hoy</p>
                         <p class="ff-stat-value" data-stat="asistenciasHoy" th:text="${asistenciasHoy}">0</p>
                         <div class="ff-kpi-meta">
-                            <span class="ff-stat-note">Entradas registradas en la jornada</span>
+                            <span class="ff-stat-note">Entradas del dia</span>
                             <span class="ff-kpi-highlight">Hoy</span>
                         </div>
                     </article>
@@ -94,7 +94,7 @@
                         <p class="ff-stat-label">Pagos pendientes</p>
                         <p class="ff-stat-value" data-stat="pagosPendientes" th:text="${pagosPendientes}">0</p>
                         <div class="ff-kpi-meta">
-                            <span class="ff-stat-note">Cuotas que requieren seguimiento</span>
+                            <span class="ff-stat-note">Pendientes de cobro</span>
                             <span class="ff-kpi-highlight">Cobro</span>
                         </div>
                     </article>
@@ -114,7 +114,7 @@
                         <p class="ff-stat-value" data-stat="ingresosMensuales"
                            th:text="${#numbers.formatDecimal(ingresosMensuales, 1, 'POINT', 2, 'COMMA')} + ' €'">0.00 €</p>
                         <div class="ff-kpi-meta">
-                            <span class="ff-stat-note">Importe abonado este mes</span>
+                            <span class="ff-stat-note">Mes actual</span>
                             <span class="ff-kpi-highlight">Facturacion</span>
                         </div>
                     </article>
@@ -133,7 +133,7 @@
                         <p class="ff-stat-label">Rutinas activas</p>
                         <p class="ff-stat-value" data-stat="rutinasActivas" th:text="${rutinasActivas}">0</p>
                         <div class="ff-kpi-meta">
-                            <span class="ff-stat-note">Planes de entrenamiento vigentes</span>
+                            <span class="ff-stat-note">Rutinas vigentes</span>
                             <span class="ff-kpi-highlight"><span data-stat="planesActivos" th:text="${planesActivos}">0</span> planes</span>
                         </div>
                     </article>
@@ -153,7 +153,7 @@
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Cobros</p>
                                     <h3 class="ff-card-title mt-1">Ingresos por mes</h3>
-                                    <p class="ff-card-subtitle">Evolucion de pagos abonados para revisar tendencia financiera.</p>
+                                    <p class="ff-card-subtitle">Ingresos del ultimo ano.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -171,7 +171,7 @@
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Membresias</p>
                                     <h3 class="ff-card-title mt-1">Usuarios por plan</h3>
-                                    <p class="ff-card-subtitle">Distribucion de miembros activos y sin plan.</p>
+                                    <p class="ff-card-subtitle">Distribucion por plan.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -189,7 +189,7 @@
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Actividad</p>
                                     <h3 class="ff-card-title mt-1">Asistencias recientes</h3>
-                                    <p class="ff-card-subtitle">Ultimos 14 dias de uso del gimnasio para detectar ritmo de actividad.</p>
+                                    <p class="ff-card-subtitle">Ultimos 14 dias.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -207,7 +207,7 @@
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Altas</p>
                                     <h3 class="ff-card-title mt-1">Nuevos usuarios</h3>
-                                    <p class="ff-card-subtitle">Ritmo de incorporacion mensual del sistema.</p>
+                                    <p class="ff-card-subtitle">Altas por mes.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -228,9 +228,9 @@
                                     <div>
                                         <p class="ff-section-eyebrow mb-0">Seguimiento</p>
                                         <h3 class="ff-card-title mt-1">Ultimos usuarios registrados</h3>
-                                        <p class="ff-card-subtitle">Tabla interactiva para revisar altas recientes sin salir del dashboard.</p>
+                                        <p class="ff-card-subtitle">Actividad reciente.</p>
                                     </div>
-                                    <span class="ff-card-toolbar-note">Busqueda, ordenacion y paginacion con DataTables.</span>
+                                    <span class="ff-card-toolbar-note">Busqueda y orden.</span>
                                 </div>
                             </div>
                             <div class="ff-card-body pt-0">
@@ -302,7 +302,7 @@
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Operativa</p>
                                     <h3 class="ff-card-title mt-1">Acciones rapidas</h3>
-                                    <p class="ff-card-subtitle">Accesos directos a los modulos mas usados del proyecto.</p>
+                                    <p class="ff-card-subtitle">Atajos del panel.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -310,28 +310,28 @@
                                     <a class="ff-action-link" th:href="@{/usuarios/nuevo}">
                                         <div>
                                             <strong>Registrar usuario</strong>
-                                            <span>Alta de miembros con rol, plan y foto.</span>
+                                            <span>Alta de miembro.</span>
                                         </div>
                                         <span class="ff-kpi-highlight">Usuarios</span>
                                     </a>
                                     <a class="ff-action-link" th:href="@{/rutinas/nueva}">
                                         <div>
                                             <strong>Crear rutina</strong>
-                                            <span>Asignacion a varios usuarios y objetivo.</span>
+                                            <span>Asignar usuarios.</span>
                                         </div>
                                         <span class="ff-kpi-highlight">Rutinas</span>
                                     </a>
                                     <a class="ff-action-link" th:href="@{/pagos/nuevo}">
                                         <div>
                                             <strong>Registrar pago</strong>
-                                            <span>Control de cuotas, estado y referencia.</span>
+                                            <span>Cobro manual.</span>
                                         </div>
                                         <span class="ff-kpi-highlight">Pagos</span>
                                     </a>
                                     <a class="ff-action-link" th:href="@{/asistencias/nueva}">
                                         <div>
                                             <strong>Nueva asistencia</strong>
-                                            <span>Entrada rapida con usuario y observaciones.</span>
+                                            <span>Check-in rapido.</span>
                                         </div>
                                         <span class="ff-kpi-highlight">Asistencia</span>
                                     </a>

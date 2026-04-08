@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('pagos')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de pago', 'Consulta completa del movimiento seleccionado.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de pago', 'Detalle del cobro.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title">Pago registrado</h2>
-                        <p class="ff-section-subtitle">Vista de detalle con foco en estado, importe y relacion con usuario y plan.</p>
+                        <p class="ff-section-subtitle">Estado, importe y relacion.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/pagos/{id}/editar(id=${pago.id})}">Editar</a>
@@ -29,7 +29,7 @@
                                 <div class="ff-detail-hero">
                                     <div>
                                         <h3 class="ff-detail-hero-title">Resumen financiero</h3>
-                                        <p class="ff-detail-hero-text">Informacion disponible para seguimiento de cobro y trazabilidad interna.</p>
+                                        <p class="ff-detail-hero-text">Detalle del cobro.</p>
                                     </div>
                                     <span class="ff-status-badge"
                                           th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
@@ -74,8 +74,8 @@
                         <aside class="ff-surface-card ff-side-card">
                             <div class="ff-card-header">
                                 <div>
-                                    <h3 class="ff-card-title">Estado del cobro</h3>
-                                    <p class="ff-card-subtitle">Lectura rapida para gestion administrativa y seguimiento.</p>
+                                    <h3 class="ff-card-title">Resumen</h3>
+                                    <p class="ff-card-subtitle">Datos clave.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">

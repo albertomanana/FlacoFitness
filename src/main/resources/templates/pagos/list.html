@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('pagos')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Pagos'}, ${subtituloListado ?: 'Gestion general de pagos registrados y cuotas del gimnasio.'})}"></div>
+        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Pagos'}, ${subtituloListado ?: 'Control de cuotas.'})}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,9 +14,9 @@
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
-                        <span class="ff-section-eyebrow">Modulo de pagos</span>
+                        <span class="ff-section-eyebrow">Pagos</span>
                         <h2 class="ff-section-title">Control de cuotas</h2>
-                        <p class="ff-section-subtitle">Consulta pagos por usuario, estado, referencia y plan con una tabla interactiva integrada.</p>
+                        <p class="ff-section-subtitle">Cuotas, estados y referencias.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/pagos/nuevo}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -33,28 +33,28 @@
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Registros</p>
                             <p class="ff-stat-value" th:text="${#lists.size(pagos)}">0</p>
-                            <p class="ff-stat-note">Pagos cargados en el sistema</p>
+                            <p class="ff-stat-note">Pagos registrados</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Pagados</p>
                             <p class="ff-stat-value" th:text="${#lists.size(pagos.?[estado != null and estado.name() == 'PAGADO'])}">0</p>
-                            <p class="ff-stat-note">Cuotas abonadas correctamente</p>
+                            <p class="ff-stat-note">Cobros completados</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Pendientes</p>
                             <p class="ff-stat-value" th:text="${#lists.size(pagos.?[estado != null and estado.name() == 'PENDIENTE'])}">0</p>
-                            <p class="ff-stat-note">Cobros aun por resolver</p>
+                            <p class="ff-stat-note">Pendientes</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Vencidos</p>
                             <p class="ff-stat-value" th:text="${#lists.size(pagos.?[estado != null and estado.name() == 'VENCIDO'])}">0</p>
-                            <p class="ff-stat-note">Casos que requieren seguimiento</p>
+                            <p class="ff-stat-note">Vencidos</p>
                         </article>
                     </div>
                 </section>
@@ -64,9 +64,9 @@
                         <div class="ff-card-toolbar w-100">
                             <div>
                                 <h3 class="ff-card-title">Historial de pagos</h3>
-                                <p class="ff-card-subtitle">Busqueda, ordenacion y paginacion para navegar facilmente por el historial financiero.</p>
+                                <p class="ff-card-subtitle">Busqueda, orden y filtros.</p>
                             </div>
-                            <span class="ff-card-toolbar-note">Compatible con Thymeleaf, acciones MVC y Bootstrap 5.</span>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">

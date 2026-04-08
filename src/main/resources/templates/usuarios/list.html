@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Usuarios', 'Gestion de miembros, roles, planes y estado operativo.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Usuarios', 'Gestion de miembros.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,9 +14,9 @@
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
-                        <span class="ff-section-eyebrow">Modulo de usuarios</span>
+                        <span class="ff-section-eyebrow">Usuarios</span>
                         <h2 class="ff-section-title">Directorio de miembros</h2>
-                        <p class="ff-section-subtitle">Listado administrativo con foto, plan, rol y estado actual para una gestion mas clara.</p>
+                        <p class="ff-section-subtitle">Miembros, planes y estado.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/usuarios/nuevo}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -33,28 +33,28 @@
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Totales</p>
                             <p class="ff-stat-value" th:text="${#lists.size(usuarios)}">0</p>
-                            <p class="ff-stat-note">Usuarios registrados en el sistema</p>
+                            <p class="ff-stat-note">Total de miembros</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Activos</p>
                             <p class="ff-stat-value" th:text="${#lists.size(usuarios.?[activo == true])}">0</p>
-                            <p class="ff-stat-note">Miembros actualmente habilitados</p>
+                            <p class="ff-stat-note">Miembros activos</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Con plan</p>
                             <p class="ff-stat-value" th:text="${#lists.size(usuarios.?[plan != null])}">0</p>
-                            <p class="ff-stat-note">Usuarios con membresia asignada</p>
+                            <p class="ff-stat-note">Con plan asignado</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Con foto</p>
                             <p class="ff-stat-value" th:text="${#lists.size(usuarios.?[fotoPath != null and !fotoPath.isBlank()])}">0</p>
-                            <p class="ff-stat-note">Perfiles con identificacion visual</p>
+                            <p class="ff-stat-note">Con avatar</p>
                         </article>
                     </div>
                 </section>
@@ -64,9 +64,9 @@
                         <div class="ff-card-toolbar w-100">
                             <div>
                                 <h3 class="ff-card-title">Base de usuarios</h3>
-                                <p class="ff-card-subtitle">Busqueda, ordenacion y paginacion integradas con DataTables para mejorar la consulta academica y operativa.</p>
+                                <p class="ff-card-subtitle">Busqueda, orden y acciones.</p>
                             </div>
-                            <span class="ff-card-toolbar-note">Las acciones existentes se mantienen sin cambios funcionales.</span>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">

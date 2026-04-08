@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario', 'Datos personales, plan, rol y estado del usuario.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario', 'Datos del miembro.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
                         <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar usuario' : 'Alta de usuario'">Formulario de usuario</h2>
-                        <p class="ff-section-subtitle">El formulario mantiene la logica MVC actual y organiza la informacion en bloques faciles de explicar y mantener.</p>
+                        <p class="ff-section-subtitle">Datos del miembro.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
                 </section>
@@ -25,7 +25,7 @@
                             <div class="ff-card-header">
                                 <div>
                                     <h3 class="ff-card-title">Ficha del usuario</h3>
-                                    <p class="ff-card-subtitle">Los campos se guardan directamente sobre la entidad y reutilizan las validaciones existentes.</p>
+                                    <p class="ff-card-subtitle">Campos principales del perfil.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -36,7 +36,7 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Identidad</h4>
-                                                <p class="ff-form-section-text">Datos principales para identificar al miembro dentro del sistema.</p>
+                                                <p class="ff-form-section-text">Identificacion y contacto.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
@@ -75,7 +75,7 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Relacion operativa</h4>
-                                                <p class="ff-form-section-text">Rol, plan y estado para encajar el usuario dentro de la logica del gimnasio.</p>
+                                                <p class="ff-form-section-text">Rol, plan y estado.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
@@ -111,7 +111,7 @@
                                     </div>
 
                                     <div class="ff-form-actions">
-                                        <p class="ff-form-actions-note">Las relaciones con rol y plan se resuelven con los catalogos activos del sistema.</p>
+                                        <p class="ff-form-actions-note">Revisa rol y plan antes de guardar.</p>
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-success">Guardar</button>
                                             <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
@@ -127,23 +127,23 @@
                             <aside class="ff-surface-card ff-side-card">
                                 <div class="ff-card-header">
                                     <div>
-                                        <h3 class="ff-card-title">Vista previa del perfil</h3>
-                                        <p class="ff-card-subtitle">El avatar usa fallback automatico si el usuario todavia no tiene foto cargada.</p>
+                                        <h3 class="ff-card-title">Vista previa</h3>
+                                        <p class="ff-card-subtitle">Avatar actual.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body d-flex flex-column gap-3">
                                     <img class="ff-user-photo-preview"
                                          th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
                                          th:alt="${'Vista previa de ' + (#strings.defaultString(usuario.nombre, 'usuario'))}">
-                                    <p class="ff-user-photo-caption">La subida de imagen se gestiona desde la vista detalle para mantener el flujo simple y explicable.</p>
+                                    <p class="ff-user-photo-caption">La foto se actualiza desde la ficha del usuario.</p>
                                 </div>
                             </aside>
 
                             <aside class="ff-surface-card ff-side-card">
                                 <div class="ff-card-header">
                                     <div>
-                                        <h3 class="ff-card-title">Contexto del registro</h3>
-                                        <p class="ff-card-subtitle">Resumen rapido para no perder orientacion durante la edicion.</p>
+                                        <h3 class="ff-card-title">Resumen</h3>
+                                        <p class="ff-card-subtitle">Estado del registro.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">

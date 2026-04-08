@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de rutina', 'Consulta completa de la rutina y sus usuarios asociados.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de rutina', 'Vista de la rutina.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title" th:text="${rutina.nombre}">Rutina</h2>
-                        <p class="ff-section-subtitle">Vista detallada para revisar objetivo, tipo, usuarios vinculados y vigencia actual.</p>
+                        <p class="ff-section-subtitle">Objetivo, tipo y usuarios.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
@@ -29,7 +29,7 @@
                                 <div class="ff-detail-hero">
                                     <div>
                                         <h3 class="ff-detail-hero-title">Resumen de la rutina</h3>
-                                        <p class="ff-detail-hero-text">Informacion util para coordinacion y seguimiento del entrenamiento.</p>
+                                        <p class="ff-detail-hero-text">Vista general de la rutina.</p>
                                     </div>
                                     <span class="ff-status-badge"
                                           th:classappend="${rutina.activa} ? ' ff-status-active' : ' ff-status-inactive'"
@@ -81,8 +81,8 @@
                         <aside class="ff-surface-card ff-side-card">
                             <div class="ff-card-header">
                                 <div>
-                                    <h3 class="ff-card-title">Puntos clave</h3>
-                                    <p class="ff-card-subtitle">Indicadores rapidos para entender el alcance de la rutina.</p>
+                                    <h3 class="ff-card-title">Resumen</h3>
+                                    <p class="ff-card-subtitle">Datos clave.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">

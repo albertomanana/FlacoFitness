@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Planificacion, objetivos y usuarios asociados a cada rutina.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Biblioteca de entrenamiento.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,9 +14,9 @@
 
                 <section class="ff-section-header">
                     <div>
-                        <span class="ff-section-eyebrow">Modulo de rutinas</span>
+                        <span class="ff-section-eyebrow">Rutinas</span>
                         <h2 class="ff-section-title">Biblioteca de rutinas</h2>
-                        <p class="ff-section-subtitle">Controla objetivo, tipo, usuarios asociados y estado de activacion de cada rutina.</p>
+                        <p class="ff-section-subtitle">Objetivo, tipo y asignaciones.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
                 </section>
@@ -26,28 +26,28 @@
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Rutinas totales</p>
                             <p class="ff-stat-value" th:text="${#lists.size(rutinas)}">0</p>
-                            <p class="ff-stat-note">Planes de entrenamiento registrados.</p>
+                            <p class="ff-stat-note">Rutinas creadas</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Activas</p>
                             <p class="ff-stat-value" th:text="${rutinas.?[activa == true].size()}">0</p>
-                            <p class="ff-stat-note">Rutinas disponibles para operar.</p>
+                            <p class="ff-stat-note">Rutinas activas</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Personalizadas</p>
                             <p class="ff-stat-value" th:text="${rutinas.?[tipoRutina != null and tipoRutina.name() == 'PERSONALIZADA'].size()}">0</p>
-                            <p class="ff-stat-note">Adaptadas a usuarios concretos.</p>
+                            <p class="ff-stat-note">Asignacion directa</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Con usuarios</p>
                             <p class="ff-stat-value" th:text="${rutinas.?[usuarios != null and !usuarios.isEmpty()].size()}">0</p>
-                            <p class="ff-stat-note">Rutinas ya asociadas a miembros.</p>
+                            <p class="ff-stat-note">Con usuarios</p>
                         </article>
                     </div>
                 </section>
@@ -57,9 +57,9 @@
                         <div class="ff-card-toolbar w-100">
                             <div>
                                 <h3 class="ff-card-title">Panel de rutinas</h3>
-                                <p class="ff-card-subtitle">Tabla interactiva para consultar objetivo, usuarios asociados y estado sin perder el flujo administrativo.</p>
+                                <p class="ff-card-subtitle">Busqueda, orden y acciones.</p>
                             </div>
-                            <span class="ff-card-toolbar-note">Responsive, ordenable y paginada.</span>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">

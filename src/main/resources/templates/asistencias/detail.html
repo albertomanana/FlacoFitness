@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de asistencia', 'Consulta completa del registro seleccionado.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de asistencia', 'Detalle del registro.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title">Registro de asistencia</h2>
-                        <p class="ff-section-subtitle">Vista compacta y clara para revisar la entrada registrada y su contexto.</p>
+                        <p class="ff-section-subtitle">Fecha, usuario y observaciones.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/asistencias}">Volver</a>
                 </section>
@@ -26,7 +26,7 @@
                                 <div class="ff-detail-hero">
                                     <div>
                                         <h3 class="ff-detail-hero-title">Resumen del acceso</h3>
-                                        <p class="ff-detail-hero-text">Registro util para seguimiento de actividad y control operativo.</p>
+                                        <p class="ff-detail-hero-text">Detalle del registro.</p>
                                     </div>
                                     <span class="ff-soft-badge">Asistencia</span>
                                 </div>
@@ -59,8 +59,8 @@
                         <aside class="ff-surface-card ff-side-card">
                             <div class="ff-card-header">
                                 <div>
-                                    <h3 class="ff-card-title">Lectura rapida</h3>
-                                    <p class="ff-card-subtitle">Resumen simple para control y revision del registro.</p>
+                                    <h3 class="ff-card-title">Resumen</h3>
+                                    <p class="ff-card-subtitle">Datos clave.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
