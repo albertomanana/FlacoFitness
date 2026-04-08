@@ -10,6 +10,8 @@
 
         <main class="ff-content">
             <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
@@ -123,23 +125,50 @@
                     </div>
 
                     <div class="col-12 col-xl-4">
-                        <div class="d-flex flex-column gap-4">
-                            <aside class="ff-surface-card ff-side-card">
-                                <div class="ff-card-header">
-                                    <div>
-                                        <h3 class="ff-card-title">Vista previa</h3>
-                                        <p class="ff-card-subtitle">Avatar actual.</p>
+                        <div class="ff-side-stack">
+                            <div class="ff-sticky-panel" id="foto-panel">
+                                <aside class="ff-surface-card">
+                                    <div class="ff-card-header">
+                                        <div>
+                                            <h3 class="ff-card-title">Vista previa</h3>
+                                            <p class="ff-card-subtitle">Avatar actual.</p>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="ff-card-body d-flex flex-column gap-3">
-                                    <img class="ff-user-photo-preview"
-                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
-                                         th:alt="${'Vista previa de ' + (#strings.defaultString(usuario.nombre, 'usuario'))}">
-                                    <p class="ff-user-photo-caption">La foto se actualiza desde la ficha del usuario.</p>
-                                </div>
-                            </aside>
+                                    <div class="ff-card-body d-flex flex-column gap-3">
+                                        <img class="ff-user-photo-preview"
+                                             th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                             th:alt="${'Vista previa de ' + (#strings.defaultString(usuario.nombre, 'usuario'))}">
+                                        <p class="ff-user-photo-caption"
+                                           th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
+                                            Avatar por defecto.
+                                        </p>
 
-                            <aside class="ff-surface-card ff-side-card">
+                                        <form th:if="${modoEdicion}"
+                                              class="d-flex flex-column gap-3"
+                                              th:action="@{/usuarios/{id}/foto(id=${usuario.id})}"
+                                              method="post"
+                                              enctype="multipart/form-data">
+                                            <input type="hidden" name="redirectTo" value="editar">
+                                            <div>
+                                                <label for="foto" class="form-label">Cambiar foto</label>
+                                                <input id="foto"
+                                                       name="foto"
+                                                       type="file"
+                                                       class="form-control"
+                                                       accept="image/png,image/jpeg,image/gif,image/webp">
+                                            </div>
+                                            <p class="ff-form-actions-note">JPG, PNG, GIF o WEBP. Maximo 5 MB.</p>
+                                            <button type="submit" class="btn btn-success w-100 justify-content-center">Actualizar foto</button>
+                                        </form>
+
+                                        <div th:unless="${modoEdicion}" class="ff-inline-note">
+                                            Guarda el usuario primero para habilitar la subida de foto.
+                                        </div>
+                                    </div>
+                                </aside>
+                            </div>
+
+                            <aside class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Resumen</h3>

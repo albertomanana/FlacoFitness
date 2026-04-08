@@ -68,3 +68,4 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se simplifico el copy visual del dashboard, listados, formularios y vistas detail para que la interfaz se perciba mas cercana a un panel SaaS real.
 - Se mejoraron microinteracciones de tablas, tarjetas, avatares y vistas con animaciones suaves de entrada y hover.
 - Se fijo la tarjeta de foto de usuario en detalle para que permanezca estable durante el desplazamiento en escritorio.
+- Se traslado la subida de foto de usuario desde la vista de detalle hacia la vista de edicion, manteniendo la previsualizacion en detalle y el cambio de imagen dentro del flujo natural de actualizacion del usuario.

@@ -96,6 +96,7 @@ public class UsuarioController {
     @PostMapping("/{id}/foto")
     public String subirFoto(@PathVariable Long id,
                             @RequestParam("foto") MultipartFile foto,
+                            @RequestParam(value = "redirectTo", defaultValue = "detail") String redirectTo,
                             RedirectAttributes redirectAttributes) {
         Usuario usuario = usuarioService.buscarPorId(id);
 
@@ -105,6 +106,10 @@ public class UsuarioController {
             redirectAttributes.addFlashAttribute("mensajeExito", "Foto actualizada correctamente.");
         } catch (BusinessValidationException ex) {
             redirectAttributes.addFlashAttribute("mensajeError", ex.getMessage());
+        }
+
+        if ("editar".equalsIgnoreCase(redirectTo)) {
+            return "redirect:/usuarios/" + id + "/editar#foto-panel";
         }
 
         return "redirect:/usuarios/" + id;

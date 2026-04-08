@@ -100,43 +100,34 @@
                     </div>
 
                     <div class="col-12 col-xl-4">
-                        <div class="d-flex flex-column gap-4">
-                            <aside class="ff-surface-card ff-side-card">
-                                <div class="ff-card-header">
-                                    <div>
-                                        <h3 class="ff-card-title">Foto del usuario</h3>
-                                        <p class="ff-card-subtitle">Vista previa del avatar.</p>
-                                    </div>
-                                </div>
-                                <div class="ff-card-body d-flex flex-column gap-4">
-                                    <img class="ff-user-photo-preview"
-                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
-                                         th:alt="${'Foto de ' + usuario.nombre}">
-
-                                    <p class="ff-user-photo-caption"
-                                       th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
-                                        Avatar por defecto.
-                                    </p>
-
-                                    <form class="d-flex flex-column gap-3"
-                                          th:action="@{/usuarios/{id}/foto(id=${usuario.id})}"
-                                          method="post"
-                                          enctype="multipart/form-data">
+                        <div class="ff-side-stack">
+                            <div class="ff-sticky-panel">
+                                <aside class="ff-surface-card">
+                                    <div class="ff-card-header">
                                         <div>
-                                            <label for="foto" class="form-label">Actualizar imagen</label>
-                                            <input id="foto"
-                                                   name="foto"
-                                                   type="file"
-                                                   class="form-control"
-                                                   accept="image/png,image/jpeg,image/gif,image/webp">
+                                            <h3 class="ff-card-title">Foto del usuario</h3>
+                                            <p class="ff-card-subtitle">Vista previa del avatar.</p>
                                         </div>
-                                        <p class="ff-form-actions-note">Formatos permitidos: JPG, PNG, GIF y WEBP. Tamano maximo: 5 MB.</p>
-                                        <button type="submit" class="btn btn-success">Subir foto</button>
-                                    </form>
-                                </div>
-                            </aside>
+                                    </div>
+                                    <div class="ff-card-body d-flex flex-column gap-4">
+                                        <img class="ff-user-photo-preview"
+                                             th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                             th:alt="${'Foto de ' + usuario.nombre}">
 
-                            <aside class="ff-surface-card ff-side-card ff-side-card-static">
+                                        <p class="ff-user-photo-caption"
+                                           th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
+                                            Avatar por defecto.
+                                        </p>
+
+                                        <a class="btn btn-success w-100 justify-content-center"
+                                           th:href="|/usuarios/${usuario.id}/editar#foto-panel|">
+                                            Cambiar foto
+                                        </a>
+                                    </div>
+                                </aside>
+                            </div>
+
+                            <aside class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Resumen</h3>
@@ -158,9 +149,11 @@
                                             <span class="ff-side-value" th:text="${usuario.rol != null ? usuario.rol.nombre : 'Sin rol asignado'}">Rol</span>
                                         </div>
                                         <div class="ff-side-item">
-                                            <span class="ff-side-label">Ruta de imagen</span>
+                                            <span class="ff-side-label">Avatar</span>
                                             <span class="ff-side-value"
-                                                  th:text="${#strings.defaultString(usuario.fotoPath, @userPhotoUrlResolver.getDefaultAvatarUrl())}">Ruta</span>
+                                                  th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Imagen personalizada' : 'Avatar por defecto'">
+                                                Avatar por defecto
+                                            </span>
                                         </div>
                                     </div>
                                 </div>
