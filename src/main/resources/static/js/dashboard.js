@@ -9,48 +9,159 @@ async function initializeDashboard() {
         return;
     }
 
-    try {
-        const response = await fetch(dashboard.dataset.statsDashboardUrl, {
-            headers: {
-                Accept: "application/json"
-            }
-        });
+    const rangeSelect = dashboard.querySelector("[data-dashboard-range]");
+    const refreshButton = dashboard.querySelector("[data-dashboard-refresh]");
+    const defaultRange = Number(dashboard.dataset.defaultRange || 30);
 
-        if (!response.ok) {
-            throw new Error(`No se pudieron cargar las estadisticas del dashboard: ${response.status}`);
+    const loadDashboard = async (rangeValue) => {
+        const range = normalizeDashboardRange(rangeValue || defaultRange);
+        toggleDashboardLoading(true);
+
+        try {
+            const stats = await fetchDashboardStats(dashboard.dataset.statsDashboardUrl, range);
+            updateDashboardStats(stats);
+            updateDashboardRangeLabel(stats.rangoDias || range);
+            renderPlanChart(stats.usuariosPorPlan || []);
+            renderIngresosChart(stats.ingresosMensualesSerie || []);
+            renderAsistenciasChart(stats.asistenciasRecientes || []);
+            renderAltasChart(stats.altasRecientes || []);
+            toggleDashboardAlert(false);
+            updateDashboardTimestamp();
+        } catch (error) {
+            console.error(error);
+            toggleDashboardAlert(true);
+            ["planes", "ingresos", "asistencias", "altas"].forEach((chartKey) => toggleChartEmptyState(chartKey, true));
+        } finally {
+            toggleDashboardLoading(false);
         }
+    };
 
-        const stats = await response.json();
-        updateDashboardStats(stats);
-        renderPlanChart(stats.usuariosPorPlan || []);
-        renderIngresosChart(stats.ingresosMensualesSerie || []);
-        renderAsistenciasChart(stats.asistenciasRecientes || []);
-        renderAltasChart(stats.altasRecientes || []);
-    } catch (error) {
-        console.error(error);
-        toggleDashboardAlert(true);
-        ["planes", "ingresos", "asistencias", "altas"].forEach((chartKey) => toggleChartEmptyState(chartKey, true));
+    if (rangeSelect) {
+        rangeSelect.value = String(defaultRange);
+        rangeSelect.addEventListener("change", (event) => {
+            loadDashboard(Number(event.target.value));
+        });
     }
+
+    if (refreshButton) {
+        refreshButton.addEventListener("click", () => {
+            loadDashboard(rangeSelect ? Number(rangeSelect.value) : defaultRange);
+        });
+    }
+
+    await loadDashboard(defaultRange);
+}
+
+async function fetchDashboardStats(baseUrl, range) {
+    const url = new URL(baseUrl, window.location.origin);
+    url.searchParams.set("rangoDias", String(normalizeDashboardRange(range)));
+
+    const response = await fetch(url, {
+        headers: {
+            Accept: "application/json"
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`No se pudieron cargar las estadisticas del dashboard: ${response.status}`);
+    }
+
+    return response.json();
+}
+
+function normalizeDashboardRange(range) {
+    const parsed = Number(range || 30);
+
+    if (Number.isNaN(parsed)) {
+        return 30;
+    }
+
+    return Math.max(7, Math.min(parsed, 365));
 }
 
 function updateDashboardStats(stats) {
-    const utils = window.ffUtils;
+    animateDashboardStat("totalUsuarios", stats.totalUsuarios, "integer");
+    animateDashboardStat("usuariosActivos", stats.usuariosActivos, "integer");
+    animateDashboardStat("planesActivos", stats.planesActivos, "integer");
+    animateDashboardStat("pagosPendientes", stats.pagosPendientes, "integer");
+    animateDashboardStat("pagosVencidos", stats.pagosVencidos, "integer");
+    animateDashboardStat("renovacionesProximas", stats.renovacionesProximas, "integer");
+    animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency");
+    animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency");
+    animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer");
+    animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer");
+}
 
-    const statValues = {
-        totalUsuarios: utils.formatInteger(stats.totalUsuarios),
-        usuariosActivos: utils.formatInteger(stats.usuariosActivos),
-        planesActivos: utils.formatInteger(stats.planesActivos),
-        pagosPendientes: utils.formatInteger(stats.pagosPendientes),
-        ingresosMensuales: utils.formatCurrency(stats.ingresosMensuales),
-        asistenciasHoy: utils.formatInteger(stats.asistenciasHoy),
-        rutinasActivas: utils.formatInteger(stats.rutinasActivas)
-    };
+function animateDashboardStat(key, rawValue, kind) {
+    document.querySelectorAll(`[data-stat="${key}"]`).forEach((target) => {
+        const nextValue = Number(rawValue || 0);
+        const currentValue = Number(target.dataset.statRaw || 0);
 
-    Object.entries(statValues).forEach(([key, value]) => {
-        document.querySelectorAll(`[data-stat="${key}"]`).forEach((target) => {
-            target.textContent = value;
-        });
+        target.dataset.statRaw = String(nextValue);
+
+        if (currentValue === nextValue) {
+            target.textContent = formatDashboardValue(nextValue, kind);
+            return;
+        }
+
+        const startTime = performance.now();
+        const duration = 550;
+
+        function step(timestamp) {
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const animatedValue = currentValue + ((nextValue - currentValue) * eased);
+            target.textContent = formatDashboardValue(animatedValue, kind, progress < 1);
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                target.textContent = formatDashboardValue(nextValue, kind);
+            }
+        }
+
+        window.requestAnimationFrame(step);
     });
+}
+
+function formatDashboardValue(value, kind, isAnimating = false) {
+    const utils = window.ffUtils;
+    const numericValue = Number(value || 0);
+
+    if (kind === "currency") {
+        return utils.formatCurrency(isAnimating ? numericValue.toFixed(2) : numericValue);
+    }
+
+    return utils.formatInteger(Math.round(numericValue));
+}
+
+function updateDashboardRangeLabel(range) {
+    document.querySelectorAll("[data-dashboard-range-label]").forEach((target) => {
+        target.textContent = String(range);
+    });
+}
+
+function updateDashboardTimestamp() {
+    const now = new Date();
+    const time = new Intl.DateTimeFormat("es-ES", {
+        hour: "2-digit",
+        minute: "2-digit"
+    }).format(now);
+
+    document.querySelectorAll("[data-dashboard-updated-at]").forEach((target) => {
+        target.textContent = `Ultima actualizacion: ${time}`;
+    });
+}
+
+function toggleDashboardLoading(loading) {
+    const refreshButton = document.querySelector("[data-dashboard-refresh]");
+
+    if (!refreshButton) {
+        return;
+    }
+
+    refreshButton.disabled = loading;
+    refreshButton.classList.toggle("is-loading", loading);
 }
 
 function renderPlanChart(planDistribution) {
@@ -62,18 +173,16 @@ function renderPlanChart(planDistribution) {
     toggleChartEmptyState("planes", false);
     createChart("planesChart", "doughnut", {
         labels: planDistribution.map((item) => item.plan),
-        datasets: [
-            {
-                data: planDistribution.map((item) => Number(item.totalUsuarios || 0)),
-                backgroundColor: [
-                    "rgba(22, 163, 74, 0.88)",
-                    "rgba(59, 130, 246, 0.88)",
-                    "rgba(249, 115, 22, 0.88)",
-                    "rgba(148, 163, 184, 0.88)"
-                ],
-                borderWidth: 0
-            }
-        ]
+        datasets: [{
+            data: planDistribution.map((item) => Number(item.totalUsuarios || 0)),
+            backgroundColor: [
+                "rgba(22, 163, 74, 0.88)",
+                "rgba(59, 130, 246, 0.88)",
+                "rgba(249, 115, 22, 0.88)",
+                "rgba(148, 163, 184, 0.88)"
+            ],
+            borderWidth: 0
+        }]
     }, {
         plugins: {
             legend: {
@@ -92,23 +201,19 @@ function renderIngresosChart(ingresosMensuales) {
     toggleChartEmptyState("ingresos", false);
     createChart("ingresosChart", "line", {
         labels: ingresosMensuales.map((item) => window.ffUtils.formatPeriod(item.periodo)),
-        datasets: [
-            {
-                label: "Ingresos",
-                data: ingresosMensuales.map((item) => Number(item.total || 0)),
-                borderColor: "rgba(22, 163, 74, 1)",
-                backgroundColor: "rgba(22, 163, 74, 0.14)",
-                fill: true,
-                tension: 0.35,
-                pointRadius: 3,
-                pointHoverRadius: 5
-            }
-        ]
+        datasets: [{
+            label: "Ingresos",
+            data: ingresosMensuales.map((item) => Number(item.total || 0)),
+            borderColor: "rgba(22, 163, 74, 1)",
+            backgroundColor: "rgba(22, 163, 74, 0.14)",
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
     }, {
         plugins: {
-            legend: {
-                display: false
-            },
+            legend: { display: false },
             tooltip: {
                 callbacks: {
                     label(context) {
@@ -139,21 +244,17 @@ function renderAsistenciasChart(asistenciasRecientes) {
     toggleChartEmptyState("asistencias", false);
     createChart("asistenciasChart", "bar", {
         labels: asistenciasRecientes.map((item) => window.ffUtils.formatShortDate(item.fecha)),
-        datasets: [
-            {
-                label: "Asistencias",
-                data: asistenciasRecientes.map((item) => Number(item.total || 0)),
-                backgroundColor: "rgba(37, 99, 235, 0.8)",
-                borderRadius: 10,
-                borderSkipped: false,
-                maxBarThickness: 32
-            }
-        ]
+        datasets: [{
+            label: "Asistencias",
+            data: asistenciasRecientes.map((item) => Number(item.total || 0)),
+            backgroundColor: "rgba(37, 99, 235, 0.8)",
+            borderRadius: 10,
+            borderSkipped: false,
+            maxBarThickness: 32
+        }]
     }, {
         plugins: {
-            legend: {
-                display: false
-            }
+            legend: { display: false }
         },
         scales: {
             y: {
@@ -175,23 +276,19 @@ function renderAltasChart(altasRecientes) {
     toggleChartEmptyState("altas", false);
     createChart("altasChart", "line", {
         labels: altasRecientes.map((item) => window.ffUtils.formatPeriod(item.periodo)),
-        datasets: [
-            {
-                label: "Altas",
-                data: altasRecientes.map((item) => Number(item.total || 0)),
-                borderColor: "rgba(249, 115, 22, 1)",
-                backgroundColor: "rgba(249, 115, 22, 0.14)",
-                fill: true,
-                tension: 0.35,
-                pointRadius: 3,
-                pointHoverRadius: 5
-            }
-        ]
+        datasets: [{
+            label: "Altas",
+            data: altasRecientes.map((item) => Number(item.total || 0)),
+            borderColor: "rgba(249, 115, 22, 1)",
+            backgroundColor: "rgba(249, 115, 22, 0.14)",
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
     }, {
         plugins: {
-            legend: {
-                display: false
-            }
+            legend: { display: false }
         },
         scales: {
             y: {
@@ -248,20 +345,12 @@ function createChart(canvasId, type, data, options) {
             },
             scales: {
                 x: {
-                    ticks: {
-                        color: "#475569"
-                    },
-                    grid: {
-                        display: false
-                    }
+                    ticks: { color: "#475569" },
+                    grid: { display: false }
                 },
                 y: {
-                    ticks: {
-                        color: "#475569"
-                    },
-                    grid: {
-                        color: "rgba(148, 163, 184, 0.18)"
-                    }
+                    ticks: { color: "#475569" },
+                    grid: { color: "rgba(148, 163, 184, 0.18)" }
                 }
             },
             ...options

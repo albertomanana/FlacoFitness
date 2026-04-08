@@ -8,6 +8,7 @@ import com.flacofitness.app.service.UsuarioService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class ViewController {
@@ -31,18 +32,26 @@ public class ViewController {
     }
 
     @GetMapping("/")
-    public String home(Model model) {
+    public String home(@RequestParam(name = "rangoDias", defaultValue = "30") int rangoDias,
+                       Model model) {
+        int rangoNormalizado = Math.max(7, Math.min(rangoDias, 365));
+
         model.addAttribute("usuariosTotales", usuarioService.contarTotal());
         model.addAttribute("usuariosActivos", usuarioService.contarActivos());
         model.addAttribute("planesActivos", planService.contarActivos());
         model.addAttribute("rutinasActivas", rutinaService.contarActivas());
         model.addAttribute("pagosRegistrados", pagoService.contarTodos());
         model.addAttribute("pagosPendientes", pagoService.contarPagosPendientes());
+        model.addAttribute("pagosVencidos", pagoService.contarPagosVencidos());
         model.addAttribute("asistenciasRegistradas", asistenciaService.contarTodas());
         model.addAttribute("asistenciasHoy", asistenciaService.contarHoy());
         model.addAttribute("ingresosRegistrados", pagoService.calcularIngresosTotales());
         model.addAttribute("ingresosMensuales", pagoService.calcularIngresosMesActual());
+        model.addAttribute("renovacionesProximas", usuarioService.contarRenovacionesProximas(7));
+        model.addAttribute("dashboardRangoDias", rangoNormalizado);
         model.addAttribute("ultimosUsuarios", usuarioService.listarRecientes());
+        model.addAttribute("ultimosPagos", pagoService.listarRecientes());
+        model.addAttribute("proximosCobros", usuarioService.listarRenovacionesProximas());
         return "home/index";
     }
 }

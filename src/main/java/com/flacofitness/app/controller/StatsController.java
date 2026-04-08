@@ -5,11 +5,14 @@ import com.flacofitness.app.model.dto.DashboardStatsResponse;
 import com.flacofitness.app.model.dto.PagosStatsResponse;
 import com.flacofitness.app.model.dto.RutinasStatsResponse;
 import com.flacofitness.app.model.dto.UsuariosStatsResponse;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.AsistenciaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.UsuarioService;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -67,19 +70,31 @@ public class StatsController {
     }
 
     @GetMapping("/dashboard")
-    public DashboardStatsResponse obtenerEstadisticasDashboard() {
+    public DashboardStatsResponse obtenerEstadisticasDashboard(
+            @RequestParam(name = "rangoDias", defaultValue = "30")
+            @Min(7) @Max(365) int rangoDias) {
+        int rangoNormalizado = normalizarRango(rangoDias);
+
         return new DashboardStatsResponse(
                 usuarioService.contarTotal(),
                 usuarioService.contarActivos(),
                 planService.contarActivos(),
                 pagoService.contarPagosPendientes(),
+                pagoService.contarPagosVencidos(),
+                usuarioService.contarRenovacionesProximas(7),
+                pagoService.calcularIngresosTotales(),
                 pagoService.calcularIngresosMesActual(),
                 asistenciaService.contarHoy(),
                 rutinaService.contarActivas(),
-                asistenciaService.obtenerAsistenciasUltimosDias(14),
+                rangoNormalizado,
+                asistenciaService.obtenerAsistenciasUltimosDias(rangoNormalizado),
                 pagoService.obtenerIngresosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
                 usuarioService.obtenerAltasMensuales()
         );
+    }
+
+    private int normalizarRango(int rangoDias) {
+        return Math.max(7, Math.min(rangoDias, 365));
     }
 }

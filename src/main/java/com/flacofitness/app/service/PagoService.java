@@ -64,6 +64,10 @@ public class PagoService {
         return pagoRepository.countByEstado(EstadoPago.PENDIENTE);
     }
 
+    public long contarPagosVencidos() {
+        return pagoRepository.countByEstado(EstadoPago.VENCIDO);
+    }
+
     public List<Pago> listarRecientes() {
         return pagoRepository.findTop8ByOrderByFechaPagoDescIdDesc();
     }

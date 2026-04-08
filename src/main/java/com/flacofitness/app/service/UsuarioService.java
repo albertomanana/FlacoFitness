@@ -46,6 +46,12 @@ public class UsuarioService {
         return usuarioRepository.findTop8ByOrderByFechaRegistroDescIdDesc();
     }
 
+    public List<Usuario> listarRenovacionesProximas() {
+        return usuarioRepository.findRenovacionesProximas(LocalDate.now()).stream()
+                .limit(6)
+                .toList();
+    }
+
     public List<PlanDistribucionStatsItem> obtenerDistribucionPorPlan() {
         return usuarioRepository.countGroupedByPlan().stream()
                 .map(item -> new PlanDistribucionStatsItem(
@@ -60,6 +66,12 @@ public class UsuarioService {
                         YearMonth.of(item.getAnio(), item.getMes()).toString(),
                         item.getTotal() == null ? 0L : item.getTotal()))
                 .toList();
+    }
+
+    public long contarRenovacionesProximas(int dias) {
+        LocalDate fechaDesde = LocalDate.now();
+        LocalDate fechaHasta = fechaDesde.plusDays(Math.max(dias, 1));
+        return usuarioRepository.countByActivoTrueAndFechaProximoPagoBetween(fechaDesde, fechaHasta);
     }
 
     public Usuario buscarPorId(Long id) {

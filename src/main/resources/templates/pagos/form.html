@@ -30,6 +30,7 @@
                             </div>
                             <div class="ff-card-body">
                                 <form th:object="${pago}"
+                                      data-payment-form
                                       th:action="${modoEdicion} ? @{/pagos/{id}(id=${pago.id})} : @{/pagos}"
                                       method="post">
                                     <div th:if="${#fields.hasGlobalErrors()}" class="alert ff-alert ff-alert-danger" role="alert">
@@ -84,9 +85,10 @@
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label for="usuario" class="form-label">Usuario</label>
-                                                    <select id="usuario" class="form-select" th:field="*{usuario.id}">
+                                                    <select id="usuario" class="form-select" th:field="*{usuario.id}" data-payment-user>
                                                         <option value="">Seleccionar usuario</option>
                                                         <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
+                                                                th:attr="data-plan-id=${usuario.plan != null ? usuario.plan.id : ''},data-plan-nombre=${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'},data-plan-precio=${usuario.plan != null && usuario.plan.precioMensual != null ? usuario.plan.precioMensual : ''}"
                                                                 th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
                                                             Usuario
                                                         </option>
@@ -96,9 +98,11 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="plan" class="form-label">Plan</label>
-                                                    <select id="plan" class="form-select" th:field="*{plan.id}">
+                                                    <select id="plan" class="form-select" th:field="*{plan.id}" data-payment-plan>
                                                         <option value="">Usar plan del usuario</option>
-                                                        <option th:each="plan : ${planes}" th:value="${plan.id}" th:text="${plan.nombre}">
+                                                        <option th:each="plan : ${planes}" th:value="${plan.id}"
+                                                                th:attr="data-plan-nombre=${plan.nombre},data-plan-precio=${plan.precioMensual}"
+                                                                th:text="${plan.nombre}">
                                                             Plan
                                                         </option>
                                                     </select>
@@ -133,20 +137,20 @@
                                 </div>
                             </div>
                             <div class="ff-card-body">
-                                <div class="ff-side-list">
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Monto</span>
-                                        <span class="ff-side-value">Se deriva del precio mensual del plan</span>
+                                    <div class="ff-side-list">
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Monto</span>
+                                            <span class="ff-side-value" data-payment-amount>Se deriva del precio mensual del plan</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Referencia</span>
+                                            <span class="ff-side-value">Se genera automaticamente en formato UUID</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Plan</span>
+                                            <span class="ff-side-value" data-payment-plan-name>Puede seleccionarse o heredarse desde el usuario</span>
+                                        </div>
                                     </div>
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Referencia</span>
-                                        <span class="ff-side-value">Se genera automaticamente en formato UUID</span>
-                                    </div>
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Plan</span>
-                                        <span class="ff-side-value">Puede seleccionarse o heredarse desde el usuario</span>
-                                    </div>
-                                </div>
                             </div>
                         </aside>
                     </div>

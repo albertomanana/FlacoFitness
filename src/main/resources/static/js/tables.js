@@ -28,6 +28,7 @@ function initializeDataTables() {
         const tableInstance = new DataTable(table, {
             responsive: true,
             autoWidth: false,
+            stateSave: table.dataset.stateSave !== "false",
             pageLength: Number(table.dataset.pageLength || 10),
             lengthChange: table.dataset.lengthChange !== "false",
             searching: table.dataset.searching !== "false",

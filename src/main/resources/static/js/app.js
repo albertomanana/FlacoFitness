@@ -51,6 +51,8 @@
         updateCurrentYear();
         initializeTopbarSearch();
         initializeRevealBlocks();
+        initializeUserPhotoPreview();
+        initializePaymentFormAssistant();
     });
 
     function updateCurrentYear() {
@@ -110,5 +112,70 @@
             element.classList.add("ff-reveal");
             observer.observe(element);
         });
+    }
+
+    function initializeUserPhotoPreview() {
+        const input = document.querySelector("[data-photo-input]");
+        const preview = document.querySelector("[data-photo-preview]");
+        const caption = document.querySelector("[data-photo-caption]");
+
+        if (!input || !preview) {
+            return;
+        }
+
+        input.addEventListener("change", () => {
+            const [file] = input.files || [];
+
+            if (!file) {
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            preview.src = objectUrl;
+            preview.classList.add("is-previewing");
+
+            if (caption) {
+                caption.textContent = `Nueva imagen seleccionada: ${file.name}`;
+            }
+        });
+    }
+
+    function initializePaymentFormAssistant() {
+        const form = document.querySelector("[data-payment-form]");
+        if (!form) {
+            return;
+        }
+
+        const userSelect = form.querySelector("[data-payment-user]");
+        const planSelect = form.querySelector("[data-payment-plan]");
+        const amountTarget = document.querySelector("[data-payment-amount]");
+        const planNameTarget = document.querySelector("[data-payment-plan-name]");
+
+        if (!userSelect || !planSelect || !amountTarget || !planNameTarget) {
+            return;
+        }
+
+        const updateSummary = () => {
+            const selectedPlanOption = planSelect.options[planSelect.selectedIndex];
+            const selectedUserOption = userSelect.options[userSelect.selectedIndex];
+            const explicitPlanId = planSelect.value;
+
+            const sourceOption = explicitPlanId ? selectedPlanOption : selectedUserOption;
+            const planName = sourceOption?.dataset.planNombre || "Se usara el plan asociado al usuario";
+            const planPrice = sourceOption?.dataset.planPrecio;
+
+            planNameTarget.textContent = planName;
+            amountTarget.textContent = planPrice ? utils.formatCurrency(planPrice) : "Se derivara automaticamente al guardar";
+
+            if (!explicitPlanId && selectedUserOption?.dataset.planId) {
+                planSelect.dataset.inheritedPlanId = selectedUserOption.dataset.planId;
+            } else {
+                delete planSelect.dataset.inheritedPlanId;
+            }
+        };
+
+        userSelect.addEventListener("change", updateSummary);
+        planSelect.addEventListener("change", updateSummary);
+        updateSummary();
     }
 })();

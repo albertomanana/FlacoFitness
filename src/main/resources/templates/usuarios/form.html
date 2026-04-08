@@ -136,10 +136,12 @@
                                     </div>
                                     <div class="ff-card-body d-flex flex-column gap-3">
                                         <img class="ff-user-photo-preview"
+                                             data-photo-preview
                                              th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
                                              th:alt="${'Vista previa de ' + (#strings.defaultString(usuario.nombre, 'usuario'))}">
                                         <p class="ff-user-photo-caption"
-                                           th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
+                                           data-photo-caption
+                                            th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
                                             Avatar por defecto.
                                         </p>
 
@@ -151,11 +153,12 @@
                                             <input type="hidden" name="redirectTo" value="editar">
                                             <div>
                                                 <label for="foto" class="form-label">Cambiar foto</label>
-                                                <input id="foto"
-                                                       name="foto"
-                                                       type="file"
-                                                       class="form-control"
-                                                       accept="image/png,image/jpeg,image/gif,image/webp">
+                                                 <input id="foto"
+                                                        name="foto"
+                                                        type="file"
+                                                        class="form-control"
+                                                        data-photo-input
+                                                        accept="image/png,image/jpeg,image/gif,image/webp">
                                             </div>
                                             <p class="ff-form-actions-note">JPG, PNG, GIF o WEBP. Maximo 5 MB.</p>
                                             <button type="submit" class="btn btn-success w-100 justify-content-center">Actualizar foto</button>

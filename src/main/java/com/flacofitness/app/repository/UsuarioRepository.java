@@ -28,7 +28,15 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @EntityGraph(attributePaths = {"rol", "plan"})
     List<Usuario> findTop8ByOrderByFechaRegistroDescIdDesc();
 
+    @EntityGraph(attributePaths = {"rol", "plan"})
+    @Query("select usuario from Usuario usuario " +
+            "where usuario.activo = true and usuario.fechaProximoPago is not null and usuario.fechaProximoPago >= :fechaDesde " +
+            "order by usuario.fechaProximoPago asc, usuario.id asc")
+    List<Usuario> findRenovacionesProximas(@Param("fechaDesde") LocalDate fechaDesde);
+
     long countByActivoTrue();
+
+    long countByActivoTrueAndFechaProximoPagoBetween(LocalDate fechaDesde, LocalDate fechaHasta);
 
     @Query("select coalesce(plan.nombre, 'Sin plan') as planNombre, count(usuario) as total " +
             "from Usuario usuario left join usuario.plan plan " +

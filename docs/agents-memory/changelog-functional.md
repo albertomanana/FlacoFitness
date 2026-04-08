@@ -69,3 +69,10 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se mejoraron microinteracciones de tablas, tarjetas, avatares y vistas con animaciones suaves de entrada y hover.
 - Se fijo la tarjeta de foto de usuario en detalle para que permanezca estable durante el desplazamiento en escritorio.
 - Se traslado la subida de foto de usuario desde la vista de detalle hacia la vista de edicion, manteniendo la previsualizacion en detalle y el cambio de imagen dentro del flujo natural de actualizacion del usuario.
+- Se anadio un endpoint agregado `/stats/dashboard` con rango configurable para alimentar el panel principal con una sola lectura JSON.
+- Se renovaron los KPIs del dashboard con pagos vencidos, renovaciones proximas, ingresos totales y filtros de periodo operativos.
+- Se incorporo una tabla de ultimos pagos y un bloque de renovaciones proximas dentro del dashboard para reforzar su utilidad en una demo academica.
+- Se anadieron animaciones numericas en los indicadores del dashboard y una recarga manual ligera de metricas sin salir de Thymeleaf.
+- Se implemento un manejo global de errores MVC con vistas coherentes para 400, 404 y 500.
+- Se mejoro el formulario de pagos para mostrar en tiempo real el plan detectado y el importe que se derivara automaticamente.
+- Se mejoro el formulario de usuarios con previsualizacion inmediata de foto antes de subirla al servidor.
