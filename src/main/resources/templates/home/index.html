@@ -9,8 +9,8 @@
         <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Metricas y actividad.')}"></div>
 
         <main class="ff-content">
-            <script id="dashboardInitialStats" type="application/json" th:inline="javascript">
-                [[${dashboardStats}]]
+            <script id="dashboardInitialStats" type="application/json" th:text="${dashboardStatsJson}">
+                {}
             </script>
             <div class="ff-content-stack"
                  data-dashboard
@@ -38,53 +38,53 @@
                 </section>
 
                 <section class="ff-kpi-grid ff-animate-in">
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios totales</p>
                         <p class="ff-stat-value" data-stat="totalUsuarios" data-stat-kind="integer" th:text="${usuariosTotales}">0</p>
                         <p class="ff-stat-note">Base registrada</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios activos</p>
                         <p class="ff-stat-value" data-stat="usuariosActivos" data-stat-kind="integer" th:text="${usuariosActivos}">0</p>
                         <p class="ff-stat-note">Miembros en curso</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Asistencias de hoy</p>
                         <p class="ff-stat-value" data-stat="asistenciasHoy" data-stat-kind="integer" th:text="${asistenciasHoy}">0</p>
                         <p class="ff-stat-note">Check-ins del dia</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Pagos pendientes</p>
                         <p class="ff-stat-value" data-stat="pagosPendientes" data-stat-kind="integer" th:text="${pagosPendientes}">0</p>
                         <p class="ff-stat-note">Cobros a seguir</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Pagos vencidos</p>
                         <p class="ff-stat-value" data-stat="pagosVencidos" data-stat-kind="integer" th:text="${pagosVencidos}">0</p>
                         <p class="ff-stat-note">Requieren accion</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Ingresos del mes</p>
                         <p class="ff-stat-value" data-stat="ingresosMensuales" data-stat-kind="currency"
                            th:text="${#numbers.formatDecimal(ingresosMensuales, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
                         <p class="ff-stat-note">Mes actual</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Ingresos totales</p>
                         <p class="ff-stat-value" data-stat="ingresosTotales" data-stat-kind="currency"
                            th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
                         <p class="ff-stat-note">Historico consolidado</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Renovaciones proximas</p>
                         <p class="ff-stat-value" data-stat="renovacionesProximas" data-stat-kind="integer" th:text="${renovacionesProximas}">0</p>
                         <p class="ff-stat-note">Siguientes 7 dias</p>
-                    </article>
-                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
+                    </a>
+                    <a th:href="@{/rutinas}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Rutinas activas</p>
                         <p class="ff-stat-value" data-stat="rutinasActivas" data-stat-kind="integer" th:text="${rutinasActivas}">0</p>
                         <p class="ff-stat-note">Programas vigentes</p>
-                    </article>
+                    </a>
                 </section>
 
                 <section class="ff-surface-card ff-dashboard-alert d-none" data-dashboard-alert>
@@ -241,7 +241,7 @@
                                             <div class="ff-timeline-item" th:each="usuario : ${proximosCobros}">
                                                 <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" th:alt="${'Avatar de ' + usuario.nombre}">
                                             <div class="ff-timeline-body">
-                                                <span class="ff-table-primary" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</span>
+                                                <a class="ff-table-primary text-decoration-none" th:href="@{/usuarios/{id}(id=${usuario.id})}" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</a>
                                                 <span class="ff-table-secondary" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</span>
                                             </div>
                                             <div class="ff-timeline-meta" th:text="${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'dd/MM') : '-'}">08/04</div>
@@ -329,8 +329,11 @@
                                         <div class="ff-user-cell">
                                             <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(pago.usuario != null ? pago.usuario.fotoPath : null)}" alt="Avatar">
                                             <div class="ff-user-cell-body">
-                                                <span class="ff-table-primary" th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null && !pago.usuario.apellidos.isBlank() ? ' ' + pago.usuario.apellidos : '') : '-'}">Usuario</span>
-                                                <span class="ff-table-secondary" th:text="${pago.referencia != null ? pago.referencia.substring(0, 8) : 'Sin referencia'}">ref</span>
+                                                <a class="ff-table-primary text-decoration-none" th:if="${pago.usuario != null}" th:href="@{/usuarios/{id}(id=${pago.usuario.id})}" th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null && !pago.usuario.apellidos.isBlank() ? ' ' + pago.usuario.apellidos : '') : '-'}">Usuario</a>
+                                                <span class="ff-table-primary" th:if="${pago.usuario == null}">-</span>
+                                                <a class="ff-table-secondary text-decoration-none"
+                                                   th:href="@{/pagos/{id}(id=${pago.id})}"
+                                                   th:text="${pago.referencia != null ? (#strings.length(pago.referencia) > 8 ? #strings.substring(pago.referencia, 0, 8) : pago.referencia) : 'Sin referencia'}">ref</a>
                                             </div>
                                         </div>
                                     </td>

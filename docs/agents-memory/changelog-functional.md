@@ -76,3 +76,28 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se implemento un manejo global de errores MVC con vistas coherentes para 400, 404 y 500.
 - Se mejoro el formulario de pagos para mostrar en tiempo real el plan detectado y el importe que se derivara automaticamente.
 - Se mejoro el formulario de usuarios con previsualizacion inmediata de foto antes de subirla al servidor.
+
+### 2026-04-08 (Rescate UI/UX completo)
+
+- Se corrigio el bug de Chart.js en el dashboard: se reemplazo el spread superficial de opciones por un deep-merge que preserva la configuracion base al combinar con opciones por grafico, y se excluyen escalas cartesianas en charts radiales (doughnut/pie) que causaban fallo silencioso.
+- Se corrigio la visibilidad de los canvases de Chart.js: el IntersectionObserver ya no aplica opacity:0 a los contenedores de graficos, permitiendo que Chart.js calcule dimensiones correctas al inicializar.
+- Se corrigio el solapamiento entre la tarjeta de "Foto del usuario" y "Resumen" en la vista de detalle: se separo el wrapper sticky para que solo la foto sea sticky y el resumen quede siempre estatico debajo.
+- Se refactorizo el CSS completo a filosofia mobile-first con breakpoints progresivos desde movil hacia escritorio.
+- Se expandieron los design tokens semanticos: se anadieron variables para accent, success, warning, error, escala tipografica (text-xs a text-3xl), escala de espaciado (space-1 a space-12), y sombras graduales (shadow-xs a shadow-hover).
+- Se implemento drag & drop de tarjetas KPI en el dashboard con SortableJS, incluyendo feedback visual al arrastrar, persistencia del orden en localStorage, y soporte tactil con delay para moviles.
+- Se anadieron esqueletos de carga (shimmer) en los contenedores de graficos mientras se obtienen datos del servidor.
+- Se implemento gestion de focus-ring para accesibilidad: el anillo de enfoque solo aparece al navegar con teclado, no con raton.
+- Se anadio validacion de tamano de archivo (5 MB max) en la previsualizacion de foto de usuario en el formulario de edicion.
+- Se limpiaron selectores CSS obsoletos y se consolidaron reglas duplicadas para reducir el tamano del archivo de estilos.
+- Se anadieron microinteracciones de hover en items de detalle, items laterales y lineas de timeline con desplazamiento y cambio de borde suaves.
+
+### 2026-04-09
+
+- Se estabilizo la fuente de datos por perfil: el sembrado SQL queda restringido al perfil `local` (H2) y se deshabilita por defecto en MySQL para evitar inconsistencias y contaminacion de datos demo.
+- Se mejoro el diagnostico de arranque: el log de inicio ahora reporta el producto de base de datos y el catalogo activo (MySQL/MariaDB vs H2) para que la ejecucion sea explicable en defensa.
+- Se refactorizo la UX de usuarios: se elimina el boton de “ojo” en listados y la fila completa es clicable para abrir el detalle sin romper acciones de editar/desactivar (incluye accesibilidad por teclado).
+- En el detalle de usuario, la foto queda como solo consulta: el cambio de imagen se realiza exclusivamente desde la vista de edicion.
+- Se corrigio una regresion critica del dashboard: la home fallaba al renderizar por truncar referencias de pago cortas con `substring(0, 8)`, lo que impedia que la pagina llegara a pintar los graficos.
+- Se reforzo la fuente de verdad del dashboard serializando el estado inicial a JSON explicito desde el controlador, evitando depender de la serializacion implicita del template.
+- Se endurecio la configuracion de Chart.js con fusion profunda de opciones y exclusion de escalas cartesianas en charts radiales, recuperando correctamente el grafico de barras de ingresos, el doughnut de usuarios por plan y las series temporales.
+- Se validaron el perfil `local` y el dashboard en ejecucion real con servidor limpio y captura headless, confirmando render de KPIs, charts y datos sembrados.

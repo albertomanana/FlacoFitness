@@ -79,7 +79,7 @@ function readInitialDashboardStats() {
     try {
         return JSON.parse(script.textContent);
     } catch (error) {
-        console.error("No se pudo leer el estado inicial del dashboard.", error);
+        console.error("No se pudo leer el estado inicial del dashboard.", error, script.textContent);
         return null;
     }
 }
@@ -347,49 +347,80 @@ function createChart(canvasId, type, data, options) {
         existingChart.destroy();
     }
 
+    const radialChart = isRadialChart(type);
+    const baseOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: "index",
+            intersect: false
+        },
+        animation: {
+            duration: 650,
+            easing: "easeOutQuart"
+        },
+        plugins: {
+            legend: {
+                labels: {
+                    usePointStyle: true,
+                    boxWidth: 8,
+                    color: "#475569"
+                }
+            },
+            tooltip: {
+                backgroundColor: "#1d2939",
+                titleColor: "#ffffff",
+                bodyColor: "#ffffff",
+                padding: 12,
+                displayColors: false
+            }
+        }
+    };
+
+    if (!radialChart) {
+        baseOptions.scales = {
+            x: {
+                ticks: { color: "#475569" },
+                grid: { display: false }
+            },
+            y: {
+                ticks: { color: "#475569" },
+                grid: { color: "rgba(148, 163, 184, 0.18)" }
+            }
+        };
+    }
+
     new Chart(canvas, {
         type,
         data,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: "index",
-                intersect: false
-            },
-            animation: {
-                duration: 650,
-                easing: "easeOutQuart"
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        usePointStyle: true,
-                        boxWidth: 8,
-                        color: "#475569"
-                    }
-                },
-                tooltip: {
-                    backgroundColor: "#1d2939",
-                    titleColor: "#ffffff",
-                    bodyColor: "#ffffff",
-                    padding: 12,
-                    displayColors: false
-                }
-            },
-            scales: {
-                x: {
-                    ticks: { color: "#475569" },
-                    grid: { display: false }
-                },
-                y: {
-                    ticks: { color: "#475569" },
-                    grid: { color: "rgba(148, 163, 184, 0.18)" }
-                }
-            },
-            ...options
-        }
+        options: mergeChartOptions(baseOptions, options, radialChart)
     });
+}
+
+function isRadialChart(type) {
+    return type === "doughnut" || type === "pie" || type === "polarArea";
+}
+
+function mergeChartOptions(baseOptions, customOptions, radialChart) {
+    const mergedOptions = {
+        ...baseOptions,
+        ...customOptions,
+        plugins: {
+            ...(baseOptions.plugins || {}),
+            ...(customOptions?.plugins || {})
+        }
+    };
+
+    if (!radialChart) {
+        mergedOptions.scales = {
+            ...(baseOptions.scales || {}),
+            ...(customOptions?.scales || {})
+        };
+    } else {
+        delete mergedOptions.scales;
+    }
+
+    return mergedOptions;
 }
 
 function toggleChartEmptyState(chartKey, isEmpty) {
