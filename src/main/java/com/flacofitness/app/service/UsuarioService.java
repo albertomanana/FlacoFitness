@@ -125,6 +125,14 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
+    @Transactional
+    public void activar(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setActivo(true);
+        sincronizarFechaProximoPago(usuario, usuario.getPlan() != null ? usuario.getPlan().getId() : null);
+        usuarioRepository.save(usuario);
+    }
+
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }

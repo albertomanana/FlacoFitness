@@ -5,7 +5,13 @@ document.addEventListener("DOMContentLoaded", () => {
 async function initializeDashboard() {
     const dashboard = document.querySelector("[data-dashboard]");
 
-    if (!dashboard || typeof Chart === "undefined") {
+    if (!dashboard) {
+        return;
+    }
+
+    if (typeof Chart === "undefined") {
+        console.error("Chart.js no esta disponible en tiempo de ejecucion.");
+        toggleDashboardAlert(true, "No se pudieron cargar los graficos del dashboard.");
         return;
     }
 
@@ -21,15 +27,17 @@ async function initializeDashboard() {
             const stats = await fetchDashboardStats(dashboard.dataset.statsDashboardUrl, range);
             updateDashboardStats(stats);
             updateDashboardRangeLabel(stats.rangoDias || range);
-            renderPlanChart(stats.usuariosPorPlan || []);
-            renderIngresosChart(stats.ingresosMensualesSerie || []);
-            renderAsistenciasChart(stats.asistenciasRecientes || []);
-            renderAltasChart(stats.altasRecientes || []);
+            window.requestAnimationFrame(() => {
+                renderPlanChart(stats.usuariosPorPlan || []);
+                renderIngresosChart(stats.ingresosMensualesSerie || []);
+                renderAsistenciasChart(stats.asistenciasRecientes || []);
+                renderAltasChart(stats.altasRecientes || []);
+            });
             toggleDashboardAlert(false);
             updateDashboardTimestamp();
         } catch (error) {
             console.error(error);
-            toggleDashboardAlert(true);
+            toggleDashboardAlert(true, "No se pudieron actualizar todas las metricas del dashboard.");
             ["planes", "ingresos", "asistencias", "altas"].forEach((chartKey) => toggleChartEmptyState(chartKey, true));
         } finally {
             toggleDashboardLoading(false);
@@ -371,10 +379,16 @@ function toggleChartEmptyState(chartKey, isEmpty) {
     }
 }
 
-function toggleDashboardAlert(visible) {
+function toggleDashboardAlert(visible, message) {
     const alert = document.querySelector("[data-dashboard-alert]");
 
     if (alert) {
         alert.classList.toggle("d-none", !visible);
+        if (visible && message) {
+            const body = alert.querySelector("[data-dashboard-alert-body]");
+            if (body) {
+                body.textContent = message;
+            }
+        }
     }
 }

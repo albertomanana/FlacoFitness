@@ -123,6 +123,13 @@ public class RutinaController {
         return "redirect:/rutinas";
     }
 
+    @PostMapping("/{id}/activar")
+    public String activarRutina(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        rutinaService.activar(id);
+        redirectAttributes.addFlashAttribute("mensajeExito", "Rutina activada correctamente.");
+        return "redirect:/rutinas";
+    }
+
     private void cargarCatalogos(Model model) {
         model.addAttribute("usuarios", usuarioService.listarActivos());
         model.addAttribute("objetivos", ObjetivoRutina.values());

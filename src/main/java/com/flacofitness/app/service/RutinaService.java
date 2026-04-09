@@ -73,6 +73,13 @@ public class RutinaService {
         rutinaRepository.save(rutina);
     }
 
+    @Transactional
+    public void activar(Long id) {
+        Rutina rutina = buscarPorId(id);
+        rutina.setActiva(true);
+        rutinaRepository.save(rutina);
+    }
+
     private Set<Usuario> obtenerUsuariosValidos(Set<Usuario> usuarios) {
         if (usuarios == null || usuarios.isEmpty()) {
             throw new BusinessValidationException("La rutina debe estar asociada al menos a un usuario valido");

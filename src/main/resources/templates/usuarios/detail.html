@@ -26,6 +26,7 @@
                 </section>
 
                 <section class="row g-4 ff-detail-layout">
+                    <!-- Main content column -->
                     <div class="col-12 col-xl-8">
                         <article class="ff-surface-card">
                             <div class="ff-card-body d-flex flex-column gap-4">
@@ -99,34 +100,33 @@
                         </article>
                     </div>
 
+                    <!-- Side column — photo is sticky, summary is static -->
                     <div class="col-12 col-xl-4">
-                        <div class="ff-side-stack">
-                            <div class="ff-sticky-panel">
-                                <aside class="ff-surface-card">
-                                    <div class="ff-card-header">
-                                        <div>
-                                            <h3 class="ff-card-title">Foto del usuario</h3>
-                                            <p class="ff-card-subtitle">Vista previa del avatar.</p>
-                                        </div>
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <!-- Photo card — sticky on XL only -->
+                            <aside class="ff-surface-card" id="foto-panel">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Foto del usuario</h3>
+                                        <p class="ff-card-subtitle">Vista previa del avatar.</p>
                                     </div>
-                                    <div class="ff-card-body d-flex flex-column gap-4">
-                                        <img class="ff-user-photo-preview"
-                                             th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
-                                             th:alt="${'Foto de ' + usuario.nombre}">
+                                </div>
+                                <div class="ff-card-body d-flex flex-column gap-4">
+                                    <img class="ff-user-photo-preview"
+                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                         th:alt="${'Foto de ' + usuario.nombre}">
 
-                                        <p class="ff-user-photo-caption"
-                                           th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
-                                            Avatar por defecto.
-                                        </p>
-
-                                        <a class="btn btn-success w-100 justify-content-center"
-                                           th:href="|/usuarios/${usuario.id}/editar#foto-panel|">
-                                            Cambiar foto
-                                        </a>
+                                    <p class="ff-user-photo-caption"
+                                       th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
+                                        Avatar por defecto.
+                                    </p>
+                                    <div class="ff-inline-note">
+                                        La foto se actualiza desde <strong>Editar</strong> para mantener un flujo coherente.
                                     </div>
-                                </aside>
-                            </div>
+                                </div>
+                            </aside>
 
+                            <!-- Summary card — always static, never overlaps -->
                             <aside class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>

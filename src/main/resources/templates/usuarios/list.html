@@ -88,15 +88,19 @@
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(usuarios)}">
-                                <tr th:each="usuario : ${usuarios}">
+                                <tr th:each="usuario : ${usuarios}"
+                                    class="ff-clickable-row"
+                                    tabindex="0"
+                                    th:attr="data-row-href=@{/usuarios/{id}(id=${usuario.id})}">
                                     <td>
                                         <div class="ff-user-cell">
                                             <img class="ff-avatar"
                                                  th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
                                                  th:alt="${'Avatar de ' + usuario.nombre}">
                                             <div class="ff-user-cell-body ff-table-meta">
-                                                <span class="ff-table-primary"
-                                                      th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Nombre completo</span>
+                                                <a class="ff-row-link ff-table-primary"
+                                                   th:href="@{/usuarios/{id}(id=${usuario.id})}"
+                                                   th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Nombre completo</a>
                                                 <span class="ff-table-secondary"
                                                       th:text="${usuario.telefono != null && !usuario.telefono.isBlank() ? usuario.telefono : 'Sin telefono'}">Telefono</span>
                                             </div>
@@ -112,15 +116,6 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                            <a class="btn btn-outline-secondary btn-sm ff-btn-icon"
-                                               th:href="@{/usuarios/{id}(id=${usuario.id})}"
-                                               title="Ver detalle">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                    <circle cx="12" cy="12" r="3"/>
-                                                </svg>
-                                            </a>
                                             <a class="btn btn-outline-success btn-sm ff-btn-icon"
                                                th:href="@{/usuarios/{id}/editar(id=${usuario.id})}"
                                                title="Editar">
@@ -143,6 +138,19 @@
                                                         <circle cx="12" cy="12" r="10"/>
                                                         <line x1="15" y1="9" x2="9" y2="15"/>
                                                         <line x1="9" y1="9" x2="15" y2="15"/>
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                            <form th:unless="${usuario.activo}"
+                                                  th:action="@{/usuarios/{id}/activar(id=${usuario.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-success btn-sm ff-btn-icon"
+                                                        title="Activar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                                         fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M20 6 9 17l-5-5"/>
                                                     </svg>
                                                 </button>
                                             </form>

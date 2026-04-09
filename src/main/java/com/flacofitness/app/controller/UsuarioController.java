@@ -161,6 +161,13 @@ public class UsuarioController {
         return "redirect:/usuarios";
     }
 
+    @PostMapping("/{id}/activar")
+    public String activarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        usuarioService.activar(id);
+        redirectAttributes.addFlashAttribute("mensajeExito", "Usuario activado correctamente.");
+        return "redirect:/usuarios";
+    }
+
     private void cargarCatalogos(Model model) {
         model.addAttribute("roles", rolRepository.findAll(Sort.by(Sort.Direction.ASC, "nombre")));
         model.addAttribute("planes", planRepository.findByActivoTrue());

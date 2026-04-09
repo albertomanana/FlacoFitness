@@ -96,15 +96,17 @@
                                             <div class="row g-3">
                                                 <div class="col-12">
                                                     <label for="usuarioIds" class="form-label">Usuarios</label>
-                                                    <select id="usuarioIds" name="usuarioIds" class="form-select" multiple size="8">
-                                                        <option th:each="usuario : ${usuarios}"
-                                                                th:value="${usuario.id}"
-                                                                th:selected="${#lists.contains(usuariosSeleccionados, usuario.id)}"
-                                                                th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">
-                                                            Usuario
-                                                        </option>
-                                                    </select>
-                                                    <div class="form-text">Usa Ctrl o Cmd para seleccionar varios usuarios.</div>
+                                                    <div data-user-assignment>
+                                                        <select id="usuarioIds" name="usuarioIds" class="form-select" multiple size="8">
+                                                            <option th:each="usuario : ${usuarios}"
+                                                                    th:value="${usuario.id}"
+                                                                    th:selected="${#lists.contains(usuariosSeleccionados, usuario.id)}"
+                                                                    th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">
+                                                                Usuario
+                                                            </option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-text">Arrastra usuarios entre columnas o usa seleccion multiple si el script no carga.</div>
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuarios')}">
                                                         <div th:each="error : ${#fields.errors('usuarios')}" th:text="${error}">Error</div>
                                                     </div>

@@ -126,6 +126,15 @@
                                                     Desactivar
                                                 </button>
                                             </form>
+                                            <form th:unless="${rutina.activa}"
+                                                  th:action="@{/rutinas/{id}/activar(id=${rutina.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-success btn-sm">
+                                                    Activar
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
