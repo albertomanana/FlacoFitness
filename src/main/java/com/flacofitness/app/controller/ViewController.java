@@ -1,5 +1,6 @@
 package com.flacofitness.app.controller;
 
+import com.flacofitness.app.model.dto.DashboardStatsResponse;
 import com.flacofitness.app.service.AsistenciaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
@@ -50,8 +51,30 @@ public class ViewController {
         model.addAttribute("renovacionesProximas", usuarioService.contarRenovacionesProximas(7));
         model.addAttribute("dashboardRangoDias", rangoNormalizado);
         model.addAttribute("ultimosUsuarios", usuarioService.listarRecientes());
+        model.addAttribute("rutinasDestacadas", rutinaService.listarActivasDestacadas());
         model.addAttribute("ultimosPagos", pagoService.listarRecientes());
         model.addAttribute("proximosCobros", usuarioService.listarRenovacionesProximas());
+        model.addAttribute("dashboardStats", construirDashboardStats(rangoNormalizado));
         return "home/index";
+    }
+
+    private DashboardStatsResponse construirDashboardStats(int rangoDias) {
+        return new DashboardStatsResponse(
+                usuarioService.contarTotal(),
+                usuarioService.contarActivos(),
+                planService.contarActivos(),
+                pagoService.contarPagosPendientes(),
+                pagoService.contarPagosVencidos(),
+                usuarioService.contarRenovacionesProximas(7),
+                pagoService.calcularIngresosTotales(),
+                pagoService.calcularIngresosMesActual(),
+                asistenciaService.contarHoy(),
+                rutinaService.contarActivas(),
+                rangoDias,
+                asistenciaService.obtenerAsistenciasUltimosDias(rangoDias),
+                pagoService.obtenerIngresosMensuales(),
+                usuarioService.obtenerDistribucionPorPlan(),
+                usuarioService.obtenerAltasMensuales()
+        );
     }
 }

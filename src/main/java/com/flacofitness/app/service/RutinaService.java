@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,13 @@ public class RutinaService {
 
     public long contarActivas() {
         return rutinaRepository.countByActivaTrue();
+    }
+
+    public List<Rutina> listarActivasDestacadas() {
+        return rutinaRepository.findByActivaTrue().stream()
+                .sorted(Comparator.comparing(Rutina::getFechaCreacion, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .limit(6)
+                .toList();
     }
 
     public Rutina buscarPorId(Long id) {

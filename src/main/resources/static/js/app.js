@@ -50,6 +50,7 @@
     document.addEventListener("DOMContentLoaded", () => {
         updateCurrentYear();
         initializeTopbarSearch();
+        initializeClickableRows();
         initializeRevealBlocks();
         initializePaymentFormAssistant();
     });
@@ -78,6 +79,27 @@
 
         searchInput.addEventListener("input", (event) => {
             syncSearch(event.target.value.trim());
+        });
+    }
+
+    function initializeClickableRows() {
+        document.querySelectorAll("[data-row-href]").forEach((row) => {
+            row.addEventListener("click", (event) => {
+                if (event.target.closest("a, button, form, input, select, textarea, label")) {
+                    return;
+                }
+
+                window.location.href = row.dataset.rowHref;
+            });
+
+            row.addEventListener("keydown", (event) => {
+                if (event.key !== "Enter" && event.key !== " ") {
+                    return;
+                }
+
+                event.preventDefault();
+                window.location.href = row.dataset.rowHref;
+            });
         });
     }
 

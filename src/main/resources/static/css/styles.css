@@ -868,6 +868,12 @@ a { text-decoration: none; }
     min-height: 220px;
 }
 
+.ff-chart-canvas-wrap canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 @media (min-width: 768px) {
     .ff-chart-canvas-wrap {
         min-height: 260px;
@@ -2133,6 +2139,12 @@ code { color: var(--ff-primary-dark); }
     touch-action: manipulation;
 }
 
+.ff-dual-list-item.is-selected {
+    background: rgba(22, 163, 74, 0.10);
+    border-color: rgba(22, 163, 74, 0.38);
+    box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.12);
+}
+
 .ff-dual-list-item:hover {
     background: var(--ff-surface-hover);
     border-color: var(--ff-primary-ring);
@@ -2149,6 +2161,10 @@ code { color: var(--ff-primary-dark); }
     color: var(--ff-text-soft);
     flex-shrink: 0;
     transition: color var(--transition-fast);
+}
+
+.ff-dual-list-avatar {
+    flex-shrink: 0;
 }
 
 .ff-dual-list-item:hover .ff-dual-list-item-grip {

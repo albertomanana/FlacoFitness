@@ -9,6 +9,9 @@
         <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Metricas y actividad.')}"></div>
 
         <main class="ff-content">
+            <script id="dashboardInitialStats" type="application/json" th:inline="javascript">
+                [[${dashboardStats}]]
+            </script>
             <div class="ff-content-stack"
                  data-dashboard
                  th:attr="data-stats-dashboard-url=@{/stats/dashboard},data-default-range=${dashboardRangoDias}">
@@ -192,12 +195,17 @@
                                         </tr>
                                         </thead>
                                         <tbody th:if="${not #lists.isEmpty(ultimosUsuarios)}">
-                                        <tr th:each="usuario : ${ultimosUsuarios}">
+                                        <tr th:each="usuario : ${ultimosUsuarios}"
+                                            class="ff-clickable-row"
+                                            tabindex="0"
+                                            th:attr="data-row-href=@{/usuarios/{id}(id=${usuario.id})}">
                                             <td>
                                                 <div class="ff-user-cell">
                                                     <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" th:alt="${'Avatar de ' + usuario.nombre}">
                                                     <div class="ff-user-cell-body">
-                                                        <span class="ff-table-primary" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</span>
+                                                        <a class="ff-row-link ff-table-primary"
+                                                           th:href="@{/usuarios/{id}(id=${usuario.id})}"
+                                                           th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</a>
                                                         <span class="ff-table-secondary" th:text="${usuario.email}">correo@ejemplo.com</span>
                                                     </div>
                                                 </div>
@@ -229,9 +237,9 @@
                                     </div>
                                 </div>
                                 <div class="ff-card-body">
-                                    <div class="ff-timeline-list" th:if="${not #lists.isEmpty(proximosCobros)}">
-                                        <div class="ff-timeline-item" th:each="usuario : ${proximosCobros}">
-                                            <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" th:alt="${'Avatar de ' + usuario.nombre}">
+                                        <div class="ff-timeline-list" th:if="${not #lists.isEmpty(proximosCobros)}">
+                                            <div class="ff-timeline-item" th:each="usuario : ${proximosCobros}">
+                                                <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" th:alt="${'Avatar de ' + usuario.nombre}">
                                             <div class="ff-timeline-body">
                                                 <span class="ff-table-primary" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</span>
                                                 <span class="ff-table-secondary" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</span>
@@ -240,6 +248,30 @@
                                         </div>
                                     </div>
                                     <div class="ff-empty-inline" th:if="${#lists.isEmpty(proximosCobros)}">No hay renovaciones proximas pendientes.</div>
+                                </div>
+                            </article>
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <p class="ff-section-eyebrow mb-0">Rutinas</p>
+                                        <h3 class="ff-card-title mt-1">Rutinas activas</h3>
+                                        <p class="ff-card-subtitle">Acceso directo a las fichas.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-action-list" th:if="${not #lists.isEmpty(rutinasDestacadas)}">
+                                        <a class="ff-action-link"
+                                           th:each="rutina : ${rutinasDestacadas}"
+                                           th:href="@{/rutinas/{id}(id=${rutina.id})}">
+                                            <div>
+                                                <strong th:text="${rutina.nombre}">Rutina</strong>
+                                                <span th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : 'Sin objetivo'}">Objetivo</span>
+                                            </div>
+                                            <span class="ff-kpi-highlight"
+                                                  th:text="${rutina.usuarios != null ? rutina.usuarios.size() + ' usr.' : '0 usr.'}">0 usr.</span>
+                                        </a>
+                                    </div>
+                                    <div class="ff-empty-inline" th:if="${#lists.isEmpty(rutinasDestacadas)}">No hay rutinas activas destacadas todavia.</div>
                                 </div>
                             </article>
                             <article class="ff-surface-card">
