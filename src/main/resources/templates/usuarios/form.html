@@ -130,20 +130,15 @@
                                 <aside class="ff-surface-card">
                                     <div class="ff-card-header">
                                         <div>
-                                            <h3 class="ff-card-title">Vista previa</h3>
-                                            <p class="ff-card-subtitle">Avatar actual.</p>
+                                            <h3 class="ff-card-title">Foto del perfil</h3>
+                                            <p class="ff-card-subtitle">Carga o reemplazo de imagen.</p>
                                         </div>
                                     </div>
                                     <div class="ff-card-body d-flex flex-column gap-3">
-                                        <img class="ff-user-photo-preview"
-                                             data-photo-preview
-                                             th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
-                                             th:alt="${'Vista previa de ' + (#strings.defaultString(usuario.nombre, 'usuario'))}">
-                                        <p class="ff-user-photo-caption"
-                                           data-photo-caption
-                                            th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
-                                            Avatar por defecto.
-                                        </p>
+                                        <div class="ff-inline-note"
+                                             th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'El usuario tiene una foto personalizada guardada.' : 'El usuario usa el avatar por defecto del sistema.'">
+                                            El usuario usa el avatar por defecto del sistema.
+                                        </div>
 
                                         <form th:if="${modoEdicion}"
                                               class="d-flex flex-column gap-3"
@@ -157,7 +152,6 @@
                                                         name="foto"
                                                         type="file"
                                                         class="form-control"
-                                                        data-photo-input
                                                         accept="image/png,image/jpeg,image/gif,image/webp">
                                             </div>
                                             <p class="ff-form-actions-note">JPG, PNG, GIF o WEBP. Maximo 5 MB.</p>

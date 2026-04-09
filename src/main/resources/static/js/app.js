@@ -51,7 +51,6 @@
         updateCurrentYear();
         initializeTopbarSearch();
         initializeRevealBlocks();
-        initializeUserPhotoPreview();
         initializePaymentFormAssistant();
     });
 
@@ -109,34 +108,13 @@
         });
 
         revealTargets.forEach((element) => {
-            element.classList.add("ff-reveal");
-            observer.observe(element);
-        });
-    }
-
-    function initializeUserPhotoPreview() {
-        const input = document.querySelector("[data-photo-input]");
-        const preview = document.querySelector("[data-photo-preview]");
-        const caption = document.querySelector("[data-photo-caption]");
-
-        if (!input || !preview) {
-            return;
-        }
-
-        input.addEventListener("change", () => {
-            const [file] = input.files || [];
-
-            if (!file) {
+            if (element.classList.contains("ff-chart-card") || element.querySelector("canvas")) {
+                element.classList.add("is-visible");
                 return;
             }
 
-            const objectUrl = URL.createObjectURL(file);
-            preview.src = objectUrl;
-            preview.classList.add("is-previewing");
-
-            if (caption) {
-                caption.textContent = `Nueva imagen seleccionada: ${file.name}`;
-            }
+            element.classList.add("ff-reveal");
+            observer.observe(element);
         });
     }
 
@@ -165,7 +143,9 @@
             const planPrice = sourceOption?.dataset.planPrecio;
 
             planNameTarget.textContent = planName;
-            amountTarget.textContent = planPrice ? utils.formatCurrency(planPrice) : "Se derivara automaticamente al guardar";
+            amountTarget.textContent = planPrice
+                ? utils.formatCurrency(planPrice)
+                : "Se derivara automaticamente al guardar";
 
             if (!explicitPlanId && selectedUserOption?.dataset.planId) {
                 planSelect.dataset.inheritedPlanId = selectedUserOption.dataset.planId;
