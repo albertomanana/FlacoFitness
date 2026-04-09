@@ -6,6 +6,8 @@ import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.UsuarioService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,17 +21,20 @@ public class ViewController {
     private final RutinaService rutinaService;
     private final PagoService pagoService;
     private final AsistenciaService asistenciaService;
+    private final ObjectMapper objectMapper;
 
     public ViewController(UsuarioService usuarioService,
                           PlanService planService,
                           RutinaService rutinaService,
                           PagoService pagoService,
-                          AsistenciaService asistenciaService) {
+                          AsistenciaService asistenciaService,
+                          ObjectMapper objectMapper) {
         this.usuarioService = usuarioService;
         this.planService = planService;
         this.rutinaService = rutinaService;
         this.pagoService = pagoService;
         this.asistenciaService = asistenciaService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping("/")
@@ -54,7 +59,9 @@ public class ViewController {
         model.addAttribute("rutinasDestacadas", rutinaService.listarActivasDestacadas());
         model.addAttribute("ultimosPagos", pagoService.listarRecientes());
         model.addAttribute("proximosCobros", usuarioService.listarRenovacionesProximas());
-        model.addAttribute("dashboardStats", construirDashboardStats(rangoNormalizado));
+        DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado);
+        model.addAttribute("dashboardStats", dashboardStats);
+        model.addAttribute("dashboardStatsJson", serializarDashboardStats(dashboardStats));
         return "home/index";
     }
 
@@ -76,5 +83,13 @@ public class ViewController {
                 usuarioService.obtenerDistribucionPorPlan(),
                 usuarioService.obtenerAltasMensuales()
         );
+    }
+
+    private String serializarDashboardStats(DashboardStatsResponse dashboardStats) {
+        try {
+            return objectMapper.writeValueAsString(dashboardStats);
+        } catch (JsonProcessingException ex) {
+            throw new IllegalStateException("No se pudo serializar el estado inicial del dashboard", ex);
+        }
     }
 }
