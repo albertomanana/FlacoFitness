@@ -101,3 +101,12 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se reforzo la fuente de verdad del dashboard serializando el estado inicial a JSON explicito desde el controlador, evitando depender de la serializacion implicita del template.
 - Se endurecio la configuracion de Chart.js con fusion profunda de opciones y exclusion de escalas cartesianas en charts radiales, recuperando correctamente el grafico de barras de ingresos, el doughnut de usuarios por plan y las series temporales.
 - Se validaron el perfil `local` y el dashboard en ejecucion real con servidor limpio y captura headless, confirmando render de KPIs, charts y datos sembrados.
+
+### 2026-04-10
+
+- Se convirtio la ficha de usuario en un centro de control con score, segmento, resumen inteligente, estado de pagos, ultima asistencia, total de asistencias y rutinas asignadas.
+- Se anadio una timeline de usuario combinando asistencias, pagos recientes y el alta inicial del perfil sin duplicar estado en base de datos.
+- Se incorporaron accesos rapidos desde el detalle de usuario hacia pagos, asistencias, edicion y rutinas filtradas por usuario.
+- Se creo la ruta `/rutinas/usuario/{usuarioId}` para reutilizar la biblioteca de rutinas como vista contextual por miembro.
+- Se amplio la capa de servicios con un agregado de perfil que compone datos de asistencias, pagos y rutinas manteniendo el controlador limpio y la logica explicable en defensa.
+- Se valido en ejecucion real con perfil `local`: detalle de usuario, edicion, pagos por usuario, asistencias por usuario y rutinas por usuario responden correctamente.

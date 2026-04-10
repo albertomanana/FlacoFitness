@@ -142,3 +142,35 @@ Quiero un resultado final que haga que FlacoFitness se vea y se sienta como una 
 ### Resultado
 
 Se genero un prompt maestro reutilizable para auditoria, mejora integral y ejecucion progresiva del proyecto con foco tecnico, visual y academico.
+
+## Entrada 2026-04-08 (Rescate UI/UX)
+
+### Fecha
+
+2026-04-08
+
+### Contexto
+
+Rescate total de UI/UX y hardening funcional tras detectar graficos rotos en dashboard y solapamiento en vista de detalle de usuario.
+
+### Prompt
+
+MegaPrompt extendido solicitando correcciones criticas (Chart.js, solapamiento foto/resumen), mejora UI/UX x20 con coherencia visual, microinteracciones y drag & drop, refactor CSS mobile-first, y actualizacion documental completa. Se aprobo SortableJS como libreria de drag & drop.
+
+### Resultado
+
+- **Bugs corregidos**: Chart.js renderiza correctamente (deep-merge de opciones + exclusion de escalas en charts radiales + visibilidad inmediata de canvases). Solapamiento foto/resumen eliminado (sticky solo en foto card, resumen siempre estatico).
+- **CSS refactorizado**: 1400+ lineas reescritas a mobile-first con design tokens semanticos expandidos (accent/success/warning/error, escalas de tipografia y espaciado).
+- **Drag & drop**: KPI cards reordenables con SortableJS, persistencia en localStorage, soporte tactil.
+- **Microinteracciones**: shimmer loading en charts, hover/transform en detail items, focus-ring solo con teclado.
+- **Archivos modificados**: `styles.css`, `app.js`, `dashboard.js`, `tables.js`, `drag-drop.js` (nuevo), `footer.html`, `detail.html` (usuarios).
+- **Documentacion actualizada**: changelog-functional.md, decisions-log.md, backlog.md, setup-status.md, prompts-history.md.
+
+### Handoff Note
+
+Todo el trabajo quedo completo en esta sesion. No hay archivos a medio tocar. Para la siguiente iteracion:
+1. Verificar graficos con datos reales en MySQL (esta sesion uso H2 local).
+2. Hacer pruebas responsive en dispositivos fisicos (solo se verifico en viewport de navegador).
+3. Abordar items del backlog: CRUD de planes/roles, modo oscuro, pruebas unitarias.
+4. Considerar promocion a `main` si la defensa academica es inminente.
+

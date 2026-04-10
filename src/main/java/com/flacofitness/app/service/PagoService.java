@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -45,6 +46,22 @@ public class PagoService {
 
     public List<Pago> listarPorUsuario(Long usuarioId) {
         return pagoRepository.findByUsuarioId(usuarioId);
+    }
+
+    public List<Pago> listarRecientesPorUsuario(Long usuarioId) {
+        return pagoRepository.findTop5ByUsuarioIdOrderByFechaPagoDescIdDesc(usuarioId);
+    }
+
+    public Optional<Pago> buscarUltimoPorUsuario(Long usuarioId) {
+        return pagoRepository.findTopByUsuarioIdOrderByFechaPagoDescIdDesc(usuarioId);
+    }
+
+    public long contarPendientesPorUsuario(Long usuarioId) {
+        return pagoRepository.countByUsuarioIdAndEstado(usuarioId, EstadoPago.PENDIENTE);
+    }
+
+    public long contarVencidosPorUsuario(Long usuarioId) {
+        return pagoRepository.countByUsuarioIdAndEstado(usuarioId, EstadoPago.VENCIDO);
     }
 
     public long contarTodos() {

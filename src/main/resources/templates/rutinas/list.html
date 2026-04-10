@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Biblioteca de entrenamiento.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Rutinas'}, ${subtituloListado ?: 'Biblioteca de entrenamiento.'})}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -15,8 +15,8 @@
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Rutinas</span>
-                        <h2 class="ff-section-title">Biblioteca de rutinas</h2>
-                        <p class="ff-section-subtitle">Objetivo, tipo y asignaciones.</p>
+                        <h2 class="ff-section-title" th:text="${tituloListado ?: 'Biblioteca de rutinas'}">Biblioteca de rutinas</h2>
+                        <p class="ff-section-subtitle" th:text="${subtituloListado ?: 'Objetivo, tipo y asignaciones.'}">Objetivo, tipo y asignaciones.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
                 </section>

@@ -8,6 +8,7 @@ import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.RolRepository;
 import com.flacofitness.app.service.UserPhotoStorageService;
+import com.flacofitness.app.service.UsuarioControlCenterService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Sort;
@@ -28,15 +29,18 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final UsuarioControlCenterService usuarioControlCenterService;
     private final UserPhotoStorageService userPhotoStorageService;
     private final RolRepository rolRepository;
     private final PlanRepository planRepository;
 
     public UsuarioController(UsuarioService usuarioService,
+                             UsuarioControlCenterService usuarioControlCenterService,
                              UserPhotoStorageService userPhotoStorageService,
                              RolRepository rolRepository,
                              PlanRepository planRepository) {
         this.usuarioService = usuarioService;
+        this.usuarioControlCenterService = usuarioControlCenterService;
         this.userPhotoStorageService = userPhotoStorageService;
         this.rolRepository = rolRepository;
         this.planRepository = planRepository;
@@ -89,7 +93,9 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     public String verDetalle(@PathVariable Long id, Model model) {
-        model.addAttribute("usuario", usuarioService.buscarPorId(id));
+        Usuario usuario = usuarioService.buscarPorId(id);
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("controlCenter", usuarioControlCenterService.construirVista(usuario));
         return "usuarios/detail";
     }
 

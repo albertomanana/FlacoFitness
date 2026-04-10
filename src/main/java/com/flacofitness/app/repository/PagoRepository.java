@@ -25,6 +25,9 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     @EntityGraph(attributePaths = {"usuario", "plan"})
     List<Pago> findByUsuarioId(Long usuarioId);
 
+    @EntityGraph(attributePaths = {"usuario", "plan"})
+    List<Pago> findTop5ByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
+
     boolean existsByUsuarioIdAndFechaPago(Long usuarioId, LocalDate fechaPago);
 
     Optional<Pago> findTopByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
@@ -33,6 +36,8 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     List<Pago> findTop8ByOrderByFechaPagoDescIdDesc();
 
     long countByEstado(EstadoPago estado);
+
+    long countByUsuarioIdAndEstado(Long usuarioId, EstadoPago estado);
 
     @Query("select coalesce(sum(pago.monto), 0) from Pago pago where pago.estado = :estado")
     BigDecimal sumMontoByEstado(@Param("estado") EstadoPago estado);

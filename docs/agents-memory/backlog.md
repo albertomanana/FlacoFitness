@@ -6,7 +6,7 @@
 - Consolidar una primera version estable para defensa y valorar promocion controlada a `main`
 - Completar una demostracion mas rica con datos semilla funcionales para dashboard, pagos y asistencias
 - Validar el dashboard tambien sobre MySQL real con captura visual, para cerrar definitivamente la paridad entre `local-demo` y `mysql-real`
-- Continuar con bloque 3 y 4: enriquecer detalle de usuario y robustecer asignacion de rutinas con fallback sin drag and drop
+- Continuar con bloque 4: robustecer asignacion de rutinas con fallback sin drag and drop y mejorar gestion multiusuario
 
 ## Prioridad media
 
@@ -15,6 +15,7 @@
 - Implementar modo oscuro global respetando los design tokens ya definidos
 - Anadir pruebas unitarias basicas para los servicios principales
 - Anadir pruebas MVC o de integracion que cubran el render de la home y eviten regresiones silenciosas de Thymeleaf en el dashboard
+- Anadir pruebas MVC o de integracion que cubran el render del detalle de usuario y su timeline para evitar regresiones silenciosas de Thymeleaf
 - Reducir dependencia de CDNs: mover gradualmente librerias criticas (jQuery/DataTables/Sortable) a WebJars o recursos locales para demos offline
 - Explorar animacion de transicion entre paginas para una experiencia mas fluida
 

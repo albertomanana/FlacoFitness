@@ -38,6 +38,17 @@ public class RutinaController {
     @GetMapping
     public String listarRutinas(Model model) {
         model.addAttribute("rutinas", rutinaService.listarTodas());
+        model.addAttribute("tituloListado", "Rutinas");
+        model.addAttribute("subtituloListado", "Biblioteca de entrenamiento.");
+        return "rutinas/list";
+    }
+
+    @GetMapping("/usuario/{usuarioId}")
+    public String listarRutinasPorUsuario(@PathVariable Long usuarioId, Model model) {
+        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+        model.addAttribute("rutinas", rutinaService.listarPorUsuario(usuarioId));
+        model.addAttribute("tituloListado", "Rutinas del usuario");
+        model.addAttribute("subtituloListado", "Rutinas asignadas a " + construirNombreUsuario(usuario) + ".");
         return "rutinas/list";
     }
 
@@ -171,5 +182,12 @@ public class RutinaController {
                 .map(Usuario::getId)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    private String construirNombreUsuario(Usuario usuario) {
+        if (usuario.getApellidos() == null || usuario.getApellidos().isBlank()) {
+            return usuario.getNombre();
+        }
+        return usuario.getNombre() + " " + usuario.getApellidos();
     }
 }

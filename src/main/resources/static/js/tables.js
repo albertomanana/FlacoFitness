@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────────────────────────
+   FlacoFitness — DataTables Init (v3)
+   ───────────────────────────────────────────────────────────── */
+
 document.addEventListener("DOMContentLoaded", () => {
     initializeDataTables();
 });
@@ -11,6 +15,22 @@ function initializeDataTables() {
     window.ffTables = [];
 
     tables.forEach((table) => {
+        /* ── Guard: do NOT init DataTable on empty-state tables ──
+           When Thymeleaf renders the empty tbody with a single
+           td[colspan], DataTables interprets it as a data row
+           with fewer columns than the header, causing:
+           "Requested unknown parameter '1' for row 0, column 1"
+        */
+        const dataRows = table.querySelectorAll("tbody tr");
+        const isEmptyState =
+            dataRows.length === 1 &&
+            dataRows[0].querySelector("td[colspan]") !== null;
+
+        if (isEmptyState) {
+            /* Skip DataTable init — the empty message is already shown by Thymeleaf */
+            return;
+        }
+
         const headers = Array.from(table.querySelectorAll("thead th"));
         const nonOrderableTargets = [];
         const nonSearchableTargets = [];
@@ -37,12 +57,12 @@ function initializeDataTables() {
             columnDefs: [
                 {
                     targets: nonOrderableTargets,
-                    orderable: false
+                    orderable: false,
                 },
                 {
                     targets: nonSearchableTargets,
-                    searchable: false
-                }
+                    searchable: false,
+                },
             ],
             language: {
                 emptyTable: "No hay datos para mostrar",
@@ -52,14 +72,15 @@ function initializeDataTables() {
                 infoFiltered: "(filtrado de _MAX_ registros)",
                 lengthMenu: "Mostrar _MENU_ filas",
                 search: "Buscar",
-                searchPlaceholder: table.dataset.searchPlaceholder || "Buscar...",
+                searchPlaceholder:
+                    table.dataset.searchPlaceholder || "Buscar...",
                 paginate: {
                     first: "Primera",
                     previous: "Anterior",
                     next: "Siguiente",
-                    last: "Ultima"
-                }
-            }
+                    last: "Ultima",
+                },
+            },
         });
 
         const wrapper = table.closest(".dt-container");
@@ -75,5 +96,7 @@ function resolveDefaultOrder(table) {
     const orderColumn = Number(table.dataset.orderColumn ?? 0);
     const orderDirection = table.dataset.orderDirection || "asc";
 
-    return Number.isNaN(orderColumn) ? [[0, "asc"]] : [[orderColumn, orderDirection]];
+    return Number.isNaN(orderColumn)
+        ? [[0, "asc"]]
+        : [[orderColumn, orderDirection]];
 }
