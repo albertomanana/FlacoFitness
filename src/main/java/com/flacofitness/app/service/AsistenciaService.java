@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +34,18 @@ public class AsistenciaService {
 
     public List<Asistencia> listarPorUsuario(Long usuarioId) {
         return asistenciaRepository.findByUsuarioId(usuarioId);
+    }
+
+    public List<Asistencia> listarRecientesPorUsuario(Long usuarioId) {
+        return asistenciaRepository.findTop5ByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(usuarioId);
+    }
+
+    public long contarPorUsuario(Long usuarioId) {
+        return asistenciaRepository.countByUsuarioId(usuarioId);
+    }
+
+    public Optional<Asistencia> buscarUltimaPorUsuario(Long usuarioId) {
+        return asistenciaRepository.findTopByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(usuarioId);
     }
 
     public long contarTodas() {

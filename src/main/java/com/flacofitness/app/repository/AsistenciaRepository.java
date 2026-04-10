@@ -23,6 +23,14 @@ public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
     @EntityGraph(attributePaths = {"usuario"})
     List<Asistencia> findByUsuarioId(Long usuarioId);
 
+    long countByUsuarioId(Long usuarioId);
+
+    @EntityGraph(attributePaths = {"usuario"})
+    Optional<Asistencia> findTopByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(Long usuarioId);
+
+    @EntityGraph(attributePaths = {"usuario"})
+    List<Asistencia> findTop5ByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(Long usuarioId);
+
     long countByFecha(LocalDate fecha);
 
     @Query("select asistencia.fecha as fecha, count(asistencia) as total from Asistencia asistencia " +
