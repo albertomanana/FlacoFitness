@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentacion viva del proyecto
+    url: https://github.com/albertomanana/FlacoFitness/tree/main/docs/agents-memory
+    about: Revisa la memoria documental antes de abrir una incidencia o tarea.

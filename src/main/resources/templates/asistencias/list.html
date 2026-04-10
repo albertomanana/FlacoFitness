@@ -1,24 +1,129 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Asistencias')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
 
-<main class="container py-5">
-    <div class="mb-4">
-        <h1 class="mb-1">Asistencias</h1>
-        <p class="text-muted mb-0">Vista placeholder para control de acceso y registro de presencia.</p>
-    </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Asistencias'}, ${subtituloListado ?: 'Control de accesos.'})}"></div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="alert alert-light border mb-0" role="alert">
-                Aquí se integrará el listado de asistencias cuando el backend y el modelo estén implementados.
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Asistencias</span>
+                        <h2 class="ff-section-title">Registro de entradas</h2>
+                        <p class="ff-section-subtitle">Entradas recientes y detalle por usuario.</p>
+                    </div>
+                    <a class="btn btn-success" th:href="@{/asistencias/nueva}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"/>
+                            <line x1="5" y1="12" x2="19" y2="12"/>
+                        </svg>
+                        Nueva asistencia
+                    </a>
+                </section>
+
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Asistencias totales</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(asistencias)}">0</p>
+                            <p class="ff-stat-note">Registros totales</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Con hora de entrada</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[horaEntrada != null])}">0</p>
+                            <p class="ff-stat-note">Con hora</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Con observaciones</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[observaciones != null and !observaciones.isBlank()])}">0</p>
+                            <p class="ff-stat-note">Con observaciones</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header">
+                        <div class="ff-card-toolbar w-100">
+                            <div>
+                                <h3 class="ff-card-title">Historial de asistencias</h3>
+                                <p class="ff-card-subtitle">Busqueda, orden y detalle.</p>
+                            </div>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle"
+                                   data-ff-datatable
+                                   data-page-length="10"
+                                   data-order-column="0"
+                                   data-order-direction="desc"
+                                   data-search-placeholder="Buscar asistencia o usuario...">
+                                <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Hora</th>
+                                    <th>Usuario</th>
+                                    <th>Observaciones</th>
+                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody th:if="${not #lists.isEmpty(asistencias)}">
+                                <tr th:each="asistencia : ${asistencias}">
+                                    <td th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">Fecha</td>
+                                    <td th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">Hora</td>
+                                    <td>
+                                        <div class="ff-user-cell">
+                                            <img class="ff-avatar ff-avatar-sm"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(asistencia.usuario != null ? asistencia.usuario.fotoPath : null)}"
+                                                 alt="Avatar del usuario">
+                                            <div class="ff-user-cell-body ff-table-meta">
+                                                <span class="ff-table-primary"
+                                                      th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null && !asistencia.usuario.apellidos.isBlank() ? ' ' + asistencia.usuario.apellidos : '') : '-'}">Usuario</span>
+                                                <span class="ff-table-secondary"
+                                                      th:text="${asistencia.usuario != null ? asistencia.usuario.email : 'Sin email'}">email</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</td>
+                                    <td class="text-end">
+                                        <a class="btn btn-outline-secondary btn-sm ff-btn-icon"
+                                           th:href="@{/asistencias/{id}(id=${asistencia.id})}"
+                                           title="Ver detalle">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </a>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(asistencias)}">
+                                <tr>
+                                    <td colspan="5" class="text-center ff-empty-state">Todavia no hay asistencias registradas.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
-        </div>
+        </main>
     </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

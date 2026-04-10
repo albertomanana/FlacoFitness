@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Error 400')}"></head>
+<body class="ff-error-page">
+<main class="ff-error-shell">
+    <section class="ff-error-card ff-animate-in">
+        <a class="ff-error-brand" th:href="@{/}" aria-label="Ir al dashboard">
+            <img th:src="@{/img/logo.svg}" alt="FlacoFitness">
+        </a>
+
+        <span class="ff-error-code ff-error-code-warning">400</span>
+        <h1 class="ff-error-title" th:text="${errorTitle ?: 'Operacion no valida'}">Operacion no valida</h1>
+        <p class="ff-error-message"
+           th:text="${errorMessage ?: 'La solicitud no cumple las reglas del sistema.'}">
+            La solicitud no cumple las reglas del sistema.
+        </p>
+        <p class="ff-error-hint"
+           th:text="${errorHint ?: 'Revisa los datos del formulario o vuelve al modulo anterior.'}">
+            Revisa los datos del formulario o vuelve al modulo anterior.
+        </p>
+
+        <div class="ff-error-path" th:if="${errorPath != null}">
+            <span>Ruta:</span>
+            <code th:text="${errorPath}">/ruta</code>
+        </div>
+
+        <div class="ff-error-actions">
+            <a class="btn btn-success" th:href="@{/}">Ir al dashboard</a>
+            <a class="btn btn-outline-secondary" href="javascript:history.back()">Volver atras</a>
+        </div>
+    </section>
+</main>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
+</body>
+</html>

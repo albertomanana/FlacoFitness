@@ -34,16 +34,32 @@ flacofitness/
 
 ## Ejecución local
 
-1. Instala Java 17, Maven y MySQL.
+1. Instala Java 17 y MySQL.
 2. Crea un archivo `.env` a partir de `.env.example` y ajusta los valores.
 3. Crea la base de datos configurada en MySQL.
 4. Ejecuta la aplicación:
 
 ```bash
-mvn spring-boot:run
+./mvnw spring-boot:run
 ```
 
 La aplicación quedará disponible por defecto en `http://localhost:8080`.
+
+### Vista rápida sin MySQL
+
+Si solo quieres abrir la interfaz y navegar por el proyecto sin depender de MySQL, arranca con el perfil local:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+En Windows PowerShell:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
+```
+
+Esto levantará una base H2 en memoria y dejará la aplicación disponible en `http://localhost:8080`.
 
 ## Ejecución con Docker
 
@@ -74,6 +90,14 @@ Estrategia de ramas propuesta:
 - `chore/*`: tareas técnicas o mantenimiento
 
 El detalle operativo del flujo está documentado en `CONTRIBUTING.md` y `docs/agents-memory/repository-workflow.md`.
+
+Automatizaciones incluidas:
+
+- CI con compilación y test Maven en GitHub Actions
+- validación de nombre de rama y título de Pull Request
+- plantillas de issues y PR
+- autoetiquetado por rutas
+- actualizaciones automáticas con Dependabot
 
 ## Nota académica
 

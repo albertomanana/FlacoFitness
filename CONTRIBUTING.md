@@ -65,6 +65,14 @@ Cada Pull Request debería incluir:
 - pruebas realizadas
 - riesgos o puntos pendientes
 
+## Reglas de calidad recomendadas
+
+- no trabajar directamente sobre `main`
+- preferir ramas pequeñas y específicas
+- mantener los títulos de PR con formato `tipo(scope): resumen`
+- actualizar la documentación viva cuando cambie el contexto del proyecto
+- revisar que CI quede en verde antes de fusionar
+
 ## Documentación viva
 
 Si un cambio altera arquitectura, alcance, dominio o decisiones, actualizar también:

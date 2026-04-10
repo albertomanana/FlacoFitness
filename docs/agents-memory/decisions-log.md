@@ -1,17 +1,37 @@
 # Decisions Log
 
-## Cómo registrar una decisión
+## Como registrar una decision
 
-Usar una entrada por decisión técnica relevante. Mantener el registro en orden cronológico y reflejar tanto el motivo como el impacto esperado.
+Usar una entrada por decision tecnica relevante. Mantener el registro en orden cronologico y reflejar tanto el motivo como el impacto esperado.
 
 ## Plantilla
 
-| Fecha | Decisión | Motivo | Impacto |
+| Fecha | Decision | Motivo | Impacto |
 | --- | --- | --- | --- |
-| AAAA-MM-DD | Describir la decisión técnica | Explicar por qué se toma | Indicar consecuencias, beneficios o limitaciones |
+| AAAA-MM-DD | Describir la decision tecnica | Explicar por que se toma | Indicar consecuencias, beneficios o limitaciones |
 
 ## Registro inicial
 
-| Fecha | Decisión | Motivo | Impacto |
+| Fecha | Decision | Motivo | Impacto |
 | --- | --- | --- | --- |
-| 2026-03-23 | Adoptar una arquitectura monolítica MVC con Spring Boot y Thymeleaf | Se ajusta al alcance académico, facilita despliegue y simplifica la defensa del proyecto | Permite avanzar rápido con una base coherente y mantenible |
+| 2026-03-23 | Adoptar una arquitectura monolitica MVC con Spring Boot y Thymeleaf | Se ajusta al alcance academico, facilita despliegue y simplifica la defensa del proyecto | Permite avanzar rapido con una base coherente y mantenible |
+| 2026-03-24 | Adoptar flujo de ramas con `main` estable y `develop` como integracion | Mejora trazabilidad y reduce riesgo de mezclar trabajo inestable con entregas | Facilita colaboracion, revision y automatizacion del repositorio |
+| 2026-04-07 | Ejecutar una alineacion automatica del esquema de `rutinas` al arrancar | La base MySQL conservaba `rutinas.usuario_id` aunque el dominio ya usa una relacion `ManyToMany` con `usuario_rutina` | Se migran relaciones legacy sin perder datos y se evita el error 500 al crear o editar rutinas |
+| 2026-04-07 | Consolidar el dashboard con un endpoint agregado `/stats/dashboard` | El dashboard necesitaba mas metricas y series sin multiplicar llamadas ni complejidad en el frontend | Se simplifica la explicacion academica, se centraliza la lectura de KPIs y se mantiene Chart.js con JS ligero |
+| 2026-04-07 | Resolver la URL publica de fotos de usuario mediante un componente dedicado | Los `fotoPath` existentes podian llegar en formatos distintos y la UI no tenia un fallback uniforme | Se asegura la visualizacion correcta en lista, detalle y formulario, con avatar por defecto sin romper usuarios existentes |
+| 2026-04-07 | Integrar DataTables solo en listados clave y tabla reciente del dashboard | Se buscaba mejorar busqueda, ordenacion y paginacion sin convertir la aplicacion en SPA ni duplicar logica | Se gana usabilidad real con una libreria conocida y justificable, manteniendo Thymeleaf y controladores MVC intactos |
+| 2026-04-08 | Reestructurar el fragmento `footer` para inyectar scripts globales desde Thymeleaf | El fragmento anterior solo devolvia el nodo `<footer>`, dejando fuera Chart.js, DataTables y el JS propio | Los graficos, las tablas interactivas y las mejoras de UX se aplican de forma consistente en todas las vistas |
+| 2026-04-08 | Anadir `jQuery` como dependencia ligera de frontend para DataTables con Bootstrap 5 | La combinacion usada de DataTables y sus adaptadores Bootstrap/Responsive fallaba en navegador por `jQuery is not defined` | Se recupera la busqueda, paginacion y ordenacion sin rehacer los listados ni cambiar el stack MVC |
+| 2026-04-08 | Simplificar el copy del panel y reforzar el contraste del sidebar | La interfaz seguia mostrando demasiado texto explicativo y el menu lateral perdia legibilidad frente al fondo | El sistema visual queda mas cercano a un SaaS administrativo real, con mejor jerarquia visual y explicacion academica mas clara |
+| 2026-04-08 | Mover la subida de foto de usuario a la pantalla de edicion y dejar el detalle solo como consulta | La operacion de cambiar imagen pertenece al flujo de actualizacion del registro y el panel lateral del detalle estaba mezclando lectura con edicion | La UX queda mas coherente, la defensa academica es mas facil de explicar y la tarjeta de foto se puede mantener sticky sin interferencias |
+| 2026-04-08 | Centralizar el dashboard en `/stats/dashboard` con un parametro `rangoDias` | El panel principal ya necesitaba mas indicadores y series, pero mantener varios `fetch` hacia endpoints independientes complicaba la sincronizacion y la explicacion academica | Se simplifica el frontend, se controla mejor el filtro temporal y se mantiene una historia de datos mas clara para la demo |
+| 2026-04-08 | Implementar un `ControllerAdvice` especifico para vistas MVC | Las excepciones de negocio y de recurso inexistente estaban cayendo en paginas genericas o poco coherentes con la interfaz principal | La aplicacion gana continuidad visual, mensajes mas claros y una defensa tecnica mas ordenada alrededor del flujo MVC |
+| 2026-04-08 | Mostrar ayudas dinamicas en los formularios de pago y usuario con JavaScript ligero | Se buscaba mas claridad operativa sin introducir SPA, duplicar logica de negocio ni sobrecargar el stack | El usuario entiende mejor que el importe del pago se deriva del plan y puede validar la foto antes de subirla, manteniendo Thymeleaf como capa principal |
+| 2026-04-08 | Corregir Chart.js con deep-merge de opciones y exclusion de escalas en charts radiales | El spread superficial anterior sobrescribia la configuracion base de plugins y tooltips, y los canvases con opacity:0 (reveal animation) reportaban dimensiones 0x0 a Chart.js | Los graficos vuelven a renderizar en el dashboard, los doughnut charts no reciben escalas cartesianas invalidas y las chart-cards se muestran inmediatamente sin esperar al IntersectionObserver |
+| 2026-04-08 | Refactorizar todo el CSS a filosofia mobile-first con design tokens expandidos | La hoja de estilos anterior usaba reglas desktop-first con overrides descendentes, generando inconsistencias en movil y duplicacion de propiedades | Se reduce el tamano efectivo del CSS, se mejora la experiencia en movil, y se establece un sistema de tokens (espaciado, tipografia, colores semanticos) reutilizable para futuras vistas |
+| 2026-04-08 | Adoptar SortableJS para reordenacion de KPI cards en el dashboard | Se buscaba una interaccion drag & drop util y estable para la defensa academica sin reimplementar touch handling nativo | Se gana una demo interactiva de UX avanzada con ~15KB de dependencia justificable, persistencia en localStorage y fallback automatico si la libreria no carga |
+| 2026-04-09 | Deshabilitar `spring.sql.init.mode` por defecto en MySQL y dejar seeds solo en perfil `local` | Evitar que `data.sql` contamine la base real y genere discrepancias entre lo que se ve en UI y lo que existe en MySQL | Una sola verdad de datos por ejecucion; demo controlada en H2 local; defensa academica mas explicable |
+| 2026-04-09 | Servir Chart.js desde recurso local versionado y no depender del CDN para el dashboard | Los graficos no deben depender de conectividad externa (campus/proxy) y el asset debe ser estable para la defensa | Dashboard mas fiable y determinista sin cambiar stack ni convertir la app en SPA |
+| 2026-04-09 | UX de usuarios: fila clicable y detalle sin cambio de foto | Reducir ruido en listados (eliminar ojo) y mantener el detalle como vista de consulta; cambios se hacen desde editar | Navegacion mas rapida, interfaz mas limpia y coherente; flujo de edicion mas defendible |
+| 2026-04-09 | Serializar el estado inicial del dashboard a JSON explicito desde el controlador | La serializacion implicita del template hacia un `<script type=\"application/json\">` era mas fragil y dificultaba el debug del estado inicial | El dashboard arranca con datos renderizados por servidor y mantiene un contrato JSON claro y testeable |
+| 2026-04-09 | Tratar el fallo del dashboard como regresion de render de la home y no como bug aislado de Chart.js | La causa raiz real era una expresion Thymeleaf que rompía la vista al truncar referencias cortas de pago | Se recupera la home completa, vuelven a cargarse los charts y el sistema queda mas defendible porque el error queda explicado de extremo a extremo |

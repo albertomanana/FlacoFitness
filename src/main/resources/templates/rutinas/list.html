@@ -1,43 +1,160 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Rutinas')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('rutinas')}"></div>
 
-<main class="container py-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-        <div>
-            <h1 class="mb-1">Rutinas</h1>
-            <p class="text-muted mb-0">Listado placeholder para planificación de entrenamientos.</p>
-        </div>
-        <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
-    </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Rutinas', 'Biblioteca de entrenamiento.')}"></div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Usuario</th>
-                        <th>Objetivo</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td colspan="4" class="text-center text-muted py-4">
-                            Pendiente de implementar entidades, servicio y controlador.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Rutinas</span>
+                        <h2 class="ff-section-title">Biblioteca de rutinas</h2>
+                        <p class="ff-section-subtitle">Objetivo, tipo y asignaciones.</p>
+                    </div>
+                    <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
+                </section>
+
+                <section class="row g-3">
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Rutinas totales</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(rutinas)}">0</p>
+                            <p class="ff-stat-note">Rutinas creadas</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Activas</p>
+                            <p class="ff-stat-value" th:text="${rutinas.?[activa == true].size()}">0</p>
+                            <p class="ff-stat-note">Rutinas activas</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Personalizadas</p>
+                            <p class="ff-stat-value" th:text="${rutinas.?[tipoRutina != null and tipoRutina.name() == 'PERSONALIZADA'].size()}">0</p>
+                            <p class="ff-stat-note">Asignacion directa</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Con usuarios</p>
+                            <p class="ff-stat-value" th:text="${rutinas.?[usuarios != null and !usuarios.isEmpty()].size()}">0</p>
+                            <p class="ff-stat-note">Con usuarios</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card">
+                    <div class="ff-card-header">
+                        <div class="ff-card-toolbar w-100">
+                            <div>
+                                <h3 class="ff-card-title">Panel de rutinas</h3>
+                                <p class="ff-card-subtitle">Busqueda, orden y acciones.</p>
+                            </div>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle"
+                                   data-ff-datatable
+                                   data-page-length="10"
+                                   data-order-column="0"
+                                   data-order-direction="asc"
+                                   data-search-placeholder="Buscar rutina, objetivo o usuario...">
+                                <thead>
+                                <tr>
+                                    <th>Rutina</th>
+                                    <th>Objetivo</th>
+                                    <th>Usuarios</th>
+                                    <th>Fecha de creacion</th>
+                                    <th>Estado</th>
+                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody th:if="${not #lists.isEmpty(rutinas)}">
+                                <tr th:each="rutina : ${rutinas}">
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <span class="ff-table-primary" th:text="${rutina.nombre}">Nombre</span>
+                                            <span class="ff-table-secondary"
+                                                  th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin tipo'}">Tipo</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="ff-soft-badge"
+                                              th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : '-'}">Objetivo</span>
+                                    </td>
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <span class="ff-table-primary" th:text="${rutina.usuarios != null ? rutina.usuarios.size() : 0} + ' usuario(s)'">0 usuario(s)</span>
+                                            <span class="ff-table-secondary">
+                                                <th:block th:if="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">
+                                                    <th:block th:each="usuario, stat : ${rutina.usuarios}">
+                                                        <span th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '') + (stat.last ? '' : ', ')}">Usuario</span>
+                                                    </th:block>
+                                                </th:block>
+                                                <th:block th:unless="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">Sin usuarios asociados</th:block>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</td>
+                                    <td>
+                                        <span class="ff-status-badge"
+                                              th:classappend="${rutina.activa} ? ' ff-status-active' : ' ff-status-inactive'"
+                                              th:text="${rutina.activa} ? 'Activa' : 'Inactiva'">Activa</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
+                                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/rutinas/{id}(id=${rutina.id})}">Ver</a>
+                                            <a class="btn btn-outline-success btn-sm" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
+                                            <form th:if="${rutina.activa}"
+                                                  th:action="@{/rutinas/{id}/desactivar(id=${rutina.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-danger btn-sm"
+                                                        onclick="return confirm('¿Deseas desactivar esta rutina?');">
+                                                    Desactivar
+                                                </button>
+                                            </form>
+                                            <form th:unless="${rutina.activa}"
+                                                  th:action="@{/rutinas/{id}/activar(id=${rutina.id})}"
+                                                  method="post"
+                                                  class="d-inline">
+                                                <button type="submit"
+                                                        class="btn btn-outline-success btn-sm">
+                                                    Activar
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(rutinas)}">
+                                <tr>
+                                    <td colspan="6" class="text-center ff-empty-state">
+                                        Todavia no hay rutinas registradas.
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
-        </div>
+        </main>
     </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

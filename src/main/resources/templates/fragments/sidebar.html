@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="offcanvas-lg offcanvas-start ff-sidebar"
+       tabindex="-1"
+       id="appSidebar"
+       aria-labelledby="appSidebarLabel"
+       th:fragment="sidebar(activeSection)">
+
+    <div class="offcanvas-header">
+        <span class="ff-sidebar-eyebrow" id="appSidebarLabel">FlacoFitness</span>
+        <button type="button"
+                class="btn-close d-lg-none"
+                data-bs-dismiss="offcanvas"
+                data-bs-target="#appSidebar"
+                aria-label="Cerrar menu"></button>
+    </div>
+
+    <div class="offcanvas-body d-flex flex-column">
+        <div class="ff-sidebar-logo">
+            <div class="ff-sidebar-logo-panel">
+                <img th:src="@{/img/logo.svg}" alt="FlacoFitness" width="148" height="42">
+            </div>
+        </div>
+
+        <nav class="ff-nav-section" aria-label="Navegacion principal">
+            <span class="ff-nav-section-label">Operaciones</span>
+            <div class="ff-nav">
+                <a class="ff-nav-link"
+                   th:classappend="${activeSection == 'inicio'} ? ' is-active' : ''"
+                   th:attr="aria-current=${activeSection == 'inicio'} ? 'page' : null"
+                   th:href="@{/}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Dashboard</span>
+                </a>
+
+                <a class="ff-nav-link"
+                   th:classappend="${activeSection == 'usuarios'} ? ' is-active' : ''"
+                   th:attr="aria-current=${activeSection == 'usuarios'} ? 'page' : null"
+                   th:href="@{/usuarios}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Usuarios</span>
+                </a>
+
+                <a class="ff-nav-link"
+                   th:classappend="${activeSection == 'rutinas'} ? ' is-active' : ''"
+                   th:attr="aria-current=${activeSection == 'rutinas'} ? 'page' : null"
+                   th:href="@{/rutinas}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 20V10"/>
+                            <path d="M12 20V4"/>
+                            <path d="M6 20v-6"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Rutinas</span>
+                </a>
+
+                <a class="ff-nav-link"
+                   th:classappend="${activeSection == 'pagos'} ? ' is-active' : ''"
+                   th:attr="aria-current=${activeSection == 'pagos'} ? 'page' : null"
+                   th:href="@{/pagos}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                            <line x1="1" y1="10" x2="23" y2="10"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Pagos</span>
+                </a>
+
+                <a class="ff-nav-link"
+                   th:classappend="${activeSection == 'asistencias'} ? ' is-active' : ''"
+                   th:attr="aria-current=${activeSection == 'asistencias'} ? 'page' : null"
+                   th:href="@{/asistencias}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                            <path d="M9 16l2 2 4-4"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Asistencias</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="ff-sidebar-footer">
+            <div class="ff-sidebar-avatar">AD</div>
+            <div>
+                <span class="ff-sidebar-user-name">Administrador</span>
+                <span class="ff-sidebar-user-role">Workspace</span>
+            </div>
+        </div>
+    </div>
+</aside>
+</body>
+</html>

@@ -1,20 +1,35 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Error 500')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-error-page">
+<main class="ff-error-shell">
+    <section class="ff-error-card ff-animate-in">
+        <a class="ff-error-brand" th:href="@{/}" aria-label="Ir al dashboard">
+            <img th:src="@{/img/logo.svg}" alt="FlacoFitness">
+        </a>
 
-<main class="container py-5 text-center">
-    <div class="mx-auto" style="max-width: 720px;">
-        <span class="badge text-bg-danger mb-3">500</span>
-        <h1 class="display-6 fw-bold">Se produjo un error interno.</h1>
-        <p class="lead text-muted">
-            La aplicación aún se encuentra en fase de construcción. Revisa la configuración o vuelve a intentarlo.
+        <span class="ff-error-code ff-error-code-danger">500</span>
+        <h1 class="ff-error-title" th:text="${errorTitle ?: 'Se produjo un error interno'}">Se produjo un error interno</h1>
+        <p class="ff-error-message"
+           th:text="${errorMessage ?: 'La aplicacion no pudo completar la solicitud.'}">
+            La aplicacion no pudo completar la solicitud.
         </p>
-        <a class="btn btn-success" th:href="@{/}">Volver al inicio</a>
-    </div>
-</main>
+        <p class="ff-error-hint"
+           th:text="${errorHint ?: 'Puedes volver al dashboard o reintentar la operacion dentro de unos segundos.'}">
+            Puedes volver al dashboard o reintentar la operacion dentro de unos segundos.
+        </p>
 
-<div th:replace="~{fragments/footer :: footer}"></div>
+        <div class="ff-error-path" th:if="${errorPath != null}">
+            <span>Ruta:</span>
+            <code th:text="${errorPath}">/ruta</code>
+        </div>
+
+        <div class="ff-error-actions">
+            <a class="btn btn-success" th:href="@{/}">Ir al dashboard</a>
+            <a class="btn btn-outline-secondary" href="javascript:location.reload()">Reintentar</a>
+        </div>
+    </section>
+</main>
+<th:block th:replace="~{fragments/footer :: footer}"></th:block>
 </body>
 </html>

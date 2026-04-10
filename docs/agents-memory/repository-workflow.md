@@ -49,4 +49,5 @@ Definir un flujo de repositorio consistente para que el desarrollo de FlacoFitne
 
 - Repositorio local previsto con ramas base `main` y `develop`
 - Workflow de CI inicial orientado a compilación y test Maven
-- Pendiente definir políticas de protección cuando exista hosting remoto
+- Repositorio remoto publicado en GitHub
+- Pendiente activar manualmente protección de ramas en la interfaz de GitHub

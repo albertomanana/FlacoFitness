@@ -1,37 +1,171 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Detalle de usuario')}"></head>
-<body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
-<main class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="mb-1">Detalle de usuario</h1>
-            <p class="text-muted mb-0">Vista de referencia para la ficha individual del usuario.</p>
-        </div>
-        <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver al listado</a>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de usuario', 'Perfil del miembro.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Consulta</span>
+                        <h2 class="ff-section-title"
+                            th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</h2>
+                        <p class="ff-section-subtitle">Perfil, plan y actividad.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a class="btn btn-success" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
+                    </div>
+                </section>
+
+                <section class="row g-4 ff-detail-layout">
+                    <!-- Main content column -->
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-body d-flex flex-column gap-4">
+                                <div class="ff-detail-hero">
+                                    <div class="ff-photo-inline">
+                                        <span class="ff-avatar-ring">
+                                            <img class="ff-avatar ff-avatar-xl"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                 th:alt="${'Foto de ' + usuario.nombre}">
+                                        </span>
+                                        <div class="ff-photo-inline-body">
+                                            <h3 class="ff-detail-hero-title">Ficha del miembro</h3>
+                                            <p class="ff-detail-hero-text">Ficha del usuario.</p>
+                                        </div>
+                                    </div>
+                                    <span class="ff-status-badge"
+                                          th:classappend="${usuario.activo} ? ' ff-status-active' : ' ff-status-inactive'"
+                                          th:text="${usuario.activo} ? 'Activo' : 'Inactivo'">Activo</span>
+                                </div>
+
+                                <div class="ff-detail-grid">
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Nombre</span>
+                                        <span class="ff-detail-value" th:text="${usuario.nombre}">Nombre</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Apellidos</span>
+                                        <span class="ff-detail-value" th:text="${#strings.defaultString(usuario.apellidos, '-')}">Apellidos</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">DNI</span>
+                                        <span class="ff-detail-value" th:text="${#strings.defaultString(usuario.dni, '-')}">DNI</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Email</span>
+                                        <span class="ff-detail-value" th:text="${usuario.email}">correo@ejemplo.com</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Telefono</span>
+                                        <span class="ff-detail-value" th:text="${#strings.defaultString(usuario.telefono, '-')}">Telefono</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Fecha de nacimiento</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${usuario.fechaNacimiento != null ? #temporals.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Fecha de registro</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${usuario.fechaRegistro != null ? #temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Proximo pago</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Rol</span>
+                                        <span class="ff-detail-value" th:text="${usuario.rol != null ? usuario.rol.nombre : '-'}">Rol</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Plan</span>
+                                        <span class="ff-detail-value" th:text="${usuario.plan != null ? usuario.plan.nombre : '-'}">Plan</span>
+                                    </div>
+                                    <div class="ff-detail-item ff-detail-full">
+                                        <span class="ff-detail-label">Direccion</span>
+                                        <span class="ff-detail-value ff-detail-value-muted" th:text="${#strings.defaultString(usuario.direccion, '-')}">Direccion</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <!-- Side column — photo is sticky, summary is static -->
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <!-- Photo card — sticky on XL only -->
+                            <aside class="ff-surface-card" id="foto-panel">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Foto del usuario</h3>
+                                        <p class="ff-card-subtitle">Vista previa del avatar.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body d-flex flex-column gap-4">
+                                    <img class="ff-user-photo-preview"
+                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                         th:alt="${'Foto de ' + usuario.nombre}">
+
+                                    <p class="ff-user-photo-caption"
+                                       th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Foto personalizada.' : 'Avatar por defecto.'">
+                                        Avatar por defecto.
+                                    </p>
+                                    <div class="ff-inline-note">
+                                        La foto se actualiza desde <strong>Editar</strong> para mantener un flujo coherente.
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <!-- Summary card — always static, never overlaps -->
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Resumen</h3>
+                                        <p class="ff-card-subtitle">Estado y datos clave.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-side-list">
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Estado</span>
+                                            <span class="ff-side-value" th:text="${usuario.activo} ? 'Disponible para operar' : 'Baja logica aplicada'">Estado</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Plan actual</span>
+                                            <span class="ff-side-value" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan asignado'}">Plan</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Rol actual</span>
+                                            <span class="ff-side-value" th:text="${usuario.rol != null ? usuario.rol.nombre : 'Sin rol asignado'}">Rol</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Avatar</span>
+                                            <span class="ff-side-value"
+                                                  th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Imagen personalizada' : 'Avatar por defecto'">
+                                                Avatar por defecto
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
     </div>
-
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <dl class="row mb-0">
-                <dt class="col-sm-3">Nombre</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
-
-                <dt class="col-sm-3">Rol</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
-
-                <dt class="col-sm-3">Plan</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
-
-                <dt class="col-sm-3">Estado</dt>
-                <dd class="col-sm-9">Pendiente de datos reales</dd>
-            </dl>
-        </div>
-    </div>
-</main>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
+</div>
 </body>
 </html>

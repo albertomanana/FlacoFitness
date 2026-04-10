@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Formulario de pago')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('pagos')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar pago' : 'Nuevo pago', 'Registro de cobros.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Formulario</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar pago' : 'Alta de pago'">Formulario de pago</h2>
+                        <p class="ff-section-subtitle">Cobro manual con calculo automatico.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/pagos}">Volver</a>
+                </section>
+
+                <section class="row g-4 ff-form-layout">
+                    <div class="col-12 col-xl-8">
+                        <div class="ff-surface-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Registro del pago</h3>
+                                    <p class="ff-card-subtitle">Fecha, estado y relaciones.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <form th:object="${pago}"
+                                      data-payment-form
+                                      th:action="${modoEdicion} ? @{/pagos/{id}(id=${pago.id})} : @{/pagos}"
+                                      method="post">
+                                    <div th:if="${#fields.hasGlobalErrors()}" class="alert ff-alert ff-alert-danger" role="alert">
+                                        <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</div>
+                                    </div>
+
+                                    <div class="d-flex flex-column gap-4">
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Datos del movimiento</h4>
+                                                <p class="ff-form-section-text">Fecha, metodo y estado.</p>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-4">
+                                                    <label for="fechaPago" class="form-label">Fecha de pago</label>
+                                                    <input id="fechaPago" type="date" class="form-control" th:field="*{fechaPago}">
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPago')}"
+                                                         th:errors="*{fechaPago}">Error</div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="metodoPago" class="form-label">Metodo de pago</label>
+                                                    <select id="metodoPago" class="form-select" th:field="*{metodoPago}">
+                                                        <option value="">Seleccionar metodo</option>
+                                                        <option th:each="metodo : ${metodosPago}" th:value="${metodo}"
+                                                                th:text="${#strings.replace(metodo.name(), '_', ' ')}">
+                                                            Metodo
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('metodoPago')}"
+                                                         th:errors="*{metodoPago}">Error</div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label for="estado" class="form-label">Estado</label>
+                                                    <select id="estado" class="form-select" th:field="*{estado}">
+                                                        <option value="">Seleccionar estado</option>
+                                                        <option th:each="estado : ${estadosPago}" th:value="${estado}"
+                                                                th:text="${#strings.replace(estado.name(), '_', ' ')}">
+                                                            Estado
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('estado')}"
+                                                         th:errors="*{estado}">Error</div>
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Relacion con el sistema</h4>
+                                                <p class="ff-form-section-text">Usuario y plan del cobro.</p>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="usuario" class="form-label">Usuario</label>
+                                                    <select id="usuario" class="form-select" th:field="*{usuario.id}" data-payment-user>
+                                                        <option value="">Seleccionar usuario</option>
+                                                        <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
+                                                                th:attr="data-plan-id=${usuario.plan != null ? usuario.plan.id : ''},data-plan-nombre=${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'},data-plan-precio=${usuario.plan != null && usuario.plan.precioMensual != null ? usuario.plan.precioMensual : ''}"
+                                                                th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
+                                                            Usuario
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario.id')}"
+                                                         th:errors="*{usuario.id}">Error</div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="plan" class="form-label">Plan</label>
+                                                    <select id="plan" class="form-select" th:field="*{plan.id}" data-payment-plan>
+                                                        <option value="">Usar plan del usuario</option>
+                                                        <option th:each="plan : ${planes}" th:value="${plan.id}"
+                                                                th:attr="data-plan-nombre=${plan.nombre},data-plan-precio=${plan.precioMensual}"
+                                                                th:text="${plan.nombre}">
+                                                            Plan
+                                                        </option>
+                                                    </select>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('plan.id')}"
+                                                         th:errors="*{plan.id}">Error</div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-text">El importe y la referencia se completan automaticamente durante el guardado.</div>
+                                                </div>
+                                            </div>
+                                        </section>
+                                    </div>
+
+                                    <div class="ff-form-actions">
+                                        <p class="ff-form-actions-note">Si no eliges plan, se usa el del usuario.</p>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success">Guardar</button>
+                                            <a class="btn btn-outline-secondary" th:href="@{/pagos}">Cancelar</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <aside class="ff-surface-card ff-side-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Resumen</h3>
+                                    <p class="ff-card-subtitle">Reglas del cobro.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                    <div class="ff-side-list">
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Monto</span>
+                                            <span class="ff-side-value" data-payment-amount>Se deriva del precio mensual del plan</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Referencia</span>
+                                            <span class="ff-side-value">Se genera automaticamente en formato UUID</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Plan</span>
+                                            <span class="ff-side-value" data-payment-plan-name>Puede seleccionarse o heredarse desde el usuario</span>
+                                        </div>
+                                    </div>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

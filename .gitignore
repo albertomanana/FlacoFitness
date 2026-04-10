@@ -3,7 +3,6 @@ target/
 *.class
 *.log
 *.ctxt
-.mvn/
 
 # Spring Boot
 *.pid
@@ -12,7 +11,6 @@ target/
 
 # Entorno local
 .env
-application-local.properties
 
 # IntelliJ IDEA
 .idea/
@@ -32,3 +30,12 @@ tmp/
 temp/
 *.swp
 *.swo
+
+# Herramientas locales
+.tools/
+
+# Uploads locales
+uploads/*
+!uploads/users/
+uploads/users/*
+!uploads/users/.gitkeep

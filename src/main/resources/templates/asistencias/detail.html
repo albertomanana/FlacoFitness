@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle de asistencia')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('asistencias')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de asistencia', 'Detalle del registro.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Consulta</span>
+                        <h2 class="ff-section-title">Registro de asistencia</h2>
+                        <p class="ff-section-subtitle">Fecha, usuario y observaciones.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/asistencias}">Volver</a>
+                </section>
+
+                <section class="row g-4 ff-detail-layout">
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-body d-flex flex-column gap-4">
+                                <div class="ff-detail-hero">
+                                    <div>
+                                        <h3 class="ff-detail-hero-title">Resumen del acceso</h3>
+                                        <p class="ff-detail-hero-text">Detalle del registro.</p>
+                                    </div>
+                                    <span class="ff-soft-badge">Asistencia</span>
+                                </div>
+
+                                <div class="ff-detail-grid">
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Fecha</span>
+                                        <span class="ff-detail-value" th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Hora de entrada</span>
+                                        <span class="ff-detail-value" th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">Hora</span>
+                                    </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Usuario</span>
+                                        <span class="ff-detail-value"
+                                              th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null ? ' ' + asistencia.usuario.apellidos : '') : '-'}">Usuario</span>
+                                    </div>
+                                    <div class="ff-detail-item ff-detail-full">
+                                        <span class="ff-detail-label">Observaciones</span>
+                                        <span class="ff-detail-value ff-detail-value-muted"
+                                              th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <aside class="ff-surface-card ff-side-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Resumen</h3>
+                                    <p class="ff-card-subtitle">Datos clave.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-side-list">
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Entrada</span>
+                                        <span class="ff-side-value" th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : 'Sin hora registrada'}">Hora</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Usuario asociado</span>
+                                        <span class="ff-side-value"
+                                              th:text="${asistencia.usuario != null ? asistencia.usuario.nombre : 'Sin usuario'}">Usuario</span>
+                                    </div>
+                                    <div class="ff-side-item">
+                                        <span class="ff-side-label">Observaciones</span>
+                                        <span class="ff-side-value"
+                                              th:text="${asistencia.observaciones != null && !asistencia.observaciones.isBlank() ? 'Incluidas en el registro' : 'Sin observaciones'}">Estado</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

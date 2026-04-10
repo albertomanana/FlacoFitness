@@ -1,0 +1,176 @@
+package com.flacofitness.app.service;
+
+import com.flacofitness.app.exception.DuplicateResourceException;
+import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.PlanDistribucionStatsItem;
+import com.flacofitness.app.model.dto.UsuarioAltaMensualStatsItem;
+import com.flacofitness.app.model.entity.Plan;
+import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.repository.UsuarioRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+@Service
+@Transactional(readOnly = true)
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+
+    public UsuarioService(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    public List<Usuario> listarTodos() {
+        return usuarioRepository.findAll();
+    }
+
+    public List<Usuario> listarActivos() {
+        return usuarioRepository.findByActivoTrue();
+    }
+
+    public long contarTotal() {
+        return usuarioRepository.count();
+    }
+
+    public long contarActivos() {
+        return usuarioRepository.countByActivoTrue();
+    }
+
+    public List<Usuario> listarRecientes() {
+        return usuarioRepository.findTop8ByOrderByFechaRegistroDescIdDesc();
+    }
+
+    public List<Usuario> listarRenovacionesProximas() {
+        return usuarioRepository.findRenovacionesProximas(LocalDate.now()).stream()
+                .limit(6)
+                .toList();
+    }
+
+    public List<PlanDistribucionStatsItem> obtenerDistribucionPorPlan() {
+        return usuarioRepository.countGroupedByPlan().stream()
+                .map(item -> new PlanDistribucionStatsItem(
+                        item.getPlanNombre() == null || item.getPlanNombre().isBlank() ? "Sin plan" : item.getPlanNombre(),
+                        item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
+    }
+
+    public List<UsuarioAltaMensualStatsItem> obtenerAltasMensuales() {
+        return usuarioRepository.countAltasGroupedByMes().stream()
+                .map(item -> new UsuarioAltaMensualStatsItem(
+                        YearMonth.of(item.getAnio(), item.getMes()).toString(),
+                        item.getTotal() == null ? 0L : item.getTotal()))
+                .toList();
+    }
+
+    public long contarRenovacionesProximas(int dias) {
+        LocalDate fechaDesde = LocalDate.now();
+        LocalDate fechaHasta = fechaDesde.plusDays(Math.max(dias, 1));
+        return usuarioRepository.countByActivoTrueAndFechaProximoPagoBetween(fechaDesde, fechaHasta);
+    }
+
+    public Usuario buscarPorId(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
+    }
+
+    @Transactional
+    public Usuario guardar(Usuario usuario) {
+        validarEmailDuplicado(usuario.getEmail(), null);
+        inicializarFechaProximoPago(usuario);
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public Usuario actualizar(Long id, Usuario usuarioActualizado) {
+        Usuario usuarioExistente = buscarPorId(id);
+        validarEmailDuplicado(usuarioActualizado.getEmail(), id);
+        Long planAnteriorId = usuarioExistente.getPlan() != null ? usuarioExistente.getPlan().getId() : null;
+
+        usuarioExistente.setNombre(usuarioActualizado.getNombre());
+        usuarioExistente.setApellidos(usuarioActualizado.getApellidos());
+        usuarioExistente.setDni(usuarioActualizado.getDni());
+        usuarioExistente.setEmail(usuarioActualizado.getEmail());
+        usuarioExistente.setTelefono(usuarioActualizado.getTelefono());
+        usuarioExistente.setFechaNacimiento(usuarioActualizado.getFechaNacimiento());
+        usuarioExistente.setDireccion(usuarioActualizado.getDireccion());
+        if (usuarioActualizado.getFotoPath() != null) {
+            usuarioExistente.setFotoPath(usuarioActualizado.getFotoPath());
+        }
+        usuarioExistente.setActivo(usuarioActualizado.getActivo());
+        usuarioExistente.setRol(usuarioActualizado.getRol());
+        usuarioExistente.setPlan(usuarioActualizado.getPlan());
+        sincronizarFechaProximoPago(usuarioExistente, planAnteriorId);
+
+        return usuarioRepository.save(usuarioExistente);
+    }
+
+    @Transactional
+    public Usuario actualizarFotoPath(Long id, String fotoPath) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setFotoPath(fotoPath);
+        return usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void desactivar(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setActivo(false);
+        usuario.setFechaProximoPago(null);
+        usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public void activar(Long id) {
+        Usuario usuario = buscarPorId(id);
+        usuario.setActivo(true);
+        sincronizarFechaProximoPago(usuario, usuario.getPlan() != null ? usuario.getPlan().getId() : null);
+        usuarioRepository.save(usuario);
+    }
+
+    public Optional<Usuario> buscarPorEmail(String email) {
+        return usuarioRepository.findByEmail(email);
+    }
+
+    private void validarEmailDuplicado(String email, Long usuarioIdActual) {
+        usuarioRepository.findByEmail(email)
+                .filter(usuario -> !usuario.getId().equals(usuarioIdActual))
+                .ifPresent(usuario -> {
+                    throw new DuplicateResourceException("Ya existe un usuario con email: " + email);
+                });
+    }
+
+    private void inicializarFechaProximoPago(Usuario usuario) {
+        if (!Boolean.TRUE.equals(usuario.getActivo()) || usuario.getPlan() == null) {
+            usuario.setFechaProximoPago(null);
+            return;
+        }
+
+        if (usuario.getFechaProximoPago() == null) {
+            usuario.setFechaProximoPago(LocalDate.now().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
+        }
+    }
+
+    private void sincronizarFechaProximoPago(Usuario usuario, Long planAnteriorId) {
+        if (!Boolean.TRUE.equals(usuario.getActivo()) || usuario.getPlan() == null) {
+            usuario.setFechaProximoPago(null);
+            return;
+        }
+
+        Long planActualId = usuario.getPlan().getId();
+        boolean planCambio = !Objects.equals(planAnteriorId, planActualId);
+
+        if (planCambio || usuario.getFechaProximoPago() == null) {
+            usuario.setFechaProximoPago(LocalDate.now().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
+        }
+    }
+
+    private long obtenerFrecuenciaCobro(Plan plan) {
+        return Math.max(plan.getDuracionDias(), 1);
+    }
+}
