@@ -14,6 +14,9 @@ import java.util.Optional;
 
 public interface PagoRepository extends JpaRepository<Pago, Long> {
 
+        @EntityGraph(attributePaths = {"usuario", "plan"})
+        List<Pago> findAllByOrderByFechaVencimientoDescIdDesc();
+
     @Override
     @EntityGraph(attributePaths = {"usuario", "plan"})
     List<Pago> findAll();
@@ -25,15 +28,26 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     @EntityGraph(attributePaths = {"usuario", "plan"})
     List<Pago> findByUsuarioId(Long usuarioId);
 
+        @EntityGraph(attributePaths = {"usuario", "plan"})
+        List<Pago> findByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
+
+        @EntityGraph(attributePaths = {"usuario", "plan"})
+        List<Pago> findByEstadoOrderByFechaVencimientoDescIdDesc(EstadoPago estado);
+
+        @EntityGraph(attributePaths = {"usuario", "plan"})
+        List<Pago> findByUsuarioIdAndEstadoOrderByFechaVencimientoDescIdDesc(Long usuarioId, EstadoPago estado);
+
     @EntityGraph(attributePaths = {"usuario", "plan"})
-    List<Pago> findTop5ByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
+    List<Pago> findTop5ByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
 
-    boolean existsByUsuarioIdAndFechaPago(Long usuarioId, LocalDate fechaPago);
+    boolean existsByUsuarioIdAndFechaVencimiento(Long usuarioId, LocalDate fechaVencimiento);
 
-    Optional<Pago> findTopByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
+        boolean existsByUsuarioIdAndFechaVencimientoAndIdNot(Long usuarioId, LocalDate fechaVencimiento, Long id);
+
+    Optional<Pago> findTopByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
 
     @EntityGraph(attributePaths = {"usuario", "plan"})
-    List<Pago> findTop8ByOrderByFechaPagoDescIdDesc();
+    List<Pago> findTop8ByOrderByFechaVencimientoDescIdDesc();
 
     long countByEstado(EstadoPago estado);
 
@@ -49,7 +63,7 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
                                           @Param("mes") int mes);
 
     @Query("select year(pago.fechaPago) as anio, month(pago.fechaPago) as mes, coalesce(sum(pago.monto), 0) as total " +
-            "from Pago pago where pago.estado = :estado " +
+            "from Pago pago where pago.estado = :estado and pago.fechaPago is not null " +
             "group by year(pago.fechaPago), month(pago.fechaPago) " +
             "order by year(pago.fechaPago), month(pago.fechaPago)")
     List<IngresoPorMesView> sumMontoGroupedByMes(@Param("estado") EstadoPago estado);

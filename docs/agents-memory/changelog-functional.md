@@ -106,7 +106,26 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 - Se convirtio la ficha de usuario en un centro de control con score, segmento, resumen inteligente, estado de pagos, ultima asistencia, total de asistencias y rutinas asignadas.
 - Se anadio una timeline de usuario combinando asistencias, pagos recientes y el alta inicial del perfil sin duplicar estado en base de datos.
+
+- Se cerro el bloque 4 del shell con eliminacion del buscador global del topbar, notificaciones accionables y una pantalla de acceso por PIN con limite de intentos y bloqueo temporal.
+- Se reorganizo la barra lateral en secciones mas claras y se anadio una accion explicita para cerrar el acceso desde la sesion actual.
+- Se incorporo un interceptor MVC ligero para exigir PIN antes de navegar por el panel y un panel de alertas global alimentado por estados reales de pagos, renovaciones y asistencias.
+- Se valido el bloque 4 con compilacion Maven y pruebas en verde tras el refactor del shell y del acceso.
 - Se incorporaron accesos rapidos desde el detalle de usuario hacia pagos, asistencias, edicion y rutinas filtradas por usuario.
 - Se creo la ruta `/rutinas/usuario/{usuarioId}` para reutilizar la biblioteca de rutinas como vista contextual por miembro.
 - Se amplio la capa de servicios con un agregado de perfil que compone datos de asistencias, pagos y rutinas manteniendo el controlador limpio y la logica explicable en defensa.
 - Se valido en ejecucion real con perfil `local`: detalle de usuario, edicion, pagos por usuario, asistencias por usuario y rutinas por usuario responden correctamente.
+
+### 2026-04-13
+
+- Se cerro el bloque 2 de pagos con enfoque de coherencia financiera: el listado ahora admite filtros por usuario y estado sin romper DataTables ni rutas existentes.
+- Se reemplazo la accion redundante de "ver" por filas clicables hacia detalle de pago y se mantuvo el enlace explicito al usuario dentro de cada registro para navegacion contextual.
+- Se reforzo el formulario de pago con `fecha_vencimiento` visible y obligatoria, manteniendo `monto` derivado desde membresia/plan y referencia autogenerada.
+- Se incorporo asistencia en frontend para pagos: deteccion de plan desde usuario, resumen de monto estimado y sugerencia operativa de vencimiento para reducir errores manuales.
+- Se anadio validacion anti-duplicados por ciclo (`usuario + fecha_vencimiento`) en alta/edicion de pagos para eliminar la causa raiz de registros repetidos.
+- Se normalizo el estado financiero al guardar: un pago `PAGADO` autocompleta `fecha_pago` cuando falta y pagos no pagados no arrastran fecha de cobro inconsistentes.
+- Se validaron regresiones del modulo de pagos con compilacion Maven y pruebas de servicio (`PagoServiceTest`) en verde.
+- Se cerro el bloque 3 de rutinas eliminando `objetivo` del dominio, formularios, listados, detalle, vistas de usuario y semillas locales.
+- Se sustituyo el boton "Ver" por filas clicables en rutinas para homogeneizar la navegacion con asistencias y pagos.
+- Se simplifico el panel de rutinas en home y contextos de usuario para mostrar solo tipo, usuarios y estado util.
+- Se elimino el enum `ObjetivoRutina` y se actualizo la entidad `Rutina` para dejar el modelo mas limpio y defendible.

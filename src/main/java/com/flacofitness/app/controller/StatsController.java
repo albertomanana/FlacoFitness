@@ -90,7 +90,13 @@ public class StatsController {
                 asistenciaService.obtenerAsistenciasUltimosDias(rangoNormalizado),
                 pagoService.obtenerIngresosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
-                usuarioService.obtenerAltasMensuales()
+                usuarioService.obtenerAltasMensuales(),
+                // NUEVAS MÉTRICAS
+                asistenciaService.contarUsuariosActivos(),
+                asistenciaService.contarUsuariosInactivos(),
+                pagoService.contarUsuariosAlDia(),
+                pagoService.contarUsuariosConDeuda(),
+                pagoService.contarUsuariosConPagosVencidos()
         );
     }
 

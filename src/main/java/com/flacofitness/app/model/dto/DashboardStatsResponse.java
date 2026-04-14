@@ -18,6 +18,12 @@ public record DashboardStatsResponse(
         List<AsistenciaDiariaStatsItem> asistenciasRecientes,
         List<IngresoMensualStatsItem> ingresosMensualesSerie,
         List<PlanDistribucionStatsItem> usuariosPorPlan,
-        List<UsuarioAltaMensualStatsItem> altasRecientes
+        List<UsuarioAltaMensualStatsItem> altasRecientes,
+        // NUEVAS MÉTRICAS PARA ANÁLISIS
+        long usuariosAsistenciaActivos,
+        long usuariosAsistenciaInactivos,
+        long usuariosFinancierosAlDia,
+        long usuariosFinancierosConDeuda,
+        long usuariosFinancierosConVencidos
 ) {
 }

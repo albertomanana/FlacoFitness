@@ -10,7 +10,10 @@ import com.flacofitness.app.repository.RolRepository;
 import com.flacofitness.app.service.UserPhotoStorageService;
 import com.flacofitness.app.service.UsuarioControlCenterService;
 import com.flacofitness.app.service.UsuarioService;
+import com.flacofitness.app.service.RutinaService;
+import com.flacofitness.app.service.PagoService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,17 +36,23 @@ public class UsuarioController {
     private final UserPhotoStorageService userPhotoStorageService;
     private final RolRepository rolRepository;
     private final PlanRepository planRepository;
+    private final RutinaService rutinaService;
+    private final PagoService pagoService;
 
     public UsuarioController(UsuarioService usuarioService,
                              UsuarioControlCenterService usuarioControlCenterService,
                              UserPhotoStorageService userPhotoStorageService,
                              RolRepository rolRepository,
-                             PlanRepository planRepository) {
+                             PlanRepository planRepository,
+                             RutinaService rutinaService,
+                             PagoService pagoService) {
         this.usuarioService = usuarioService;
         this.usuarioControlCenterService = usuarioControlCenterService;
         this.userPhotoStorageService = userPhotoStorageService;
         this.rolRepository = rolRepository;
         this.planRepository = planRepository;
+        this.rutinaService = rutinaService;
+        this.pagoService = pagoService;
     }
 
     @GetMapping
@@ -96,6 +105,7 @@ public class UsuarioController {
         Usuario usuario = usuarioService.buscarPorId(id);
         model.addAttribute("usuario", usuario);
         model.addAttribute("controlCenter", usuarioControlCenterService.construirVista(usuario));
+        model.addAttribute("deudaTotalUsuario", pagoService.calcularDeudaTotalPorUsuario(id));
         return "usuarios/detail";
     }
 
@@ -158,6 +168,25 @@ public class UsuarioController {
 
         redirectAttributes.addFlashAttribute("mensajeExito", "Usuario actualizado correctamente.");
         return "redirect:/usuarios";
+    }
+
+    @GetMapping("/{id}/rutinas")
+    public String mostrarFormularioRutinas(@PathVariable Long id, Model model) {
+        Usuario usuario = usuarioService.buscarPorId(id);
+        model.addAttribute("usuario", usuario);
+        // We get all routines to allow assigning
+        model.addAttribute("todasLasRutinas", rutinaService.listarTodas());
+        model.addAttribute("rutinasAsignadas", rutinaService.listarPorUsuario(id));
+        return "usuarios/rutinas-form";
+    }
+
+    @PostMapping("/{id}/rutinas")
+    public String actualizarRutinas(@PathVariable Long id,
+                                    @RequestParam(name = "rutinaIds", required = false) List<Long> rutinaIds,
+                                    RedirectAttributes redirectAttributes) {
+        rutinaService.sincronizarRutinasDeUsuario(id, rutinaIds);
+        redirectAttributes.addFlashAttribute("mensajeExito", "Rutinas del usuario actualizadas correctamente.");
+        return "redirect:/usuarios/" + id;
     }
 
     @PostMapping("/{id}/desactivar")

@@ -2,16 +2,17 @@
 
 ## Prioridad alta
 
-- Exponer `fechaProximoPago` y el estado de renovacion automatica en las vistas de usuario y pagos
 - Consolidar una primera version estable para defensa y valorar promocion controlada a `main`
 - Completar una demostracion mas rica con datos semilla funcionales para dashboard, pagos y asistencias
 - Validar el dashboard tambien sobre MySQL real con captura visual, para cerrar definitivamente la paridad entre `local-demo` y `mysql-real`
-- Continuar con bloque 4: robustecer asignacion de rutinas con fallback sin drag and drop y mejorar gestion multiusuario
+- Ejecutar bloque 4: eliminar buscador global del topbar, activar notificaciones funcionales y definir autenticacion simple por PIN con limite de intentos
+- Revisar si el acceso PIN necesita persistencia de sesion mas larga o mensajes de bloqueo mas visibles en defensa
 
 ## Prioridad media
-
 - Anadir CRUD visual para planes y roles si se necesita una defensa mas completa del modelo administrativo
 - Crear diagramas de arquitectura y base de datos para la documentacion tecnica
+- Anadir pruebas MVC de pagos para filtros por usuario/estado y regla anti-duplicados por `fecha_vencimiento`
+- Anadir pruebas MVC o de integracion para rutinas sin objetivo y con fila clicable
 - Implementar modo oscuro global respetando los design tokens ya definidos
 - Anadir pruebas unitarias basicas para los servicios principales
 - Anadir pruebas MVC o de integracion que cubran el render de la home y eviten regresiones silenciosas de Thymeleaf en el dashboard

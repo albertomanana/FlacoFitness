@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
                         <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar rutina' : 'Alta de rutina'">Formulario de rutina</h2>
-                        <p class="ff-section-subtitle">Objetivo, tipo y usuarios.</p>
+                        <p class="ff-section-subtitle">Tipo y usuarios.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/rutinas}">Volver</a>
                 </section>
@@ -36,7 +36,7 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Definicion principal</h4>
-                                                <p class="ff-form-section-text">Nombre, objetivo, tipo y descripcion.</p>
+                                                <p class="ff-form-section-text">Nombre, tipo y descripcion.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-12">
@@ -45,18 +45,6 @@
                                                            placeholder="Rutina funcional intermedia">
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}"
                                                          th:errors="*{nombre}">Error</div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <label for="objetivo" class="form-label">Objetivo</label>
-                                                    <select id="objetivo" class="form-select" th:field="*{objetivo}">
-                                                        <option value="">Seleccionar objetivo</option>
-                                                        <option th:each="objetivo : ${objetivos}" th:value="${objetivo}"
-                                                                th:text="${#strings.replace(objetivo.name(), '_', ' ')}">
-                                                            Objetivo
-                                                        </option>
-                                                    </select>
-                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('objetivo')}"
-                                                         th:errors="*{objetivo}">Error</div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="tipoRutina" class="form-label">Tipo de rutina</label>

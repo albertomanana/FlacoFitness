@@ -23,8 +23,8 @@
             </div>
         </div>
 
-        <nav class="ff-nav-section" aria-label="Navegacion principal">
-            <span class="ff-nav-section-label">Operaciones</span>
+        <nav class="ff-nav-section" aria-label="Resumen general">
+            <span class="ff-nav-section-label">Visión general</span>
             <div class="ff-nav">
                 <a class="ff-nav-link"
                    th:classappend="${activeSection == 'inicio'} ? ' is-active' : ''"
@@ -41,7 +41,12 @@
                     </span>
                     <span class="ff-nav-label">Dashboard</span>
                 </a>
+            </div>
+        </nav>
 
+        <nav class="ff-nav-section" aria-label="Navegacion principal">
+            <span class="ff-nav-section-label">Operaciones</span>
+            <div class="ff-nav">
                 <a class="ff-nav-link"
                    th:classappend="${activeSection == 'usuarios'} ? ' is-active' : ''"
                    th:attr="aria-current=${activeSection == 'usuarios'} ? 'page' : null"
@@ -103,6 +108,25 @@
                     </span>
                     <span class="ff-nav-label">Asistencias</span>
                 </a>
+            </div>
+        </nav>
+
+        <nav class="ff-nav-section" aria-label="Acceso">
+            <span class="ff-nav-section-label">Acceso</span>
+            <div class="ff-nav">
+                <form th:action="@{/salir}" method="post" class="m-0">
+                    <button type="submit" class="ff-nav-link w-100 text-start">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 17l5-5-5-5"/>
+                                <path d="M15 12H3"/>
+                                <path d="M21 3v18"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Cerrar acceso</span>
+                    </button>
+                </form>
             </div>
         </nav>
 

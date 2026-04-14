@@ -48,7 +48,7 @@ class PagoServiceTest {
         Usuario usuario = crearUsuario(1L, fechaVencida);
 
         when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
-        when(pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaVencida)).thenReturn(false);
+        when(pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaVencida)).thenReturn(false);
         when(pagoRepository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         int pagosGenerados = pagoService.generarPagosMensuales();
@@ -60,7 +60,7 @@ class PagoServiceTest {
         assertThat(pagosGenerados).isEqualTo(1);
         assertThat(pagoGenerado.getUsuario()).isSameAs(usuario);
         assertThat(pagoGenerado.getPlan()).isSameAs(usuario.getPlan());
-        assertThat(pagoGenerado.getFechaPago()).isEqualTo(fechaVencida);
+        assertThat(pagoGenerado.getFechaVencimiento()).isEqualTo(fechaVencida);
         assertThat(pagoGenerado.getEstado()).isEqualTo(EstadoPago.PENDIENTE);
         assertThat(pagoGenerado.getMetodoPago()).isEqualTo(MetodoPago.TRANSFERENCIA);
         assertThat(usuario.getFechaProximoPago()).isEqualTo(fechaVencida.plusDays(usuario.getPlan().getDuracionDias()));
@@ -74,13 +74,13 @@ class PagoServiceTest {
 
         Pago ultimoPago = new Pago();
         ultimoPago.setId(10L);
-        ultimoPago.setFechaPago(ultimaFechaPago);
+        ultimoPago.setFechaVencimiento(ultimaFechaPago);
 
         LocalDate fechaEsperada = ultimaFechaPago.plusDays(usuario.getPlan().getDuracionDias());
 
         when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
-        when(pagoRepository.findTopByUsuarioIdOrderByFechaPagoDescIdDesc(usuario.getId())).thenReturn(Optional.of(ultimoPago));
-        when(pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaEsperada)).thenReturn(true);
+        when(pagoRepository.findTopByUsuarioIdOrderByFechaVencimientoDescIdDesc(usuario.getId())).thenReturn(Optional.of(ultimoPago));
+        when(pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaEsperada)).thenReturn(true);
 
         int pagosGenerados = pagoService.generarPagosMensuales();
 

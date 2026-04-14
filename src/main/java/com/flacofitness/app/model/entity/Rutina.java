@@ -1,6 +1,5 @@
 package com.flacofitness.app.model.entity;
 
-import com.flacofitness.app.model.enums.ObjetivoRutina;
 import com.flacofitness.app.model.enums.TipoRutina;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -47,11 +46,6 @@ public class Rutina {
     @CreationTimestamp
     @Column(name = "fecha_creacion", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaCreacion;
-
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private ObjetivoRutina objetivo;
 
     @NotNull
     @Enumerated(EnumType.STRING)

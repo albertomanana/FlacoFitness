@@ -59,6 +59,12 @@ public class ViewController {
         model.addAttribute("rutinasDestacadas", rutinaService.listarActivasDestacadas());
         model.addAttribute("ultimosPagos", pagoService.listarRecientes());
         model.addAttribute("proximosCobros", usuarioService.listarRenovacionesProximas());
+        // NUEVAS MÉTRICAS PARA DASHBOARD
+        model.addAttribute("usuariosAsistenciaActivos", asistenciaService.contarUsuariosActivos());
+        model.addAttribute("usuariosAsistenciaInactivos", asistenciaService.contarUsuariosInactivos());
+        model.addAttribute("usuariosFinancierosAlDia", pagoService.contarUsuariosAlDia());
+        model.addAttribute("usuariosFinancierosConDeuda", pagoService.contarUsuariosConDeuda());
+        model.addAttribute("usuariosFinancierosConVencidos", pagoService.contarUsuariosConPagosVencidos());
         DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado);
         model.addAttribute("dashboardStats", dashboardStats);
         model.addAttribute("dashboardStatsJson", serializarDashboardStats(dashboardStats));
@@ -81,7 +87,13 @@ public class ViewController {
                 asistenciaService.obtenerAsistenciasUltimosDias(rangoDias),
                 pagoService.obtenerIngresosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
-                usuarioService.obtenerAltasMensuales()
+                usuarioService.obtenerAltasMensuales(),
+                // NUEVAS MÉTRICAS
+                asistenciaService.contarUsuariosActivos(),
+                asistenciaService.contarUsuariosInactivos(),
+                pagoService.contarUsuariosAlDia(),
+                pagoService.contarUsuariosConDeuda(),
+                pagoService.contarUsuariosConPagosVencidos()
         );
     }
 

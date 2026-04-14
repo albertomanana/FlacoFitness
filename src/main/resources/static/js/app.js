@@ -49,7 +49,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         updateCurrentYear();
-        initializeTopbarSearch();
         initializeClickableRows();
         initializeRevealBlocks();
         initializePaymentFormAssistant();
@@ -58,27 +57,6 @@
     function updateCurrentYear() {
         document.querySelectorAll("[data-current-year]").forEach((element) => {
             element.textContent = String(new Date().getFullYear());
-        });
-    }
-
-    function initializeTopbarSearch() {
-        const searchInput = document.getElementById("topbarSearch");
-        if (!searchInput) {
-            return;
-        }
-
-        const syncSearch = utils.debounce((query) => {
-            if (!Array.isArray(window.ffTables) || window.ffTables.length === 0) {
-                return;
-            }
-
-            window.ffTables.forEach((tableInstance) => {
-                tableInstance.search(query).draw();
-            });
-        }, 120);
-
-        searchInput.addEventListener("input", (event) => {
-            syncSearch(event.target.value.trim());
         });
     }
 
@@ -148,36 +126,91 @@
 
         const userSelect = form.querySelector("[data-payment-user]");
         const planSelect = form.querySelector("[data-payment-plan]");
+        const dueDateInput = form.querySelector("[data-payment-due-date]");
+        const paymentDateInput = form.querySelector("[data-payment-date]");
+        const statusSelect = form.querySelector("[data-payment-status]");
         const amountTarget = document.querySelector("[data-payment-amount]");
         const planNameTarget = document.querySelector("[data-payment-plan-name]");
+        const duePreviewTarget = document.querySelector("[data-payment-due-preview]");
 
-        if (!userSelect || !planSelect || !amountTarget || !planNameTarget) {
+        if (!userSelect || !planSelect || !amountTarget || !planNameTarget || !dueDateInput || !paymentDateInput || !statusSelect || !duePreviewTarget) {
             return;
         }
+
+        const toIsoDate = (dateValue) => {
+            if (!dateValue) {
+                return "";
+            }
+
+            const date = new Date(dateValue);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        };
+
+        const sumarDias = (fechaIso, dias) => {
+            if (!fechaIso) {
+                return "";
+            }
+
+            const base = new Date(`${fechaIso}T00:00:00`);
+            if (Number.isNaN(base.getTime())) {
+                return "";
+            }
+
+            base.setDate(base.getDate() + Number(dias || 0));
+            return toIsoDate(base);
+        };
 
         const updateSummary = () => {
             const selectedPlanOption = planSelect.options[planSelect.selectedIndex];
             const selectedUserOption = userSelect.options[userSelect.selectedIndex];
             const explicitPlanId = planSelect.value;
 
-            const sourceOption = explicitPlanId ? selectedPlanOption : selectedUserOption;
+            if (!explicitPlanId && selectedUserOption?.dataset.planId) {
+                planSelect.value = selectedUserOption.dataset.planId;
+            }
+
+            const currentPlanOption = planSelect.options[planSelect.selectedIndex];
+            const sourceOption = currentPlanOption?.value ? currentPlanOption : selectedUserOption;
             const planName = sourceOption?.dataset.planNombre || "Se usara el plan asociado al usuario";
             const planPrice = sourceOption?.dataset.planPrecio;
+            const planDuration = sourceOption?.dataset.planDuracion;
+            const nextPayment = selectedUserOption?.dataset.nextPayment;
 
             planNameTarget.textContent = planName;
             amountTarget.textContent = planPrice
                 ? utils.formatCurrency(planPrice)
                 : "Se derivara automaticamente al guardar";
 
-            if (!explicitPlanId && selectedUserOption?.dataset.planId) {
-                planSelect.dataset.inheritedPlanId = selectedUserOption.dataset.planId;
-            } else {
-                delete planSelect.dataset.inheritedPlanId;
+            const suggestedDueDate = nextPayment || sumarDias(toIsoDate(new Date()), planDuration || 30);
+
+            if (!dueDateInput.value && suggestedDueDate) {
+                dueDateInput.value = suggestedDueDate;
+            }
+
+            duePreviewTarget.textContent = dueDateInput.value
+                ? utils.formatShortDate(dueDateInput.value)
+                : "Se propone segun plan y proximo cobro del usuario";
+
+            if (statusSelect.value === "PAGADO" && !paymentDateInput.value) {
+                paymentDateInput.value = toIsoDate(new Date());
+            }
+
+            if (statusSelect.value !== "PAGADO") {
+                paymentDateInput.value = "";
             }
         };
 
         userSelect.addEventListener("change", updateSummary);
         planSelect.addEventListener("change", updateSummary);
+        dueDateInput.addEventListener("change", updateSummary);
+        statusSelect.addEventListener("change", updateSummary);
         updateSummary();
     }
 })();

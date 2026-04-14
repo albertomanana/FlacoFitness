@@ -69,56 +69,56 @@ WHERE NOT EXISTS (SELECT 1 FROM usuarios WHERE email = 'jorge@demo.com');
 -- ──────────────────────────────────────────────
 -- Pagos demo
 -- ──────────────────────────────────────────────
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('MONTH', -2, CURRENT_DATE), 49.90, 'TARJETA', 'PAGADO', 'REF-C1',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('MONTH', -2, CURRENT_DATE), DATEADD('MONTH', -1, CURRENT_DATE), 49.90, 'TARJETA', 'PAGADO', 'REF-C1',
        (SELECT id FROM usuarios WHERE email = 'carlos@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Premium')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-C1');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('MONTH', -1, CURRENT_DATE), 49.90, 'TARJETA', 'PAGADO', 'REF-C2',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('MONTH', -1, CURRENT_DATE), CURRENT_DATE, 49.90, 'TARJETA', 'PAGADO', 'REF-C2',
        (SELECT id FROM usuarios WHERE email = 'carlos@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Premium')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-C2');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT CURRENT_DATE, 49.90, 'TARJETA', 'PENDIENTE', 'REF-C3',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT NULL, DATEADD('DAY', 15, CURRENT_DATE), 49.90, 'TARJETA', 'PENDIENTE', 'REF-C3',
        (SELECT id FROM usuarios WHERE email = 'carlos@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Premium')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-C3');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('MONTH', -2, CURRENT_DATE), 29.90, 'TRANSFERENCIA', 'PAGADO', 'REF-A1',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('MONTH', -2, CURRENT_DATE), DATEADD('MONTH', -1, CURRENT_DATE), 29.90, 'TRANSFERENCIA', 'PAGADO', 'REF-A1',
        (SELECT id FROM usuarios WHERE email = 'ana@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Basico')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-A1');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('MONTH', -1, CURRENT_DATE), 29.90, 'TRANSFERENCIA', 'PAGADO', 'REF-A2',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('MONTH', -1, CURRENT_DATE), CURRENT_DATE, 29.90, 'TRANSFERENCIA', 'PAGADO', 'REF-A2',
        (SELECT id FROM usuarios WHERE email = 'ana@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Basico')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-A2');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT CURRENT_DATE, 29.90, 'TRANSFERENCIA', 'PENDIENTE', 'REF-A3',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT NULL, DATEADD('DAY', 15, CURRENT_DATE), 29.90, 'TRANSFERENCIA', 'PENDIENTE', 'REF-A3',
        (SELECT id FROM usuarios WHERE email = 'ana@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Basico')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-A3');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('MONTH', -3, CURRENT_DATE), 49.90, 'EFECTIVO', 'PAGADO', 'REF-D1',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('MONTH', -3, CURRENT_DATE), DATEADD('MONTH', -2, CURRENT_DATE), 49.90, 'EFECTIVO', 'PAGADO', 'REF-D1',
        (SELECT id FROM usuarios WHERE email = 'david@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Premium')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-D1');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('MONTH', -2, CURRENT_DATE), 49.90, 'EFECTIVO', 'PAGADO', 'REF-D2',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('MONTH', -2, CURRENT_DATE), DATEADD('MONTH', -1, CURRENT_DATE), 49.90, 'EFECTIVO', 'PAGADO', 'REF-D2',
        (SELECT id FROM usuarios WHERE email = 'david@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Premium')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-D2');
 
-INSERT INTO pagos (fecha_pago, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
-SELECT DATEADD('DAY', -45, CURRENT_DATE), 29.90, 'TARJETA', 'VENCIDO', 'REF-M1',
+INSERT INTO pagos (fecha_pago, fecha_vencimiento, monto, metodo_pago, estado, referencia, usuario_id, plan_id)
+SELECT DATEADD('DAY', -45, CURRENT_DATE), DATEADD('DAY', -40, CURRENT_DATE), 29.90, 'TARJETA', 'VENCIDO', 'REF-M1',
        (SELECT id FROM usuarios WHERE email = 'maria@demo.com'),
        (SELECT id FROM planes WHERE nombre = 'Basico')
 WHERE NOT EXISTS (SELECT 1 FROM pagos WHERE referencia = 'REF-M1');
@@ -193,18 +193,18 @@ WHERE NOT EXISTS (
 -- ──────────────────────────────────────────────
 -- Rutinas demo
 -- ──────────────────────────────────────────────
-INSERT INTO rutinas (nombre, descripcion, objetivo, tipo_rutina, activa, fecha_creacion)
-SELECT 'Full Body Principiante', 'Rutina de cuerpo completo para usuarios que inician en el gimnasio', 'FUERZA', 'GENERAL', true,
+INSERT INTO rutinas (nombre, descripcion, tipo_rutina, activa, fecha_creacion)
+SELECT 'Full Body Principiante', 'Rutina de cuerpo completo para usuarios que inician en el gimnasio', 'GENERAL', true,
        DATEADD('MONTH', -3, CURRENT_TIMESTAMP)
 WHERE NOT EXISTS (SELECT 1 FROM rutinas WHERE nombre = 'Full Body Principiante');
 
-INSERT INTO rutinas (nombre, descripcion, objetivo, tipo_rutina, activa, fecha_creacion)
-SELECT 'HIIT Cardio', 'Entrenamiento intervalico de alta intensidad para quemar grasa', 'PERDIDA_GRASA', 'GENERAL', true,
+INSERT INTO rutinas (nombre, descripcion, tipo_rutina, activa, fecha_creacion)
+SELECT 'HIIT Cardio', 'Entrenamiento intervalico de alta intensidad para quemar grasa', 'GENERAL', true,
        DATEADD('MONTH', -2, CURRENT_TIMESTAMP)
 WHERE NOT EXISTS (SELECT 1 FROM rutinas WHERE nombre = 'HIIT Cardio');
 
-INSERT INTO rutinas (nombre, descripcion, objetivo, tipo_rutina, activa, fecha_creacion)
-SELECT 'Plan Carlos Premium', 'Rutina personalizada de hipertrofia para Carlos', 'HIPERTROFIA', 'PERSONALIZADA', true,
+INSERT INTO rutinas (nombre, descripcion, tipo_rutina, activa, fecha_creacion)
+SELECT 'Plan Carlos Premium', 'Rutina personalizada para Carlos', 'PERSONALIZADA', true,
        DATEADD('MONTH', -1, CURRENT_TIMESTAMP)
 WHERE NOT EXISTS (SELECT 1 FROM rutinas WHERE nombre = 'Plan Carlos Premium');
 

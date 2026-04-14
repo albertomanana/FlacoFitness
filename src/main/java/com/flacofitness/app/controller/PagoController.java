@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -37,8 +38,15 @@ public class PagoController {
     }
 
     @GetMapping
-    public String listarPagos(Model model) {
-        model.addAttribute("pagos", pagoService.listarTodos());
+    public String listarPagos(@RequestParam(name = "usuarioId", required = false) Long usuarioId,
+                              @RequestParam(name = "estado", required = false) EstadoPago estado,
+                              Model model) {
+        model.addAttribute("pagos", pagoService.listarFiltrados(usuarioId, estado));
+        cargarResumenFinanciero(model);
+        model.addAttribute("usuariosFiltro", usuarioService.listarTodos());
+        model.addAttribute("estadosFiltro", EstadoPago.values());
+        model.addAttribute("usuarioFiltroId", usuarioId);
+        model.addAttribute("estadoFiltro", estado);
         model.addAttribute("tituloListado", "Pagos");
         model.addAttribute("subtituloListado", "Gestión general de pagos registrados en el sistema.");
         return "pagos/list";
@@ -49,6 +57,8 @@ public class PagoController {
         Pago pago = new Pago();
         pago.setUsuario(new Usuario());
         pago.setPlan(new Plan());
+        pago.setEstado(EstadoPago.PENDIENTE);
+        pago.setFechaVencimiento(java.time.LocalDate.now().plusDays(30));
         cargarCatalogos(model);
         model.addAttribute("pago", pago);
         model.addAttribute("modoEdicion", false);
@@ -130,13 +140,39 @@ public class PagoController {
         return "redirect:/pagos";
     }
 
+    @PostMapping("/{id}/marcar-pagado")
+    public String marcarComoPagado(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            pagoService.marcarComoPagado(id);
+            redirectAttributes.addFlashAttribute("mensajeExito", "El cobro se ha registrado exitosamente. Estado actualizado a PAGADO.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al procesar el pago: " + e.getMessage());
+        }
+        return "redirect:/pagos";
+    }
+
     @GetMapping("/usuario/{usuarioId}")
     public String listarPagosPorUsuario(@PathVariable Long usuarioId, Model model) {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
-        model.addAttribute("pagos", pagoService.listarPorUsuario(usuarioId));
+        model.addAttribute("pagos", pagoService.listarFiltrados(usuarioId, null));
+        cargarResumenFinanciero(model);
+        model.addAttribute("usuariosFiltro", usuarioService.listarTodos());
+        model.addAttribute("estadosFiltro", EstadoPago.values());
+        model.addAttribute("usuarioFiltroId", usuarioId);
+        model.addAttribute("estadoFiltro", null);
         model.addAttribute("tituloListado", "Pagos del usuario");
         model.addAttribute("subtituloListado", "Historial de pagos de " + construirNombreUsuario(usuario) + ".");
         return "pagos/list";
+    }
+
+    private void cargarResumenFinanciero(Model model) {
+        model.addAttribute("ingresosTotales", pagoService.calcularIngresosTotales());
+        model.addAttribute("ingresosMesActual", pagoService.calcularIngresosMesActual());
+        model.addAttribute("pagosPendientes", pagoService.contarPagosPendientes());
+        model.addAttribute("pagosVencidos", pagoService.contarPagosVencidos());
+        model.addAttribute("usuariosAlDia", pagoService.contarUsuariosAlDia());
+        model.addAttribute("usuariosConDeuda", pagoService.contarUsuariosConDeuda());
+        model.addAttribute("usuariosConVencidos", pagoService.contarUsuariosConPagosVencidos());
     }
 
     private void cargarCatalogos(Model model) {

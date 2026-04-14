@@ -2,7 +2,6 @@ package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.entity.Rutina;
 import com.flacofitness.app.model.entity.Usuario;
-import com.flacofitness.app.model.enums.ObjetivoRutina;
 import com.flacofitness.app.model.enums.TipoRutina;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.UsuarioService;
@@ -143,7 +142,6 @@ public class RutinaController {
 
     private void cargarCatalogos(Model model) {
         model.addAttribute("usuarios", usuarioService.listarActivos());
-        model.addAttribute("objetivos", ObjetivoRutina.values());
         model.addAttribute("tiposRutina", TipoRutina.values());
     }
 

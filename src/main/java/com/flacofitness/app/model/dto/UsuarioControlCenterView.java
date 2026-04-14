@@ -13,6 +13,8 @@ public record UsuarioControlCenterView(
         Long diasSinAsistencia,
         boolean actividadReciente,
         String estadoActividad,
+        int rachaActual,
+        boolean enRiesgo,
         long pagosPendientes,
         long pagosVencidos,
         boolean pagosAlDia,

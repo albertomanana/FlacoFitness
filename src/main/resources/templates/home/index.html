@@ -49,19 +49,29 @@
                         <p class="ff-stat-note">Miembros en curso</p>
                     </a>
                     <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Asistencias de hoy</p>
-                        <p class="ff-stat-value" data-stat="asistenciasHoy" data-stat-kind="integer" th:text="${asistenciasHoy}">0</p>
-                        <p class="ff-stat-note">Check-ins del dia</p>
+                        <p class="ff-stat-label">Usuarios activos</p>
+                        <p class="ff-stat-value" data-stat="usuariosAsistenciaActivos" data-stat-kind="integer" th:text="${usuariosAsistenciaActivos}">0</p>
+                        <p class="ff-stat-note">Asistencia reciente</p>
+                    </a>
+                    <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Usuarios inactivos</p>
+                        <p class="ff-stat-value" data-stat="usuariosAsistenciaInactivos" data-stat-kind="integer" th:text="${usuariosAsistenciaInactivos}">0</p>
+                        <p class="ff-stat-note">Sin actividad (>14 días)</p>
                     </a>
                     <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Pagos pendientes</p>
-                        <p class="ff-stat-value" data-stat="pagosPendientes" data-stat-kind="integer" th:text="${pagosPendientes}">0</p>
-                        <p class="ff-stat-note">Cobros a seguir</p>
+                        <p class="ff-stat-label">Al día financiero</p>
+                        <p class="ff-stat-value" data-stat="usuariosFinancierosAlDia" data-stat-kind="integer" th:text="${usuariosFinancierosAlDia}">0</p>
+                        <p class="ff-stat-note">Estado OK</p>
                     </a>
                     <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Pagos vencidos</p>
-                        <p class="ff-stat-value" data-stat="pagosVencidos" data-stat-kind="integer" th:text="${pagosVencidos}">0</p>
-                        <p class="ff-stat-note">Requieren accion</p>
+                        <p class="ff-stat-label">Con deuda</p>
+                        <p class="ff-stat-value" data-stat="usuariosFinancierosConDeuda" data-stat-kind="integer" th:text="${usuariosFinancierosConDeuda}">0</p>
+                        <p class="ff-stat-note">Pagos pendientes</p>
+                    </a>
+                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Con vencidos</p>
+                        <p class="ff-stat-value" data-stat="usuariosFinancierosConVencidos" data-stat-kind="integer" th:text="${usuariosFinancierosConVencidos}">0</p>
+                        <p class="ff-stat-note">Acción requerida</p>
                     </a>
                     <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Ingresos del mes</p>
@@ -87,10 +97,29 @@
                     </a>
                 </section>
 
+                <!-- ALERTAS DE DASHBOARD -->
                 <section class="ff-surface-card ff-dashboard-alert d-none" data-dashboard-alert>
                     <div class="ff-card-body py-3">
                         <strong class="d-block mb-1">No se pudieron actualizar todas las metricas.</strong>
                         <span class="ff-table-secondary" data-dashboard-alert-body>Se mantienen los datos renderizados por el servidor para no interrumpir el uso del panel.</span>
+                    </div>
+                </section>
+
+                <section class="row g-3 ff-animate-in" th:if="${usuariosFinancierosConVencidos > 0 or usuariosAsistenciaInactivos > 0}">
+                    <div class="col-12">
+                        <div class="alert alert-warning border-warning" role="alert">
+                            <h6 class="alert-heading fw-bold"><i class="fas fa-exclamation-triangle"></i> Alertas del Sistema</h6>
+                            <div class="row">
+                                <div class="col-md-6" th:if="${usuariosFinancierosConVencidos > 0}">
+                                    <p class="mb-1"><strong>Pagos Vencidos:</strong> <span th:text="${usuariosFinancierosConVencidos}">0</span> usuarios requieren acción inmediata</p>
+                                    <a th:href="@{/pagos}" class="btn btn-sm btn-warning">Revisar Pagos</a>
+                                </div>
+                                <div class="col-md-6" th:if="${usuariosAsistenciaInactivos > 0}">
+                                    <p class="mb-1"><strong>Usuarios Inactivos:</strong> <span th:text="${usuariosAsistenciaInactivos}">0</span> sin asistencia reciente</p>
+                                    <a th:href="@{/asistencias}" class="btn btn-sm btn-warning">Ver Asistencias</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -228,6 +257,14 @@
 
                     <div class="col-xl-4">
                         <div class="ff-side-stack">
+                            <article class="ff-surface-card bg-danger-subtle border-danger border shadow-sm" th:if="${pagosVencidos > 0}">
+                                <div class="ff-card-body">
+                                    <h3 class="ff-card-title text-danger mb-2"><i class="fas fa-exclamation-triangle"></i> Riesgo de Morosidad</h3>
+                                    <p class="text-danger mb-0">Existen <strong th:text="${pagosVencidos}">0</strong> cuota(s) vencida(s) que requieren gestion inmediata.</p>
+                                    <a class="btn btn-sm btn-danger mt-3 fw-bold" th:href="@{/pagos}"><i class="fas fa-search-dollar"></i> Gestionar Cobros</a>
+                                </div>
+                            </article>
+                            
                             <article class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
@@ -265,7 +302,7 @@
                                            th:href="@{/rutinas/{id}(id=${rutina.id})}">
                                             <div>
                                                 <strong th:text="${rutina.nombre}">Rutina</strong>
-                                                <span th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : 'Sin objetivo'}">Objetivo</span>
+                                                <span th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin tipo'}">Tipo</span>
                                             </div>
                                             <span class="ff-kpi-highlight"
                                                   th:text="${rutina.usuarios != null ? rutina.usuarios.size() + ' usr.' : '0 usr.'}">0 usr.</span>

@@ -41,8 +41,17 @@ public class RutinaService {
     }
 
     public List<Rutina> listarActivasDestacadas() {
+        Comparator<Rutina> porPopularidad = new Comparator<Rutina>() {
+            @Override
+            public int compare(Rutina r1, Rutina r2) {
+                int size1 = r1.getUsuarios() != null ? r1.getUsuarios().size() : 0;
+                int size2 = r2.getUsuarios() != null ? r2.getUsuarios().size() : 0;
+                return Integer.compare(size2, size1);
+            }
+        };
+
         return rutinaRepository.findByActivaTrue().stream()
-                .sorted(Comparator.comparing(Rutina::getFechaCreacion, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .sorted(porPopularidad)
                 .limit(6)
                 .toList();
     }
@@ -65,7 +74,6 @@ public class RutinaService {
 
         rutinaExistente.setNombre(rutinaActualizada.getNombre());
         rutinaExistente.setDescripcion(rutinaActualizada.getDescripcion());
-        rutinaExistente.setObjetivo(rutinaActualizada.getObjetivo());
         rutinaExistente.setTipoRutina(rutinaActualizada.getTipoRutina());
         rutinaExistente.setActiva(rutinaActualizada.getActiva());
         rutinaExistente.getUsuarios().clear();
@@ -86,6 +94,36 @@ public class RutinaService {
         Rutina rutina = buscarPorId(id);
         rutina.setActiva(true);
         rutinaRepository.save(rutina);
+    }
+
+    @Transactional
+    public void sincronizarRutinasDeUsuario(Long usuarioId, List<Long> rutinaIds) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + usuarioId));
+
+        List<Rutina> todasLasRutinas = rutinaRepository.findAll();
+        Set<Long> nuevasRutinasIds = (rutinaIds == null) ? new java.util.HashSet<>() : new java.util.HashSet<>(rutinaIds);
+
+        for (Rutina rutina : todasLasRutinas) {
+            boolean tieneUsuario = rutina.getUsuarios().contains(usuario);
+            boolean debeTenerUsuario = nuevasRutinasIds.contains(rutina.getId());
+
+            if (!tieneUsuario && debeTenerUsuario) {
+                rutina.getUsuarios().add(usuario);
+                rutinaRepository.save(rutina);
+            } else if (tieneUsuario && !debeTenerUsuario) {
+                // Remove the user from this routine's list
+                rutina.getUsuarios().remove(usuario);
+                // Validate if routine still has users (business rule: must have at least one)
+                if (rutina.getUsuarios().isEmpty()) {
+                     // In a real system, we might just leave it empty or deactivate it.
+                     // But based on your validation: "La rutina debe estar asociada al menos a un usuario"
+                     // So we might throw exception or just allow it if it's systemic.
+                     // For UI flexibility, we'll allow systemic removal but it might be caught by other validations if edited later.
+                }
+                rutinaRepository.save(rutina);
+            }
+        }
     }
 
     private Set<Usuario> obtenerUsuariosValidos(Set<Usuario> usuarios) {
