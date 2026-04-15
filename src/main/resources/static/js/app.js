@@ -1,4 +1,10 @@
 (() => {
+    const SPLASH_SESSION_KEY = "flacofitness:splash-seen:v1";
+    const PAGE_TRANSITION_DELAY = 140;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    document.documentElement.classList.add("ff-motion-enabled");
+
     const utils = {
         formatInteger(value) {
             return new Intl.NumberFormat("es-ES", {
@@ -46,13 +52,155 @@
     };
 
     window.ffUtils = utils;
+    primeSplashVisibility();
 
     document.addEventListener("DOMContentLoaded", () => {
+        initializeSplashScreen();
+        initializePageTransitions();
         updateCurrentYear();
         initializeClickableRows();
         initializeRevealBlocks();
         initializePaymentFormAssistant();
     });
+
+    window.addEventListener("pageshow", () => {
+        document.body.classList.remove("ff-page-exiting");
+        revealCurrentPage();
+    });
+
+    function primeSplashVisibility() {
+        const splash = document.querySelector("[data-app-splash]");
+
+        if (!splash || !shouldSkipSplash()) {
+            return;
+        }
+
+        splash.classList.add("ff-app-splash-hidden");
+        document.body.classList.add("ff-splash-skipped");
+    }
+
+    function initializeSplashScreen() {
+        const splash = document.querySelector("[data-app-splash]");
+
+        if (!splash || shouldSkipSplash()) {
+            hideSplashImmediately(splash);
+            revealCurrentPage();
+            return;
+        }
+
+        document.body.classList.add("ff-splash-active");
+        splash.setAttribute("aria-hidden", "false");
+        rememberSplashSeen();
+
+        window.setTimeout(() => {
+            splash.classList.add("ff-app-splash-leaving");
+            document.body.classList.remove("ff-splash-active");
+            let finished = false;
+
+            const finish = () => {
+                if (finished) {
+                    return;
+                }
+                finished = true;
+                splash.classList.add("ff-app-splash-hidden");
+                splash.setAttribute("aria-hidden", "true");
+                revealCurrentPage();
+            };
+
+            splash.addEventListener("transitionend", finish, { once: true });
+            window.setTimeout(finish, 420);
+        }, 950);
+    }
+
+    function hideSplashImmediately(splash) {
+        if (!splash) {
+            return;
+        }
+
+        splash.classList.add("ff-app-splash-hidden");
+        splash.setAttribute("aria-hidden", "true");
+        document.body.classList.add("ff-splash-skipped");
+    }
+
+    function revealCurrentPage() {
+        window.requestAnimationFrame(() => {
+            document.body.classList.add("ff-page-ready");
+        });
+    }
+
+    function shouldSkipSplash() {
+        if (motionQuery.matches) {
+            return true;
+        }
+
+        try {
+            return window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "true";
+        } catch (error) {
+            return true;
+        }
+    }
+
+    function rememberSplashSeen() {
+        try {
+            window.sessionStorage.setItem(SPLASH_SESSION_KEY, "true");
+        } catch (error) {
+            // If sessionStorage is blocked, the splash remains harmlessly per page load.
+        }
+    }
+
+    function initializePageTransitions() {
+        document.addEventListener("click", (event) => {
+            const link = event.target.closest("a[href]");
+
+            if (!link || !shouldTransitionLink(event, link)) {
+                return;
+            }
+
+            event.preventDefault();
+            navigateWithTransition(link.href);
+        });
+    }
+
+    function shouldTransitionLink(event, link) {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return false;
+        }
+
+        if (link.target || link.download || link.hasAttribute("data-no-transition") || link.hasAttribute("data-bs-toggle")) {
+            return false;
+        }
+
+        const rawHref = link.getAttribute("href") || "";
+        if (rawHref.startsWith("#") || rawHref.startsWith("javascript:")) {
+            return false;
+        }
+
+        const url = new URL(link.href, window.location.href);
+
+        if (url.origin !== window.location.origin || !["http:", "https:"].includes(url.protocol)) {
+            return false;
+        }
+
+        const currentUrl = new URL(window.location.href);
+
+        if (url.pathname === currentUrl.pathname && url.search === currentUrl.search && url.hash) {
+            return false;
+        }
+
+        return url.href !== currentUrl.href;
+    }
+
+    function navigateWithTransition(destination) {
+        if (!destination || motionQuery.matches) {
+            window.location.href = destination;
+            return;
+        }
+
+        document.body.classList.add("ff-page-exiting");
+        window.setTimeout(() => {
+            window.location.href = destination;
+        }, PAGE_TRANSITION_DELAY);
+    }
 
     function updateCurrentYear() {
         document.querySelectorAll("[data-current-year]").forEach((element) => {
@@ -67,7 +215,7 @@
                     return;
                 }
 
-                window.location.href = row.dataset.rowHref;
+                navigateWithTransition(row.dataset.rowHref);
             });
 
             row.addEventListener("keydown", (event) => {
@@ -76,7 +224,7 @@
                 }
 
                 event.preventDefault();
-                window.location.href = row.dataset.rowHref;
+                navigateWithTransition(row.dataset.rowHref);
             });
         });
     }

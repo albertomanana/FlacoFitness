@@ -240,7 +240,6 @@
                                             <th>Plan</th>
                                             <th>Registro</th>
                                             <th>Estado</th>
-                                            <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                         </tr>
                                         </thead>
                                         <tbody th:if="${not #lists.isEmpty(ultimosUsuarios)}">
@@ -263,11 +262,10 @@
                                             <td th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</td>
                                             <td th:text="${usuario.fechaRegistro != null ? #temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</td>
                                             <td><span class="ff-status-badge" th:classappend="${usuario.activo} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${usuario.activo} ? 'Activo' : 'Inactivo'">Activo</span></td>
-                                            <td class="text-end"><a class="btn btn-outline-secondary btn-sm" th:href="@{/usuarios/{id}(id=${usuario.id})}">Ver</a></td>
                                         </tr>
                                         </tbody>
                                         <tbody th:if="${#lists.isEmpty(ultimosUsuarios)}">
-                                        <tr><td colspan="6" class="text-center ff-empty-state">No hay usuarios recientes para mostrar todavia.</td></tr>
+                                        <tr><td colspan="5" class="text-center ff-empty-state">No hay usuarios recientes para mostrar todavia.</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -376,11 +374,13 @@
                                     <th>Plan</th>
                                     <th>Monto</th>
                                     <th>Estado</th>
-                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(ultimosPagos)}">
-                                <tr th:each="pago : ${ultimosPagos}">
+                                <tr th:each="pago : ${ultimosPagos}"
+                                    class="ff-clickable-row"
+                                    tabindex="0"
+                                    th:attr="data-row-href=@{/pagos/{id}(id=${pago.id})}">
                                     <td th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">Fecha</td>
                                     <td>
                                         <div class="ff-user-cell">
@@ -397,11 +397,10 @@
                                     <td th:text="${pago.plan != null ? pago.plan.nombre : 'Sin plan'}">Plan</td>
                                     <td th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
                                     <td><span class="ff-status-badge" th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')" th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">Estado</span></td>
-                                    <td class="text-end"><a class="btn btn-outline-secondary btn-sm" th:href="@{/pagos/{id}(id=${pago.id})}">Ver</a></td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(ultimosPagos)}">
-                                <tr><td colspan="6" class="text-center ff-empty-state">No hay pagos recientes para mostrar.</td></tr>
+                                <tr><td colspan="5" class="text-center ff-empty-state">No hay pagos recientes para mostrar.</td></tr>
                                 </tbody>
                             </table>
                         </div>
