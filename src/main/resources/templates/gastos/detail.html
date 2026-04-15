@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle gasto')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('gastos')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de gasto', 'Trazabilidad financiera.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header ff-animate-in">
+                    <div><span class="ff-section-eyebrow">Finanzas</span><h2 class="ff-section-title" th:text="${gasto.concepto}">Detalle</h2></div>
+                    <div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/gastos}">Volver</a><a class="btn btn-success" th:href="@{/gastos/{id}/editar(id=${gasto.id})}">Editar</a></div>
+                </section>
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><strong>Categoria:</strong> <span th:text="${gasto.categoria != null ? #strings.replace(gasto.categoria.name(), '_', ' ') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Importe:</strong> <span th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span></div>
+                            <div class="col-md-6"><strong>Fecha:</strong> <span th:text="${gasto.fecha != null ? #temporals.format(gasto.fecha, 'dd/MM/yyyy') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Estado pago:</strong> <span th:text="${gasto.pagado ? 'Pagado' : 'Pendiente'}">-</span></div>
+                            <div class="col-md-6"><strong>Recurrente:</strong> <span th:text="${gasto.recurrente ? 'Si' : 'No'}">-</span></div>
+                            <div class="col-md-6"><strong>Frecuencia:</strong> <span th:text="${gasto.frecuencia != null ? #strings.replace(gasto.frecuencia.name(), '_', ' ') : 'No aplica'}">-</span></div>
+                            <div class="col-md-6"><strong>Proveedor:</strong> <span th:text="${#strings.defaultString(gasto.proveedor, '-')}">-</span></div>
+                            <div class="col-md-6"><strong>Staff:</strong> <span th:text="${gasto.staffResponsable != null ? gasto.staffResponsable.usuario.nombre : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Maquina:</strong> <span th:text="${gasto.maquina != null ? gasto.maquina.nombre : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Material:</strong> <span th:text="${gasto.material != null ? gasto.material.nombre : '-'}">-</span></div>
+                            <div class="col-12"><strong>Observaciones:</strong><p class="mb-0" th:text="${#strings.defaultString(gasto.observaciones, 'Sin observaciones')}">Sin observaciones</p></div>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

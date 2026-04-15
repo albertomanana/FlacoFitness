@@ -6,6 +6,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.flacofitness.app.repository.AsistenciaRepository;
 import com.flacofitness.app.repository.ClaseRepository;
+import com.flacofitness.app.repository.GastoRepository;
+import com.flacofitness.app.repository.MaquinaRepository;
+import com.flacofitness.app.repository.MaterialRepository;
 import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
@@ -61,6 +64,15 @@ class FlacoFitnessApplicationTests {
 
     @MockBean
     private ReservaSesionRepository reservaSesionRepository;
+
+        @MockBean
+        private GastoRepository gastoRepository;
+
+        @MockBean
+        private MaquinaRepository maquinaRepository;
+
+        @MockBean
+        private MaterialRepository materialRepository;
 
     @Test
     void contextLoads() {

@@ -43,7 +43,12 @@
                         <p class="ff-notification-menu-title">Centro de alertas</p>
                         <p class="ff-notification-menu-subtitle" th:text="${shellNotificationCount > 0 ? shellNotificationCount + ' alertas activas' : 'Sin alertas pendientes'}">Sin alertas pendientes</p>
                     </div>
-                    <span class="ff-notification-pill" th:if="${shellNotificationCount > 0}" th:text="${shellNotificationCount}">0</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="ff-notification-pill" th:if="${shellNotificationCount > 0}" th:text="${shellNotificationCount}">0</span>
+                        <form th:if="${shellNotificationCount > 0}" th:action="@{/notificaciones/marcar-leidas}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-link btn-sm p-0 ff-notification-clear-btn">Marcar leidas</button>
+                        </form>
+                    </div>
                 </div>
                 <div class="ff-notification-list" th:if="${shellNotifications != null and !#lists.isEmpty(shellNotifications)}">
                     <a class="ff-notification-item"

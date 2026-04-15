@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class AccessSessionService {
@@ -16,6 +18,9 @@ public class AccessSessionService {
     public static final String ATTR_TARGET_URI = "ff.access.targetUri";
 
     private final AccessSettings accessSettings;
+    private static final DateTimeFormatter LOCK_TIME_FORMATTER = DateTimeFormatter
+            .ofPattern("HH:mm")
+            .withZone(ZoneId.systemDefault());
 
     public AccessSessionService(AccessSettings accessSettings) {
         this.accessSettings = accessSettings;
@@ -177,6 +182,7 @@ public class AccessSessionService {
             return "El acceso quedo bloqueado temporalmente.";
         }
 
-        return "Demasiados intentos. El acceso quedo bloqueado hasta " + lockedUntil + ".";
+        return "Demasiados intentos. El acceso quedo bloqueado hasta "
+                + LOCK_TIME_FORMATTER.format(lockedUntil) + ".";
     }
 }

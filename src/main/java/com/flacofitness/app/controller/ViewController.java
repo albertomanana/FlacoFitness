@@ -10,6 +10,9 @@ import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.TrialService;
 import com.flacofitness.app.service.UsuarioService;
+import com.flacofitness.app.service.GastoService;
+import com.flacofitness.app.service.MaquinaService;
+import com.flacofitness.app.service.MaterialService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Controller;
@@ -29,6 +32,9 @@ public class ViewController {
     private final TrialService trialService;
     private final SesionClaseService sesionClaseService;
     private final MembresiaService membresiaService;
+    private final GastoService gastoService;
+    private final MaquinaService maquinaService;
+    private final MaterialService materialService;
     private final ObjectMapper objectMapper;
 
     public ViewController(UsuarioService usuarioService,
@@ -40,6 +46,9 @@ public class ViewController {
                           TrialService trialService,
                           SesionClaseService sesionClaseService,
                           MembresiaService membresiaService,
+                          GastoService gastoService,
+                          MaquinaService maquinaService,
+                          MaterialService materialService,
                           ObjectMapper objectMapper) {
         this.usuarioService = usuarioService;
         this.planService = planService;
@@ -50,6 +59,9 @@ public class ViewController {
         this.trialService = trialService;
         this.sesionClaseService = sesionClaseService;
         this.membresiaService = membresiaService;
+        this.gastoService = gastoService;
+        this.maquinaService = maquinaService;
+        this.materialService = materialService;
         this.objectMapper = objectMapper;
     }
 
@@ -87,6 +99,11 @@ public class ViewController {
         model.addAttribute("sesionesHoy", sesionClaseService.contarSesionesHoy());
         model.addAttribute("membresiasActivas", membresiaService.contarActivas());
         model.addAttribute("membresiasVencidas", membresiaService.contarVencidas());
+        model.addAttribute("gastoMesActual", gastoService.calcularGastoMesActual());
+        model.addAttribute("gastosCriticos", gastoService.contarCriticos());
+        model.addAttribute("gastosRecurrentesProximos", gastoService.contarRecurrentesProximos(7));
+        model.addAttribute("maquinasFueraServicio", maquinaService.contarFueraDeServicio());
+        model.addAttribute("materialesBajoStock", materialService.contarBajoStock());
         model.addAttribute("proximasSesiones", sesionClaseService.listarProximas());
         model.addAttribute("proximosTrials", trialService.listarProximos());
         DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado);

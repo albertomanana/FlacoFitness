@@ -21,11 +21,22 @@
                 <section class="ff-surface-card ff-animate-in">
                     <div class="ff-card-header"><div class="ff-card-toolbar w-100"><div><h3 class="ff-card-title">Agenda</h3><p class="ff-card-subtitle">Filtra por fecha y abre la sesion desde la fila.</p></div><form class="d-flex gap-2" th:action="@{/sesiones}" method="get"><input type="date" name="fecha" class="form-control form-control-sm" th:value="${fechaFiltro}"><button class="btn btn-outline-secondary btn-sm" type="submit">Filtrar</button><a class="btn btn-outline-secondary btn-sm" th:href="@{/sesiones}">Limpiar</a></form></div></div>
                     <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="sesionesTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="sesionesEstadoFiltro">Estado</label>
+                                <select id="sesionesEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="estado">
+                                    <option value="all">Todos</option>
+                                    <option value="programada">Programadas</option>
+                                    <option value="cancelada">Canceladas</option>
+                                    <option value="finalizada">Finalizadas</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-order-column="1" data-order-direction="desc" data-search-placeholder="Buscar sesion...">
+                            <table id="sesionesTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-order-column="1" data-order-direction="desc" data-search-placeholder="Buscar sesion...">
                                 <thead><tr><th>Clase</th><th>Fecha</th><th>Horario</th><th>Staff</th><th>Cupo</th><th>Estado</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>
                                 <tbody th:if="${not #lists.isEmpty(sesiones)}">
-                                <tr th:each="sesion : ${sesiones}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/sesiones/{id}(id=${sesion.id})}">
+                                <tr th:each="sesion : ${sesiones}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/sesiones/{id}(id=${sesion.id})},data-ff-row='1',data-ff-estado=${sesion.estado != null ? #strings.toLowerCase(#strings.replace(sesion.estado.name(), '_', '-')) : 'programada'}">
                                     <td><div class="ff-table-meta"><a class="ff-row-link ff-table-primary" th:href="@{/sesiones/{id}(id=${sesion.id})}" th:text="${sesion.clase != null ? sesion.clase.nombre : 'Sesion'}">Clase</a><span class="ff-table-secondary" th:text="${sesion.rutina != null ? sesion.rutina.nombre : 'Sin rutina vinculada'}">Rutina</span></div></td>
                                     <td th:text="${sesion.fecha != null ? #temporals.format(sesion.fecha, 'dd/MM/yyyy') : '-'}">Fecha</td>
                                     <td th:text="${(sesion.horaInicio != null ? #temporals.format(sesion.horaInicio, 'HH:mm') : '-') + (sesion.horaFin != null ? ' - ' + #temporals.format(sesion.horaFin, 'HH:mm') : '')}">Hora</td>

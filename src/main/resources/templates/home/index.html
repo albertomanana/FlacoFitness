@@ -143,6 +143,38 @@
                     </div>
                 </section>
 
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-3">
+                        <a th:href="@{/gastos}" class="ff-surface-card ff-stat-card text-decoration-none">
+                            <p class="ff-stat-label">Gasto del mes</p>
+                            <p class="ff-stat-value"
+                               th:text="${gastoMesActual != null ? #numbers.formatDecimal(gastoMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Control operativo interno</p>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <a th:href="@{/gastos}" class="ff-surface-card ff-stat-card text-decoration-none">
+                            <p class="ff-stat-label">Gastos criticos</p>
+                            <p class="ff-stat-value" th:text="${gastosCriticos}">0</p>
+                            <p class="ff-stat-note">Vencidos pendientes</p>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <a th:href="@{/maquinas}" class="ff-surface-card ff-stat-card text-decoration-none">
+                            <p class="ff-stat-label">Maquinas fuera de servicio</p>
+                            <p class="ff-stat-value" th:text="${maquinasFueraServicio}">0</p>
+                            <p class="ff-stat-note">Mantenimiento / averias</p>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <a th:href="@{/materiales}" class="ff-surface-card ff-stat-card text-decoration-none">
+                            <p class="ff-stat-label">Material bajo stock</p>
+                            <p class="ff-stat-value" th:text="${materialesBajoStock}">0</p>
+                            <p class="ff-stat-note">Reposicion recomendada</p>
+                        </a>
+                    </div>
+                </section>
+
                 <section class="row g-4 ff-animate-in">
                     <div class="col-xl-8">
                         <article class="ff-surface-card ff-chart-card h-100">

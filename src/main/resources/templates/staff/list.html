@@ -41,8 +41,28 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="staffTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="staffEstadoFiltro">Estado</label>
+                                <select id="staffEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="status">
+                                    <option value="all">Todos</option>
+                                    <option value="activo">Activos</option>
+                                    <option value="inactivo">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="staffRolFiltro">Rol</label>
+                                <select id="staffRolFiltro" class="form-select form-select-sm" data-ff-filter-key="rol">
+                                    <option value="all">Todos</option>
+                                    <option value="entrenador">Entrenador</option>
+                                    <option value="recepcion">Recepcion</option>
+                                    <option value="gerente">Gerente</option>
+                                    <option value="administracion">Administracion</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar staff...">
+                            <table id="staffTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar staff...">
                                 <thead>
                                 <tr>
                                     <th>Staff</th>
@@ -54,7 +74,7 @@
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(staff)}">
-                                <tr th:each="perfil : ${staff}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/staff/{id}(id=${perfil.id})}">
+                                <tr th:each="perfil : ${staff}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/staff/{id}(id=${perfil.id})},data-ff-row='1',data-ff-status=${perfil.activo == true ? 'activo' : 'inactivo'},data-ff-rol=${perfil.rolStaff != null ? #strings.toLowerCase(#strings.replace(perfil.rolStaff.name(), '_', '-')) : 'sin-rol'}">
                                     <td>
                                         <div class="ff-user-cell">
                                             <img class="ff-avatar" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(perfil.usuario != null ? perfil.usuario.fotoPath : null)}" alt="Avatar staff">

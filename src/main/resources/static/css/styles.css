@@ -413,6 +413,54 @@ a { text-decoration: none; }
     gap: 0.15rem;
 }
 
+.ff-nav-group {
+    margin-bottom: var(--space-3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.28);
+    overflow: hidden;
+}
+
+.ff-nav-group-toggle {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.65rem 0.85rem;
+    color: #dbeafe;
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 700;
+    border-bottom: 1px solid transparent;
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.ff-nav-group-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.ff-nav-group-toggle::after {
+    content: "▾";
+    float: right;
+    color: #93c5fd;
+    font-size: 0.75rem;
+    transform: translateY(1px);
+    transition: transform var(--transition-fast);
+}
+
+.ff-nav-group[open] .ff-nav-group-toggle {
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.ff-nav-group[open] .ff-nav-group-toggle::after {
+    transform: rotate(180deg);
+}
+
+.ff-nav-group .ff-nav {
+    padding: 0.35rem;
+}
+
 .ff-nav-link {
     position: relative;
     display: flex;
@@ -844,6 +892,18 @@ a { text-decoration: none; }
 .ff-notification-item-link {
     font-weight: 700;
     color: var(--ff-primary-dark);
+}
+
+.ff-notification-clear-btn {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ff-accent);
+    text-decoration: none;
+}
+
+.ff-notification-clear-btn:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
 }
 
 .ff-notification-empty {
@@ -2172,6 +2232,27 @@ textarea.form-control { min-height: 6rem; }
     border-color: rgba(22, 163, 74, 0.45);
     box-shadow: 0 0 0 3px var(--ff-primary-ring);
     background: #fff;
+}
+
+.ff-table-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+}
+
+.ff-table-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.ff-table-filter-label {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ff-text-soft);
+    font-weight: 700;
 }
 
 .ff-datatable-wrap .dt-info {

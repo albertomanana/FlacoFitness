@@ -63,8 +63,26 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="rutinasTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="rutinasEstadoFiltro">Estado</label>
+                                <select id="rutinasEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="status">
+                                    <option value="all">Todas</option>
+                                    <option value="activa">Activas</option>
+                                    <option value="inactiva">Inactivas</option>
+                                </select>
+                            </div>
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="rutinasTipoFiltro">Tipo</label>
+                                <select id="rutinasTipoFiltro" class="form-select form-select-sm" data-ff-filter-key="tipo">
+                                    <option value="all">Todos</option>
+                                    <option value="general">General</option>
+                                    <option value="personalizada">Personalizada</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle"
+                            <table id="rutinasTable" class="table table-hover align-middle"
                                    data-ff-datatable
                                    data-page-length="10"
                                    data-order-column="0"
@@ -83,7 +101,7 @@
                                 <tr th:each="rutina : ${rutinas}"
                                     class="ff-clickable-row"
                                     tabindex="0"
-                                    th:attr="data-row-href=@{/rutinas/{id}(id=${rutina.id})}">
+                                    th:attr="data-row-href=@{/rutinas/{id}(id=${rutina.id})},data-ff-row='1',data-ff-status=${rutina.activa ? 'activa' : 'inactiva'},data-ff-tipo=${rutina.tipoRutina != null ? #strings.toLowerCase(#strings.replace(rutina.tipoRutina.name(), '_', '-')) : 'general'}">
                                     <td>
                                         <div class="ff-table-meta">
                                             <span class="ff-table-primary" th:text="${rutina.nombre}">Nombre</span>
