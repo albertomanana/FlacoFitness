@@ -24,6 +24,12 @@ public record DashboardStatsResponse(
         long usuariosAsistenciaInactivos,
         long usuariosFinancierosAlDia,
         long usuariosFinancierosConDeuda,
-        long usuariosFinancierosConVencidos
+        long usuariosFinancierosConVencidos,
+        long staffActivos,
+        long trialsPendientes,
+        long trialsHoy,
+        long sesionesHoy,
+        long membresiasActivas,
+        long membresiasVencidas
 ) {
 }

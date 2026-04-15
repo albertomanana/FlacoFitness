@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Clases')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('clases')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Clases', 'Catalogo de actividades.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-section-header ff-animate-in"><div><span class="ff-section-eyebrow">Operaciones</span><h2 class="ff-section-title">Clases</h2><p class="ff-section-subtitle">Actividades reutilizables para programar sesiones.</p></div><a class="btn btn-success" th:href="@{/clases/nueva}">Nueva clase</a></section>
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header"><div><h3 class="ff-card-title">Catalogo de clases</h3><p class="ff-card-subtitle">Spinning, Yoga, HIIT y otras actividades.</p></div></div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar clase...">
+                                <thead><tr><th>Clase</th><th>Aforo sugerido</th><th>Estado</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>
+                                <tbody th:if="${not #lists.isEmpty(clases)}">
+                                <tr th:each="clase : ${clases}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/clases/{id}(id=${clase.id})}">
+                                    <td><div class="ff-table-meta"><a class="ff-row-link ff-table-primary" th:href="@{/clases/{id}(id=${clase.id})}" th:text="${clase.nombre}">Clase</a><span class="ff-table-secondary" th:text="${#strings.defaultString(clase.descripcion, 'Sin descripcion')}">Descripcion</span></div></td>
+                                    <td th:text="${clase.capacidadSugerida != null ? clase.capacidadSugerida + ' plazas' : '-'}">12 plazas</td>
+                                    <td><span class="ff-status-badge" th:classappend="${clase.activa == true} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${clase.activa == true} ? 'Activa' : 'Inactiva'">Activa</span></td>
+                                    <td class="text-end"><div class="d-inline-flex gap-2"><a class="btn btn-outline-success btn-sm" th:href="@{/clases/{id}/editar(id=${clase.id})}">Editar</a><form th:if="${clase.activa == true}" th:action="@{/clases/{id}/desactivar(id=${clase.id})}" method="post"><button class="btn btn-outline-danger btn-sm" type="submit">Desactivar</button></form><form th:unless="${clase.activa == true}" th:action="@{/clases/{id}/activar(id=${clase.id})}" method="post"><button class="btn btn-outline-success btn-sm" type="submit">Activar</button></form></div></td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(clases)}"><tr><td colspan="4" class="text-center ff-empty-state">No hay clases creadas.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

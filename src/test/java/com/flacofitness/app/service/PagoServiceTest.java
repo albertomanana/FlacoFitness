@@ -7,6 +7,7 @@ import com.flacofitness.app.model.enums.EstadoPago;
 import com.flacofitness.app.model.enums.MetodoPago;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
+import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +40,9 @@ class PagoServiceTest {
     @Mock
     private PlanRepository planRepository;
 
+    @Mock
+    private MembresiaUsuarioRepository membresiaUsuarioRepository;
+
     @InjectMocks
     private PagoService pagoService;
 
@@ -49,6 +54,8 @@ class PagoServiceTest {
 
         when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
         when(pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaVencida)).thenReturn(false);
+        when(membresiaUsuarioRepository.findTopByUsuarioIdAndEstadoInOrderByFechaInicioDescIdDesc(eq(usuario.getId()), any()))
+                .thenReturn(Optional.empty());
         when(pagoRepository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         int pagosGenerados = pagoService.generarPagosMensuales();

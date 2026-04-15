@@ -70,6 +70,10 @@ public class Pago {
     @JoinColumn(name = "plan_id")
     private Plan plan;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "membresia_usuario_id")
+    private MembresiaUsuario membresiaUsuario;
+
     @PrePersist
     @PreUpdate
     private void sincronizarDatosDerivados() {

@@ -3,11 +3,14 @@ package com.flacofitness.app.service;
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.dto.IngresoMensualStatsItem;
+import com.flacofitness.app.model.entity.MembresiaUsuario;
 import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoMembresia;
 import com.flacofitness.app.model.enums.EstadoPago;
 import com.flacofitness.app.model.enums.MetodoPago;
+import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
@@ -31,13 +34,16 @@ public class PagoService {
     private final PagoRepository pagoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PlanRepository planRepository;
+    private final MembresiaUsuarioRepository membresiaUsuarioRepository;
 
     public PagoService(PagoRepository pagoRepository,
                        UsuarioRepository usuarioRepository,
-                       PlanRepository planRepository) {
+                       PlanRepository planRepository,
+                       MembresiaUsuarioRepository membresiaUsuarioRepository) {
         this.pagoRepository = pagoRepository;
         this.usuarioRepository = usuarioRepository;
         this.planRepository = planRepository;
+        this.membresiaUsuarioRepository = membresiaUsuarioRepository;
     }
 
     public List<Pago> listarTodos() {
@@ -156,7 +162,9 @@ public class PagoService {
     public Pago guardar(Pago pago) {
         Usuario usuario = obtenerUsuarioValido(pago.getUsuario());
         pago.setUsuario(usuario);
-        pago.setPlan(resolverPlan(pago.getPlan(), usuario));
+        MembresiaUsuario membresia = resolverMembresia(pago.getMembresiaUsuario(), usuario, pago.getPlan());
+        pago.setMembresiaUsuario(membresia);
+        pago.setPlan(membresia != null ? membresia.getPlan() : resolverPlan(pago.getPlan(), usuario));
         validarDuplicadoCiclo(pago.getUsuario().getId(), pago.getFechaVencimiento(), null);
         normalizarEstadoYFechas(pago);
         return pagoRepository.save(pago);
@@ -166,7 +174,8 @@ public class PagoService {
     public Pago actualizar(Long id, Pago pagoActualizado) {
         Pago pagoExistente = buscarPorId(id);
         Usuario usuario = obtenerUsuarioValido(pagoActualizado.getUsuario());
-        Plan plan = resolverPlan(pagoActualizado.getPlan(), usuario);
+        MembresiaUsuario membresia = resolverMembresia(pagoActualizado.getMembresiaUsuario(), usuario, pagoActualizado.getPlan());
+        Plan plan = membresia != null ? membresia.getPlan() : resolverPlan(pagoActualizado.getPlan(), usuario);
 
         pagoExistente.setFechaVencimiento(pagoActualizado.getFechaVencimiento());
         pagoExistente.setFechaPago(pagoActualizado.getFechaPago());
@@ -174,6 +183,7 @@ public class PagoService {
         pagoExistente.setEstado(pagoActualizado.getEstado());
         pagoExistente.setUsuario(usuario);
         pagoExistente.setPlan(plan);
+        pagoExistente.setMembresiaUsuario(membresia);
         validarDuplicadoCiclo(pagoExistente.getUsuario().getId(), pagoExistente.getFechaVencimiento(), pagoExistente.getId());
         normalizarEstadoYFechas(pagoExistente);
 
@@ -240,6 +250,31 @@ public class PagoService {
         throw new BusinessValidationException("El pago debe estar asociado a un plan valido o a un usuario con plan asignado");
     }
 
+    private MembresiaUsuario resolverMembresia(MembresiaUsuario membresiaSeleccionada, Usuario usuario, Plan planSeleccionado) {
+        if (membresiaSeleccionada != null && membresiaSeleccionada.getId() != null) {
+            MembresiaUsuario membresia = membresiaUsuarioRepository.findById(membresiaSeleccionada.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Membresia de usuario no encontrada con id: " + membresiaSeleccionada.getId()));
+            if (!membresia.getUsuario().getId().equals(usuario.getId())) {
+                throw new BusinessValidationException("La membresia seleccionada no pertenece al usuario indicado");
+            }
+            return membresia;
+        }
+
+        Long planId = planSeleccionado != null ? planSeleccionado.getId() : null;
+        if (planId == null && usuario.getPlan() != null) {
+            planId = usuario.getPlan().getId();
+        }
+
+        Long finalPlanId = planId;
+        return membresiaUsuarioRepository
+                .findTopByUsuarioIdAndEstadoInOrderByFechaInicioDescIdDesc(
+                        usuario.getId(),
+                        List.of(EstadoMembresia.ACTIVA, EstadoMembresia.PENDIENTE, EstadoMembresia.PRUEBA))
+                .filter(membresia -> finalPlanId == null || membresia.getPlan().getId().equals(finalPlanId))
+                .orElse(null);
+    }
+
     private Plan obtenerPlanValido(Long planId) {
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new ResourceNotFoundException("Plan no encontrado con id: " + planId));
@@ -264,7 +299,9 @@ public class PagoService {
     private Pago crearPagoAutomatico(Usuario usuario, Plan plan, LocalDate fechaVencimiento) {
         Pago pago = new Pago();
         pago.setUsuario(usuario);
-        pago.setPlan(plan);
+        MembresiaUsuario membresia = resolverMembresia(null, usuario, plan);
+        pago.setMembresiaUsuario(membresia);
+        pago.setPlan(membresia != null ? membresia.getPlan() : plan);
         pago.setFechaVencimiento(fechaVencimiento);
         pago.setFechaPago(null); 
         pago.setMetodoPago(MetodoPago.TRANSFERENCIA);

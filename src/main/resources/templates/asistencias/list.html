@@ -167,6 +167,18 @@
                                                 </option>
                                             </select>
                                         </div>
+                                        <div>
+                                            <label class="form-label" for="sesionFiltro">Sesion</label>
+                                            <select id="sesionFiltro" name="sesionId" class="form-select">
+                                                <option value="">Todas las sesiones</option>
+                                                <option th:each="sesion : ${sesionesFiltro}"
+                                                        th:value="${sesion.id}"
+                                                        th:selected="${sesionFiltroId != null and sesionFiltroId == sesion.id}"
+                                                        th:text="${(sesion.clase != null ? sesion.clase.nombre : 'Sesion') + ' - ' + (sesion.fecha != null ? #temporals.format(sesion.fecha, 'dd/MM/yyyy') : '-')}">
+                                                    Sesion
+                                                </option>
+                                            </select>
+                                        </div>
                                         <div class="d-flex gap-2 flex-wrap">
                                             <button type="submit" class="btn btn-success">Aplicar filtros</button>
                                             <a class="btn btn-outline-secondary" th:href="@{/asistencias(mes=${mesFiltro})}">Limpiar</a>
@@ -243,6 +255,7 @@
                                     <th>Fecha</th>
                                     <th>Hora</th>
                                     <th>Usuario</th>
+                                    <th>Sesion</th>
                                     <th>Observaciones</th>
                                 </tr>
                                 </thead>
@@ -276,12 +289,19 @@
                                             </div>
                                         </div>
                                     </td>
+                                    <td>
+                                        <a th:if="${asistencia.sesionClase != null}"
+                                           class="ff-table-primary"
+                                           th:href="@{/sesiones/{id}(id=${asistencia.sesionClase.id})}"
+                                           th:text="${asistencia.sesionClase.clase != null ? asistencia.sesionClase.clase.nombre : 'Sesion'}">Sesion</a>
+                                        <span th:if="${asistencia.sesionClase == null}" class="ff-table-secondary">Check-in libre</span>
+                                    </td>
                                     <td th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(asistencias)}">
                                 <tr>
-                                    <td colspan="4" class="text-center ff-empty-state">No hay asistencias para el filtro actual.</td>
+                                    <td colspan="5" class="text-center ff-empty-state">No hay asistencias para el filtro actual.</td>
                                 </tr>
                                 </tbody>
                             </table>

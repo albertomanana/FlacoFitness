@@ -59,6 +59,17 @@
                                                          th:errors="*{tipoRutina}">Error</div>
                                                 </div>
                                                 <div class="col-md-6">
+                                                    <label for="staffResponsable" class="form-label">Staff responsable</label>
+                                                    <select id="staffResponsable" class="form-select" th:field="*{staffResponsable.id}">
+                                                        <option value="">Sin responsable</option>
+                                                        <option th:each="perfil : ${staffActivos}"
+                                                                th:value="${perfil.id}"
+                                                                th:text="${perfil.usuario != null ? perfil.usuario.nombre + (perfil.usuario.apellidos != null && !perfil.usuario.apellidos.isBlank() ? ' ' + perfil.usuario.apellidos : '') : 'Staff'}">
+                                                            Staff
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
                                                     <div class="form-check form-switch mt-md-4 pt-md-2">
                                                         <input id="activa" class="form-check-input" type="checkbox" th:field="*{activa}">
                                                         <label for="activa" class="form-check-label">Rutina activa</label>

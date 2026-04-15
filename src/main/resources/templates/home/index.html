@@ -48,6 +48,26 @@
                         <p class="ff-stat-value" data-stat="usuariosActivos" data-stat-kind="integer" th:text="${usuariosActivos}">0</p>
                         <p class="ff-stat-note">Miembros en curso</p>
                     </a>
+                    <a th:href="@{/staff}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Staff activo</p>
+                        <p class="ff-stat-value" data-stat="staffActivos" data-stat-kind="integer" th:text="${staffActivos}">0</p>
+                        <p class="ff-stat-note">Equipo operativo</p>
+                    </a>
+                    <a th:href="@{/membresias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Membresias activas</p>
+                        <p class="ff-stat-value" data-stat="membresiasActivas" data-stat-kind="integer" th:text="${membresiasActivas}">0</p>
+                        <p class="ff-stat-note">Contratos vigentes</p>
+                    </a>
+                    <a th:href="@{/trials}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Trials pendientes</p>
+                        <p class="ff-stat-value" data-stat="trialsPendientes" data-stat-kind="integer" th:text="${trialsPendientes}">0</p>
+                        <p class="ff-stat-note">Pipeline comercial</p>
+                    </a>
+                    <a th:href="@{/sesiones}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Sesiones hoy</p>
+                        <p class="ff-stat-value" data-stat="sesionesHoy" data-stat-kind="integer" th:text="${sesionesHoy}">0</p>
+                        <p class="ff-stat-note">Agenda diaria</p>
+                    </a>
                     <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios activos</p>
                         <p class="ff-stat-value" data-stat="usuariosAsistenciaActivos" data-stat-kind="integer" th:text="${usuariosAsistenciaActivos}">0</p>

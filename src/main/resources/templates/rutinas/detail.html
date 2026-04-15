@@ -101,6 +101,17 @@
                                                   th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd MMM yyyy') : '-'}">Fecha</span>
                                         </div>
                                     </div>
+                                    <div class="ff-side-item d-flex flex-column gap-1 border-top pt-3 mt-2">
+                                        <span class="ff-side-label text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Staff responsable</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-user-tie text-success"></i>
+                                            <a class="ff-side-value"
+                                               th:if="${rutina.staffResponsable != null}"
+                                               th:href="@{/staff/{id}(id=${rutina.staffResponsable.id})}"
+                                               th:text="${rutina.staffResponsable.usuario != null ? rutina.staffResponsable.usuario.nombre : 'Staff'}">Staff</a>
+                                            <span class="ff-side-value" th:if="${rutina.staffResponsable == null}">Sin responsable</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </aside>

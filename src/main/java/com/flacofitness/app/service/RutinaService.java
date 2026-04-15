@@ -3,8 +3,10 @@ package com.flacofitness.app.service;
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Rutina;
+import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.RutinaRepository;
+import com.flacofitness.app.repository.StaffPerfilRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +24,14 @@ public class RutinaService {
 
     private final RutinaRepository rutinaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final StaffPerfilRepository staffPerfilRepository;
 
-    public RutinaService(RutinaRepository rutinaRepository, UsuarioRepository usuarioRepository) {
+    public RutinaService(RutinaRepository rutinaRepository,
+                         UsuarioRepository usuarioRepository,
+                         StaffPerfilRepository staffPerfilRepository) {
         this.rutinaRepository = rutinaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.staffPerfilRepository = staffPerfilRepository;
     }
 
     public List<Rutina> listarTodas() {
@@ -64,6 +70,7 @@ public class RutinaService {
     @Transactional
     public Rutina guardar(Rutina rutina) {
         rutina.setUsuarios(obtenerUsuariosValidos(rutina.getUsuarios()));
+        rutina.setStaffResponsable(obtenerStaffOpcional(rutina.getStaffResponsable()));
         return rutinaRepository.save(rutina);
     }
 
@@ -76,6 +83,7 @@ public class RutinaService {
         rutinaExistente.setDescripcion(rutinaActualizada.getDescripcion());
         rutinaExistente.setTipoRutina(rutinaActualizada.getTipoRutina());
         rutinaExistente.setActiva(rutinaActualizada.getActiva());
+        rutinaExistente.setStaffResponsable(obtenerStaffOpcional(rutinaActualizada.getStaffResponsable()));
         rutinaExistente.getUsuarios().clear();
         rutinaExistente.getUsuarios().addAll(usuarios);
 
@@ -156,5 +164,13 @@ public class RutinaService {
         }
 
         return new LinkedHashSet<>(usuariosValidados);
+    }
+
+    private StaffPerfil obtenerStaffOpcional(StaffPerfil staffPerfil) {
+        if (staffPerfil == null || staffPerfil.getId() == null) {
+            return null;
+        }
+        return staffPerfilRepository.findById(staffPerfil.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Staff no encontrado con id: " + staffPerfil.getId()));
     }
 }

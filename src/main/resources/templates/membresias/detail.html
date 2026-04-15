@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle membresia')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('membresias')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle membresia', 'Oferta comercial.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header"><div><span class="ff-section-eyebrow">Membresia</span><h2 class="ff-section-title" th:text="${plan.nombre}">Plan</h2><p class="ff-section-subtitle" th:text="${#strings.defaultString(plan.descripcion, 'Catalogo comercial')}">Catalogo</p></div><div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/membresias}">Volver</a><a class="btn btn-success" th:href="@{/membresias/{id}/editar(id=${plan.id})}">Editar</a></div></section>
+                <section class="row g-4">
+                    <div class="col-lg-8">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-header"><h3 class="ff-card-title">Datos del plan</h3></div>
+                            <div class="ff-card-body">
+                                <div class="ff-detail-grid">
+                                    <div class="ff-detail-item"><span>Tipo</span><strong th:text="${plan.tipoMembresia != null ? #strings.replace(plan.tipoMembresia.name(), '_', ' ') : 'MENSUAL'}">Tipo</strong></div>
+                                    <div class="ff-detail-item"><span>Precio</span><strong th:text="${plan.precioMensual != null ? #numbers.formatDecimal(plan.precioMensual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">Precio</strong></div>
+                                    <div class="ff-detail-item"><span>Duracion</span><strong th:text="${plan.duracionDias != null ? plan.duracionDias + ' dias' : '-'}">30 dias</strong></div>
+                                    <div class="ff-detail-item"><span>Estado</span><strong th:text="${plan.activo == true ? 'Activa' : 'Inactiva'}">Activa</strong></div>
+                                    <div class="ff-detail-item ff-detail-item-wide"><span>Beneficios</span><strong th:text="${#strings.defaultString(plan.beneficios, '-')}">Beneficios</strong></div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-lg-4">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-header"><h3 class="ff-card-title">Uso reciente</h3></div>
+                            <div class="ff-card-body">
+                                <div th:if="${#lists.isEmpty(contratosRecientes)}" class="ff-empty-inline">Aun no hay contratos recientes.</div>
+                                <div class="ff-side-list" th:if="${not #lists.isEmpty(contratosRecientes)}">
+                                    <a class="ff-side-list-item" th:each="contrato : ${contratosRecientes}" th:if="${contrato.plan != null and contrato.plan.id == plan.id}" th:href="@{/usuarios/{id}/membresias(id=${contrato.usuario.id})}">
+                                        <strong th:text="${contrato.usuario != null ? contrato.usuario.nombre : 'Usuario'}">Usuario</strong>
+                                        <span th:text="${contrato.estado}">ACTIVA</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

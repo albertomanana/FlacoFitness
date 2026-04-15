@@ -56,6 +56,17 @@
                                                          th:errors="*{usuario.id}">Error</div>
                                                 </div>
                                                 <div class="col-12">
+                                                    <label for="sesionClase" class="form-label">Sesion vinculada (opcional)</label>
+                                                    <select id="sesionClase" class="form-select" th:field="*{sesionClase.id}">
+                                                        <option value="">Check-in libre</option>
+                                                        <option th:each="sesion : ${sesiones}"
+                                                                th:value="${sesion.id}"
+                                                                th:text="${(sesion.clase != null ? sesion.clase.nombre : 'Sesion') + ' - ' + (sesion.fecha != null ? #temporals.format(sesion.fecha, 'dd/MM/yyyy') : '-') + ' ' + (sesion.horaInicio != null ? #temporals.format(sesion.horaInicio, 'HH:mm') : '')}">
+                                                            Sesion
+                                                        </option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-12">
                                                     <label for="observaciones" class="form-label">Observaciones</label>
                                                     <textarea id="observaciones" class="form-control" rows="4" th:field="*{observaciones}"
                                                               placeholder="Notas opcionales sobre la asistencia"></textarea>

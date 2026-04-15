@@ -23,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.FetchType;
 
 @Entity
 @Table(name = "usuarios")

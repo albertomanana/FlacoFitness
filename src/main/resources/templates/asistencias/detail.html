@@ -47,6 +47,15 @@
                                             <span th:unless="${asistencia.usuario != null}">-</span>
                                         </span>
                                     </div>
+                                    <div class="ff-detail-item">
+                                        <span class="ff-detail-label">Sesion</span>
+                                        <span class="ff-detail-value">
+                                            <a th:if="${asistencia.sesionClase != null}"
+                                               th:href="@{/sesiones/{id}(id=${asistencia.sesionClase.id})}"
+                                               th:text="${asistencia.sesionClase.clase != null ? asistencia.sesionClase.clase.nombre : 'Sesion'}">Sesion</a>
+                                            <span th:unless="${asistencia.sesionClase != null}">Check-in libre</span>
+                                        </span>
+                                    </div>
                                     <div class="ff-detail-item ff-detail-full">
                                         <span class="ff-detail-label">Observaciones</span>
                                         <span class="ff-detail-value ff-detail-value-muted"

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar trial' : 'Nuevo trial')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('trials')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar trial' : 'Nuevo trial', 'Alta rapida de lead.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header"><div><span class="ff-section-eyebrow">Trials</span><h2 class="ff-section-title" th:text="${modoEdicion} ? 'Editar prueba' : 'Nueva prueba'">Nueva prueba</h2><p class="ff-section-subtitle">Datos minimos para seguimiento comercial.</p></div><a class="btn btn-outline-secondary" th:href="@{/trials}">Volver</a></section>
+                <form class="ff-surface-card" th:object="${trial}" th:action="${modoEdicion} ? @{/trials/{id}(id=${trial.id})} : @{/trials}" method="post">
+                    <div class="ff-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label" for="nombre">Nombre</label><input id="nombre" class="form-control" th:field="*{nombre}"><div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div></div>
+                            <div class="col-md-6"><label class="form-label" for="apellidos">Apellidos</label><input id="apellidos" class="form-control" th:field="*{apellidos}"></div>
+                            <div class="col-md-6"><label class="form-label" for="email">Email</label><input id="email" type="email" class="form-control" th:field="*{email}"></div>
+                            <div class="col-md-6"><label class="form-label" for="telefono">Telefono</label><input id="telefono" class="form-control" th:field="*{telefono}"></div>
+                            <div class="col-md-4"><label class="form-label" for="fechaPrueba">Fecha prueba</label><input id="fechaPrueba" type="date" class="form-control" th:field="*{fechaPrueba}"></div>
+                            <div class="col-md-4"><label class="form-label" for="estado">Estado</label><select id="estado" class="form-select" th:field="*{estado}"><option th:each="estado : ${estadosTrial}" th:value="${estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option></select></div>
+                            <div class="col-md-4"><label class="form-label" for="origen">Origen</label><input id="origen" class="form-control" th:field="*{origen}" placeholder="Instagram, walk-in, referido..."></div>
+                            <div class="col-md-6"><label class="form-label" for="staff">Staff responsable</label><select id="staff" class="form-select" th:field="*{staffResponsable.id}"><option value="">Sin asignar</option><option th:each="perfil : ${staffActivos}" th:value="${perfil.id}" th:text="${perfil.usuario != null ? perfil.usuario.nombre + (perfil.usuario.apellidos != null && !perfil.usuario.apellidos.isBlank() ? ' ' + perfil.usuario.apellidos : '') : 'Staff'}">Staff</option></select></div>
+                            <div class="col-12"><label class="form-label" for="observaciones">Observaciones</label><textarea id="observaciones" rows="4" class="form-control" th:field="*{observaciones}"></textarea></div>
+                        </div>
+                    </div>
+                    <div class="ff-form-actions"><p class="ff-form-actions-note">Para convertir a usuario, el trial debe tener email.</p><div class="d-flex gap-2"><button class="btn btn-success" type="submit">Guardar</button><a class="btn btn-outline-secondary" th:href="@{/trials}">Cancelar</a></div></div>
+                </form>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

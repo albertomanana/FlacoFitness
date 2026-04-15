@@ -9,8 +9,10 @@ import com.flacofitness.app.model.dto.AsistenciaDiariaStatsItem;
 import com.flacofitness.app.model.dto.AsistenciaMensualStatsItem;
 import com.flacofitness.app.model.dto.UsuarioAsistenciaCountDto;
 import com.flacofitness.app.model.entity.Asistencia;
+import com.flacofitness.app.model.entity.SesionClase;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.repository.AsistenciaRepository;
+import com.flacofitness.app.repository.SesionClaseRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +36,14 @@ public class AsistenciaService {
 
     private final AsistenciaRepository asistenciaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final SesionClaseRepository sesionClaseRepository;
 
-    public AsistenciaService(AsistenciaRepository asistenciaRepository, UsuarioRepository usuarioRepository) {
+    public AsistenciaService(AsistenciaRepository asistenciaRepository,
+                             UsuarioRepository usuarioRepository,
+                             SesionClaseRepository sesionClaseRepository) {
         this.asistenciaRepository = asistenciaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.sesionClaseRepository = sesionClaseRepository;
     }
 
     public List<Asistencia> listarTodas() {
@@ -54,6 +60,10 @@ public class AsistenciaService {
 
     public List<Asistencia> listarPorFechaYUsuario(LocalDate fecha, Long usuarioId) {
         return asistenciaRepository.findByFechaAndUsuarioIdOrderByHoraEntradaDescIdDesc(fecha, usuarioId);
+    }
+
+    public List<Asistencia> listarPorSesion(Long sesionClaseId) {
+        return asistenciaRepository.findBySesionClaseIdOrderByHoraEntradaDescIdDesc(sesionClaseId);
     }
 
     public List<Asistencia> listarRecientesPorUsuario(Long usuarioId) {
@@ -144,6 +154,7 @@ public class AsistenciaService {
     @Transactional
     public Asistencia registrar(Asistencia asistencia) {
         asistencia.setUsuario(obtenerUsuarioValido(asistencia.getUsuario()));
+        asistencia.setSesionClase(obtenerSesionOpcional(asistencia.getSesionClase()));
         return asistenciaRepository.save(asistencia);
     }
 
@@ -284,6 +295,15 @@ public class AsistenciaService {
 
         return usuarioRepository.findById(usuario.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + usuario.getId()));
+    }
+
+    private SesionClase obtenerSesionOpcional(SesionClase sesionClase) {
+        if (sesionClase == null || sesionClase.getId() == null) {
+            return null;
+        }
+
+        return sesionClaseRepository.findById(sesionClase.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Sesion no encontrada con id: " + sesionClase.getId()));
     }
 
     private String normalizarObservaciones(String observaciones) {

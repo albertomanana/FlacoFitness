@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -55,6 +56,10 @@ public class Rutina {
     @NotNull
     @Column(nullable = false)
     private Boolean activa;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_responsable_id")
+    private StaffPerfil staffResponsable;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

@@ -1,7 +1,13 @@
 package com.flacofitness.app.config;
 
 import com.flacofitness.app.model.enums.EstadoPago;
+import com.flacofitness.app.model.enums.EstadoMembresia;
+import com.flacofitness.app.model.enums.EstadoReservaSesion;
+import com.flacofitness.app.model.enums.EstadoSesion;
+import com.flacofitness.app.model.enums.EstadoTrial;
 import com.flacofitness.app.model.enums.MetodoPago;
+import com.flacofitness.app.model.enums.RolStaff;
+import com.flacofitness.app.model.enums.TipoMembresia;
 import com.flacofitness.app.model.enums.TipoRutina;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.ObjectProvider;
@@ -152,6 +158,7 @@ public class DemoDataSeeder implements ApplicationRunner {
         assignRoutines(users, userIds, routineIds);
         seedAttendances(users, userIds);
         seedPayments(users, userIds, planIds);
+        seedCoreSaasModules();
     }
 
     private Map<String, Long> ensureRoles() {
@@ -442,8 +449,10 @@ public class DemoDataSeeder implements ApplicationRunner {
             return;
         }
 
+        deleteByIds("DELETE FROM reservas_sesion WHERE usuario_id IN (%s)", ids);
         deleteByIds("DELETE FROM asistencias WHERE usuario_id IN (%s)", ids);
         deleteByIds("DELETE FROM pagos WHERE usuario_id IN (%s)", ids);
+        deleteByIds("DELETE FROM membresias_usuario WHERE usuario_id IN (%s)", ids);
         deleteByIds("DELETE FROM usuario_rutina WHERE usuario_id IN (%s)", ids);
     }
 
@@ -726,6 +735,385 @@ public class DemoDataSeeder implements ApplicationRunner {
         }
     }
 
+    private void seedCoreSaasModules() {
+        updatePlanCatalogMetadata();
+        List<Long> staffProfileIds = seedStaffProfiles();
+        seedMembershipContracts();
+        seedTrials(staffProfileIds);
+        Map<String, Long> classIds = seedClasses();
+        seedSessionsAndReservations(classIds, staffProfileIds);
+        linkPaymentsToMembershipContracts();
+        assignStaffToRoutines(staffProfileIds);
+    }
+
+    private void updatePlanCatalogMetadata() {
+        updatePlanCatalog("Basico", TipoMembresia.MENSUAL, "Acceso general, registro de asistencias y rutinas base.");
+        updatePlanCatalog("Premium", TipoMembresia.PREMIUM, "Incluye rutinas personalizadas, prioridad en clases y seguimiento ampliado.");
+        updatePlanCatalog("Plus", TipoMembresia.PREMIUM, "Plan avanzado con mayor flexibilidad y acceso a sesiones especiales.");
+        updatePlanCatalog("Estudiante", TipoMembresia.ESTUDIANTE, "Tarifa reducida para perfiles jovenes con acceso completo.");
+        updatePlanCatalog("Trimestral", TipoMembresia.TRIMESTRAL, "Contrato de tres meses con precio cerrado y renovacion planificada.");
+    }
+
+    private void updatePlanCatalog(String nombre, TipoMembresia tipo, String beneficios) {
+        jdbcTemplate.update(
+                "UPDATE planes SET tipo_membresia = ?, beneficios = ? WHERE nombre = ?",
+                tipo.name(), beneficios, nombre);
+    }
+
+    private List<Long> seedStaffProfiles() {
+        List<Map<String, Object>> staffUsers = jdbcTemplate.queryForList("""
+                SELECT u.id, u.nombre, u.apellidos, u.email
+                FROM usuarios u
+                JOIN roles r ON r.id = u.rol_id
+                WHERE r.nombre = 'STAFF'
+                ORDER BY u.id ASC
+                """);
+
+        List<Long> staffProfileIds = new ArrayList<>();
+        for (int index = 0; index < staffUsers.size(); index++) {
+            Map<String, Object> row = staffUsers.get(index);
+            Long userId = ((Number) row.get("ID")).longValue();
+            RolStaff rolStaff = index == 0 ? RolStaff.GERENTE : (index == 1 ? RolStaff.ENTRENADOR : RolStaff.RECEPCION);
+            String especialidad = index == 0 ? "Direccion operativa" : (index == 1 ? "Fuerza y recomposicion" : "Recepcion y atencion");
+            String observaciones = "Perfil staff demo ligado al usuario " + row.get("EMAIL") + ".";
+
+            Integer total = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM staff_perfiles WHERE usuario_id = ?",
+                    Integer.class, userId);
+
+            if (total == null || total == 0) {
+                jdbcTemplate.update(
+                        "INSERT INTO staff_perfiles (usuario_id, especialidad, rol_staff, activo, fecha_alta, observaciones) VALUES (?, ?, ?, ?, ?, ?)",
+                        userId,
+                        especialidad,
+                        rolStaff.name(),
+                        true,
+                        java.sql.Date.valueOf(LocalDate.now().minusDays(90L + index * 15L)),
+                        observaciones);
+            } else {
+                jdbcTemplate.update(
+                        "UPDATE staff_perfiles SET especialidad = ?, rol_staff = ?, activo = ?, observaciones = ? WHERE usuario_id = ?",
+                        especialidad,
+                        rolStaff.name(),
+                        true,
+                        observaciones,
+                        userId);
+            }
+
+            staffProfileIds.add(loadStaffProfileIdByUserId(userId));
+        }
+
+        return staffProfileIds;
+    }
+
+    private void seedMembershipContracts() {
+        List<Map<String, Object>> users = jdbcTemplate.queryForList("""
+                SELECT u.id, u.plan_id, u.activo, u.fecha_registro, u.fecha_proximo_pago, p.precio_mensual, p.duracion_dias
+                FROM usuarios u
+                LEFT JOIN planes p ON p.id = u.plan_id
+                WHERE u.plan_id IS NOT NULL
+                ORDER BY u.id ASC
+                """);
+
+        for (Map<String, Object> row : users) {
+            Long userId = ((Number) row.get("ID")).longValue();
+            Long planId = ((Number) row.get("PLAN_ID")).longValue();
+            BigDecimal precio = (BigDecimal) row.get("PRECIO_MENSUAL");
+            Integer duracion = row.get("DURACION_DIAS") != null ? ((Number) row.get("DURACION_DIAS")).intValue() : 30;
+            LocalDate fechaInicio = toLocalDate(row.get("FECHA_REGISTRO")).orElse(LocalDate.now().minusDays(duracion));
+            LocalDate fechaFin = toLocalDate(row.get("FECHA_PROXIMO_PAGO")).orElse(fechaInicio.plusDays(Math.max(duracion, 1)));
+            boolean activo = Boolean.TRUE.equals(row.get("ACTIVO"));
+            EstadoMembresia estado = estadoMembresiaDemo(activo, fechaFin);
+
+            Integer total = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM membresias_usuario WHERE usuario_id = ? AND plan_id = ? AND fecha_inicio = ?",
+                    Integer.class,
+                    userId,
+                    planId,
+                    java.sql.Date.valueOf(fechaInicio));
+
+            if (total != null && total > 0) {
+                continue;
+            }
+
+            jdbcTemplate.update(
+                    "INSERT INTO membresias_usuario (usuario_id, plan_id, fecha_inicio, fecha_fin, estado, precio_snapshot, origen, observaciones, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    userId,
+                    planId,
+                    java.sql.Date.valueOf(fechaInicio),
+                    java.sql.Date.valueOf(fechaFin),
+                    estado.name(),
+                    precio,
+                    "Seed local",
+                    "Contrato demo generado desde el plan actual del usuario.",
+                    Timestamp.valueOf(LocalDateTime.now().minusDays(12)));
+        }
+    }
+
+    private EstadoMembresia estadoMembresiaDemo(boolean usuarioActivo, LocalDate fechaFin) {
+        if (!usuarioActivo) {
+            return EstadoMembresia.CANCELADA;
+        }
+        if (fechaFin != null && fechaFin.isBefore(LocalDate.now())) {
+            return EstadoMembresia.VENCIDA;
+        }
+        return EstadoMembresia.ACTIVA;
+    }
+
+    private void seedTrials(List<Long> staffProfileIds) {
+        Long staffId = firstOrNull(staffProfileIds);
+        List<TrialSpec> trials = List.of(
+                new TrialSpec("Laura", "Navas", "690123445", "laura.navas.trial@demo.es", "Instagram", LocalDate.now(), EstadoTrial.PENDIENTE),
+                new TrialSpec("Hugo", "Campos", "691223344", "hugo.campos.trial@demo.es", "Referido", LocalDate.now().plusDays(1), EstadoTrial.PENDIENTE),
+                new TrialSpec("Claudia", "Moya", "692334455", "claudia.moya.trial@demo.es", "Web", LocalDate.now().minusDays(1), EstadoTrial.ASISTIO),
+                new TrialSpec("Ivan", "Rivas", "693445566", "ivan.rivas.trial@demo.es", "Flyer local", LocalDate.now().minusDays(3), EstadoTrial.NO_ASISTIO),
+                new TrialSpec("Sofia", "Cano", "694556677", "sofia.cano.trial@demo.es", "Instagram", LocalDate.now().plusDays(3), EstadoTrial.PENDIENTE)
+        );
+
+        for (TrialSpec trial : trials) {
+            Integer total = jdbcTemplate.queryForObject(
+                    "SELECT COUNT(*) FROM trials WHERE email = ?",
+                    Integer.class,
+                    trial.email());
+
+            if (total == null || total == 0) {
+                jdbcTemplate.update(
+                        "INSERT INTO trials (nombre, apellidos, telefono, email, origen, fecha_prueba, estado, staff_responsable_id, observaciones, fecha_registro) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        trial.nombre(),
+                        trial.apellidos(),
+                        trial.telefono(),
+                        trial.email(),
+                        trial.origen(),
+                        java.sql.Date.valueOf(trial.fechaPrueba()),
+                        trial.estado().name(),
+                        staffId,
+                        "Lead demo para explicar el embudo comercial.",
+                        Timestamp.valueOf(LocalDateTime.now().minusDays(5)));
+            } else {
+                jdbcTemplate.update(
+                        "UPDATE trials SET fecha_prueba = ?, estado = ?, staff_responsable_id = ? WHERE email = ?",
+                        java.sql.Date.valueOf(trial.fechaPrueba()),
+                        trial.estado().name(),
+                        staffId,
+                        trial.email());
+            }
+        }
+    }
+
+    private Map<String, Long> seedClasses() {
+        List<ClassSpec> classes = List.of(
+                new ClassSpec("HIIT Controlado", "Sesion intensa de intervalos con aforo reducido.", 12, true),
+                new ClassSpec("Yoga Movilidad", "Movilidad, respiracion y recuperacion activa.", 16, true),
+                new ClassSpec("Spinning Base", "Cardio guiado para grupos mixtos.", 14, true),
+                new ClassSpec("Fuerza Tecnica", "Trabajo guiado de fuerza con supervision de entrenador.", 10, true)
+        );
+
+        Map<String, Long> ids = new LinkedHashMap<>();
+        for (ClassSpec spec : classes) {
+            Integer total = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM clases WHERE nombre = ?", Integer.class, spec.nombre());
+            if (total == null || total == 0) {
+                jdbcTemplate.update(
+                        "INSERT INTO clases (nombre, descripcion, capacidad_sugerida, activa, observaciones) VALUES (?, ?, ?, ?, ?)",
+                        spec.nombre(),
+                        spec.descripcion(),
+                        spec.capacidadSugerida(),
+                        spec.activa(),
+                        "Clase demo del nucleo vendible.");
+            } else {
+                jdbcTemplate.update(
+                        "UPDATE clases SET descripcion = ?, capacidad_sugerida = ?, activa = ? WHERE nombre = ?",
+                        spec.descripcion(),
+                        spec.capacidadSugerida(),
+                        spec.activa(),
+                        spec.nombre());
+            }
+            ids.put(spec.nombre(), loadSingleId("clases", "nombre", spec.nombre()));
+        }
+        return ids;
+    }
+
+    private void seedSessionsAndReservations(Map<String, Long> classIds, List<Long> staffProfileIds) {
+        List<Long> activeUsers = jdbcTemplate.queryForList(
+                "SELECT id FROM usuarios WHERE activo = TRUE ORDER BY id ASC LIMIT 24",
+                Long.class);
+        if (activeUsers.isEmpty() || classIds.isEmpty()) {
+            return;
+        }
+
+        Long staff1 = firstOrNull(staffProfileIds);
+        Long staff2 = staffProfileIds.size() > 1 ? staffProfileIds.get(1) : staff1;
+        Long rutinaHiit = findRoutineId("HIIT Metabolico");
+        Long rutinaMovilidad = findRoutineId("Movilidad y Core");
+
+        List<SessionSpec> sessions = List.of(
+                new SessionSpec("HIIT Controlado", LocalDate.now(), LocalTime.of(18, 30), LocalTime.of(19, 15), 12, EstadoSesion.PROGRAMADA, staff2, rutinaHiit),
+                new SessionSpec("Yoga Movilidad", LocalDate.now(), LocalTime.of(20, 0), LocalTime.of(20, 45), 16, EstadoSesion.PROGRAMADA, staff1, rutinaMovilidad),
+                new SessionSpec("Spinning Base", LocalDate.now().plusDays(1), LocalTime.of(9, 30), LocalTime.of(10, 15), 14, EstadoSesion.PROGRAMADA, staff1, null),
+                new SessionSpec("Fuerza Tecnica", LocalDate.now().plusDays(2), LocalTime.of(19, 0), LocalTime.of(20, 0), 10, EstadoSesion.PROGRAMADA, staff2, findRoutineId("Fuerza Funcional")),
+                new SessionSpec("Yoga Movilidad", LocalDate.now().minusDays(1), LocalTime.of(19, 30), LocalTime.of(20, 15), 16, EstadoSesion.FINALIZADA, staff1, rutinaMovilidad)
+        );
+
+        int userOffset = 0;
+        for (SessionSpec session : sessions) {
+            Long classId = classIds.get(session.className());
+            if (classId == null) {
+                continue;
+            }
+
+            Long sessionId = upsertSession(session, classId);
+            int reservations = Math.min(session.aforo() - 1, 5 + Math.floorMod(session.className().hashCode(), 5));
+            for (int index = 0; index < reservations && index < activeUsers.size(); index++) {
+                Long userId = activeUsers.get(Math.floorMod(userOffset + index, activeUsers.size()));
+                upsertReservation(sessionId, userId, session.estado() == EstadoSesion.FINALIZADA ? EstadoReservaSesion.ASISTIO : EstadoReservaSesion.RESERVADA);
+                if (session.estado() == EstadoSesion.FINALIZADA || (session.fecha().isEqual(LocalDate.now()) && index < 3)) {
+                    upsertSessionAttendance(sessionId, userId, session.fecha(), session.horaInicio().plusMinutes(5), "Asistencia vinculada a sesion demo.");
+                }
+            }
+            userOffset += 4;
+        }
+    }
+
+    private Long upsertSession(SessionSpec session, Long classId) {
+        Long sessionId = findSessionId(classId, session.fecha(), session.horaInicio());
+        if (sessionId == null) {
+            jdbcTemplate.update(
+                    "INSERT INTO sesiones_clase (clase_id, fecha, hora_inicio, hora_fin, aforo, estado, rutina_id, staff_responsable_id, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    classId,
+                    java.sql.Date.valueOf(session.fecha()),
+                    session.horaInicio(),
+                    session.horaFin(),
+                    session.aforo(),
+                    session.estado().name(),
+                    session.rutinaId(),
+                    session.staffId(),
+                    "Sesion demo programada para validar agenda, reservas y asistencia.");
+            return findSessionId(classId, session.fecha(), session.horaInicio());
+        }
+
+        jdbcTemplate.update(
+                "UPDATE sesiones_clase SET hora_fin = ?, aforo = ?, estado = ?, rutina_id = ?, staff_responsable_id = ?, observaciones = ? WHERE id = ?",
+                session.horaFin(),
+                session.aforo(),
+                session.estado().name(),
+                session.rutinaId(),
+                session.staffId(),
+                "Sesion demo programada para validar agenda, reservas y asistencia.",
+                sessionId);
+        return sessionId;
+    }
+
+    private Long findSessionId(Long classId, LocalDate fecha, LocalTime horaInicio) {
+        List<Long> ids = jdbcTemplate.queryForList(
+                "SELECT id FROM sesiones_clase WHERE clase_id = ? AND fecha = ? AND hora_inicio = ? ORDER BY id ASC LIMIT 1",
+                Long.class,
+                classId,
+                java.sql.Date.valueOf(fecha),
+                horaInicio);
+        return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    private void upsertReservation(Long sessionId, Long userId, EstadoReservaSesion estado) {
+        Integer total = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM reservas_sesion WHERE sesion_clase_id = ? AND usuario_id = ?",
+                Integer.class,
+                sessionId,
+                userId);
+        if (total == null || total == 0) {
+            jdbcTemplate.update(
+                    "INSERT INTO reservas_sesion (sesion_clase_id, usuario_id, estado, fecha_reserva, observaciones) VALUES (?, ?, ?, ?, ?)",
+                    sessionId,
+                    userId,
+                    estado.name(),
+                    Timestamp.valueOf(LocalDateTime.now().minusDays(1)),
+                    "Reserva demo.");
+        } else {
+            jdbcTemplate.update(
+                    "UPDATE reservas_sesion SET estado = ?, observaciones = ? WHERE sesion_clase_id = ? AND usuario_id = ?",
+                    estado.name(),
+                    "Reserva demo.",
+                    sessionId,
+                    userId);
+        }
+    }
+
+    private void upsertSessionAttendance(Long sessionId, Long userId, LocalDate fecha, LocalTime horaEntrada, String observaciones) {
+        Integer total = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM asistencias WHERE sesion_clase_id = ? AND usuario_id = ?",
+                Integer.class,
+                sessionId,
+                userId);
+        if (total != null && total > 0) {
+            return;
+        }
+
+        jdbcTemplate.update(
+                "INSERT INTO asistencias (fecha, hora_entrada, observaciones, usuario_id, sesion_clase_id) VALUES (?, ?, ?, ?, ?)",
+                java.sql.Date.valueOf(fecha),
+                horaEntrada,
+                observaciones,
+                userId,
+                sessionId);
+    }
+
+    private void linkPaymentsToMembershipContracts() {
+        List<Map<String, Object>> contracts = jdbcTemplate.queryForList("""
+                SELECT id, usuario_id, plan_id
+                FROM membresias_usuario
+                ORDER BY fecha_inicio DESC, id DESC
+                """);
+
+        for (Map<String, Object> contract : contracts) {
+            jdbcTemplate.update(
+                    "UPDATE pagos SET membresia_usuario_id = ? WHERE usuario_id = ? AND plan_id = ? AND membresia_usuario_id IS NULL",
+                    ((Number) contract.get("ID")).longValue(),
+                    ((Number) contract.get("USUARIO_ID")).longValue(),
+                    ((Number) contract.get("PLAN_ID")).longValue());
+        }
+    }
+
+    private void assignStaffToRoutines(List<Long> staffProfileIds) {
+        if (staffProfileIds.isEmpty()) {
+            return;
+        }
+        List<Long> routineIds = jdbcTemplate.queryForList("SELECT id FROM rutinas WHERE activa = TRUE ORDER BY id ASC", Long.class);
+        for (int index = 0; index < routineIds.size(); index++) {
+            jdbcTemplate.update(
+                    "UPDATE rutinas SET staff_responsable_id = ? WHERE id = ?",
+                    staffProfileIds.get(index % staffProfileIds.size()),
+                    routineIds.get(index));
+        }
+    }
+
+    private Long loadStaffProfileIdByUserId(Long userId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT id FROM staff_perfiles WHERE usuario_id = ? ORDER BY id ASC LIMIT 1",
+                Long.class,
+                userId);
+    }
+
+    private Long firstOrNull(List<Long> ids) {
+        return ids.isEmpty() ? null : ids.get(0);
+    }
+
+    private Optional<LocalDate> toLocalDate(Object value) {
+        if (value == null) {
+            return Optional.empty();
+        }
+        if (value instanceof LocalDate localDate) {
+            return Optional.of(localDate);
+        }
+        if (value instanceof java.sql.Date date) {
+            return Optional.of(date.toLocalDate());
+        }
+        if (value instanceof Timestamp timestamp) {
+            return Optional.of(timestamp.toLocalDateTime().toLocalDate());
+        }
+        if (value instanceof LocalDateTime localDateTime) {
+            return Optional.of(localDateTime.toLocalDate());
+        }
+        return Optional.empty();
+    }
+
     private int paymentCyclesFor(UserSpec user) {
         return switch (user.financialProfile()) {
             case CLEAN -> 4 + Math.floorMod(user.seedIndex(), 3);
@@ -953,6 +1341,30 @@ public class DemoDataSeeder implements ApplicationRunner {
         private LocalDateTime createdAt() {
             return LocalDateTime.now().minusDays(20L + Math.abs(nombre.hashCode() % 120));
         }
+    }
+
+    private record TrialSpec(
+            String nombre,
+            String apellidos,
+            String telefono,
+            String email,
+            String origen,
+            LocalDate fechaPrueba,
+            EstadoTrial estado) {
+    }
+
+    private record ClassSpec(String nombre, String descripcion, int capacidadSugerida, boolean activa) {
+    }
+
+    private record SessionSpec(
+            String className,
+            LocalDate fecha,
+            LocalTime horaInicio,
+            LocalTime horaFin,
+            int aforo,
+            EstadoSesion estado,
+            Long staffId,
+            Long rutinaId) {
     }
 
     private record UserSpec(

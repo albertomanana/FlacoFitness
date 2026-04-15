@@ -129,3 +129,17 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se sustituyo el boton "Ver" por filas clicables en rutinas para homogeneizar la navegacion con asistencias y pagos.
 - Se simplifico el panel de rutinas en home y contextos de usuario para mostrar solo tipo, usuarios y estado util.
 - Se elimino el enum `ObjetivoRutina` y se actualizo la entidad `Rutina` para dejar el modelo mas limpio y defendible.
+
+### 2026-04-15
+
+- Se inicio el nucleo vendible SaaS de FlacoFitness con modulos reales de staff, membresias contractuales, trials comerciales, clases, sesiones programadas y reservas.
+- Se modelo `StaffPerfil` como perfil operativo ligado a `Usuario`, evitando duplicar personas y manteniendo el rol `STAFF` como clasificacion base.
+- Se mantuvo `Plan` como catalogo comercial y se anadio `MembresiaUsuario` como contrato real entre usuario y plan, con estado, fechas y precio snapshot.
+- Se conecto `Pago` opcionalmente con `MembresiaUsuario` sin romper pagos existentes que solo dependen de usuario y plan.
+- Se anadio `Trial` para gestionar leads y dias de prueba, con staff responsable opcional y conversion controlada a usuario real.
+- Se separo el dominio de clases entre `Clase` como catalogo y `SesionClase` como ocurrencia programada con fecha, hora, staff, cupo y rutina opcional.
+- Se incorporo `ReservaSesion` para inscribir usuarios a sesiones y registrar asistencia vinculada a una sesion concreta.
+- Se actualizo `Asistencia` para seguir permitiendo check-in libre y aceptar una relacion opcional con `SesionClase`.
+- Se ampliaron dashboard y notificaciones con staff activo, trials, sesiones de hoy y membresias activas/vencidas.
+- Se anadieron vistas Thymeleaf para staff, membresias, trials, clases y sesiones, manteniendo Bootstrap, DataTables y JavaScript ligero.
+- Se enriquecio el sembrado local/demo con datos de los nuevos modulos y se dejo `data.sql` seguro para MySQL real.

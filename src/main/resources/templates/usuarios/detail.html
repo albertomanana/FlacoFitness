@@ -191,6 +191,7 @@
                                 <div class="ff-card-body">
                                     <div class="ff-quick-links d-flex flex-column gap-2">
                                         <a class="btn btn-success w-100" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar perfil</a>
+                                        <a class="btn btn-outline-success w-100" th:href="@{/usuarios/{id}/membresias(id=${usuario.id})}">Gestionar membresia</a>
                                         <a class="btn btn-outline-secondary w-100" th:href="@{/pagos/usuario/{usuarioId}(usuarioId=${usuario.id})}">Ver pagos</a>
                                         <a class="btn btn-outline-secondary w-100" th:href="@{/asistencias/usuario/{usuarioId}(usuarioId=${usuario.id})}">Ver asistencias</a>
                                         <a class="btn btn-outline-secondary w-100" th:href="@{/usuarios/{id}/rutinas(id=${usuario.id})}">Gestionar rutinas</a>

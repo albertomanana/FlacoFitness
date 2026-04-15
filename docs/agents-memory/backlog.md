@@ -2,27 +2,25 @@
 
 ## Prioridad alta
 
-- Consolidar una primera version estable para defensa y valorar promocion controlada a `main`
-- Completar una demostracion mas rica con datos semilla funcionales para dashboard, pagos y asistencias
-- Validar el dashboard tambien sobre MySQL real con captura visual, para cerrar definitivamente la paridad entre `local-demo` y `mysql-real`
-- Ejecutar bloque 4: eliminar buscador global del topbar, activar notificaciones funcionales y definir autenticacion simple por PIN con limite de intentos
-- Revisar si el acceso PIN necesita persistencia de sesion mas larga o mensajes de bloqueo mas visibles en defensa
+- Validar en navegador el flujo completo de los nuevos modulos: `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`.
+- Ejecutar `mvnw.cmd test` y resolver cualquier regresion de servicios o plantillas.
+- Probar arranque con perfil `local` y confirmar que dashboard, charts, DataTables y nuevas rutas cargan sin error 500.
+- Crear PR de `feature/core-saas-modules` hacia `develop` cuando la validacion local quede cerrada.
+- Revisar si el flujo de conversion de trial a usuario necesita asignar membresia inicial automaticamente.
 
 ## Prioridad media
-- Anadir CRUD visual para planes y roles si se necesita una defensa mas completa del modelo administrativo
-- Crear diagramas de arquitectura y base de datos para la documentacion tecnica
-- Anadir pruebas MVC de pagos para filtros por usuario/estado y regla anti-duplicados por `fecha_vencimiento`
-- Anadir pruebas MVC o de integracion para rutinas sin objetivo y con fila clicable
-- Implementar modo oscuro global respetando los design tokens ya definidos
-- Anadir pruebas unitarias basicas para los servicios principales
-- Anadir pruebas MVC o de integracion que cubran el render de la home y eviten regresiones silenciosas de Thymeleaf en el dashboard
-- Anadir pruebas MVC o de integracion que cubran el render del detalle de usuario y su timeline para evitar regresiones silenciosas de Thymeleaf
-- Reducir dependencia de CDNs: mover gradualmente librerias criticas (jQuery/DataTables/Sortable) a WebJars o recursos locales para demos offline
-- Explorar animacion de transicion entre paginas para una experiencia mas fluida
+
+- Anadir pruebas MVC para render de las nuevas pantallas principales.
+- Anadir filtros especificos en sesiones por fecha, staff y estado.
+- Anadir filtros especificos en trials por estado, origen y fecha de prueba.
+- Mejorar el formulario de usuario para enlazar alta de membresia justo despues de crear un nuevo usuario.
+- Mejorar el detalle de staff con calendario de proximas sesiones y rutinas asignadas.
+- Mejorar el detalle de membresia de usuario con pagos asociados y renovacion rapida.
+- Completar diagrama ER en `docs/diagrams`.
 
 ## Prioridad baja
 
-- Preparar scripts de despliegue y revision final de Docker
-- Valorar exportacion simple de tablas a CSV si aporta valor real a la entrega final
-- Investigar lazy-loading de imagenes de avatar en listados con muchos registros
-- Documentar el sistema de design tokens en un archivo de referencia para futuras extensiones
+- Evaluar exportacion CSV de pagos, asistencias, trials y sesiones.
+- Preparar datos demo reducidos para MySQL opcional sin contaminar bases reales.
+- Mover DataTables/jQuery/Sortable a recursos locales o WebJars para demos sin internet.
+- Documentar una guia de defensa academica con casos de uso: lead -> trial -> usuario -> membresia -> pago -> sesion -> asistencia.

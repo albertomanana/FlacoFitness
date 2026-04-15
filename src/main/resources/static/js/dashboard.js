@@ -122,6 +122,12 @@ function updateDashboardStats(stats, utils) {
     animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils);
     animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils);
     animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils);
+    animateDashboardStat("staffActivos", stats.staffActivos, "integer", utils);
+    animateDashboardStat("trialsPendientes", stats.trialsPendientes, "integer", utils);
+    animateDashboardStat("trialsHoy", stats.trialsHoy, "integer", utils);
+    animateDashboardStat("sesionesHoy", stats.sesionesHoy, "integer", utils);
+    animateDashboardStat("membresiasActivas", stats.membresiasActivas, "integer", utils);
+    animateDashboardStat("membresiasVencidas", stats.membresiasVencidas, "integer", utils);
 }
 
 function animateDashboardStat(key, rawValue, kind, utils) {

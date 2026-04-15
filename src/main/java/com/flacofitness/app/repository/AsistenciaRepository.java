@@ -14,41 +14,46 @@ import java.util.Optional;
 public interface AsistenciaRepository extends JpaRepository<Asistencia, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     List<Asistencia> findAll();
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     @Query("select asistencia from Asistencia asistencia " +
             "order by asistencia.fecha desc, asistencia.horaEntrada desc, asistencia.id desc")
     List<Asistencia> findAllOrdered();
 
     @Override
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     Optional<Asistencia> findById(Long id);
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     List<Asistencia> findByUsuarioId(Long usuarioId);
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     List<Asistencia> findByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(Long usuarioId);
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     List<Asistencia> findByFechaOrderByHoraEntradaDescIdDesc(LocalDate fecha);
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     List<Asistencia> findByFechaAndUsuarioIdOrderByHoraEntradaDescIdDesc(LocalDate fecha, Long usuarioId);
 
     long countByUsuarioId(Long usuarioId);
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     Optional<Asistencia> findTopByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(Long usuarioId);
 
-    @EntityGraph(attributePaths = {"usuario"})
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
     List<Asistencia> findTop5ByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(Long usuarioId);
 
     long countByFecha(LocalDate fecha);
 
     boolean existsByUsuarioIdAndFecha(Long usuarioId, LocalDate fecha);
+
+    boolean existsByUsuarioIdAndSesionClaseId(Long usuarioId, Long sesionClaseId);
+
+    @EntityGraph(attributePaths = {"usuario", "sesionClase", "sesionClase.clase"})
+    List<Asistencia> findBySesionClaseIdOrderByHoraEntradaDescIdDesc(Long sesionClaseId);
 
     @Query("select asistencia.fecha as fecha, count(asistencia) as total from Asistencia asistencia " +
             "group by asistencia.fecha order by asistencia.fecha")

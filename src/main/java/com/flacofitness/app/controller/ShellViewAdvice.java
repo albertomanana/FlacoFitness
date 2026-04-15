@@ -2,7 +2,10 @@ package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.dto.ShellNotificationItem;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.MembresiaService;
 import com.flacofitness.app.service.PagoService;
+import com.flacofitness.app.service.SesionClaseService;
+import com.flacofitness.app.service.TrialService;
 import com.flacofitness.app.service.UsuarioService;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,20 +18,34 @@ import java.util.List;
         UsuarioController.class,
         PagoController.class,
         RutinaController.class,
-        AsistenciaController.class
+        AsistenciaController.class,
+        StaffController.class,
+        MembresiaController.class,
+        TrialController.class,
+        ClaseController.class,
+        SesionClaseController.class
 })
 public class ShellViewAdvice {
 
     private final PagoService pagoService;
     private final UsuarioService usuarioService;
     private final AsistenciaService asistenciaService;
+    private final MembresiaService membresiaService;
+    private final TrialService trialService;
+    private final SesionClaseService sesionClaseService;
 
     public ShellViewAdvice(PagoService pagoService,
                            UsuarioService usuarioService,
-                           AsistenciaService asistenciaService) {
+                           AsistenciaService asistenciaService,
+                           MembresiaService membresiaService,
+                           TrialService trialService,
+                           SesionClaseService sesionClaseService) {
         this.pagoService = pagoService;
         this.usuarioService = usuarioService;
         this.asistenciaService = asistenciaService;
+        this.membresiaService = membresiaService;
+        this.trialService = trialService;
+        this.sesionClaseService = sesionClaseService;
     }
 
     @ModelAttribute("shellNotifications")
@@ -76,6 +93,39 @@ public class ShellViewAdvice {
                     "Abrir asistencias",
                     "/asistencias",
                     "success"
+            ));
+        }
+
+        long trialsHoy = trialService.contarHoy();
+        if (trialsHoy > 0) {
+            notifications.add(new ShellNotificationItem(
+                    "Trials de hoy",
+                    trialsHoy + " prueba(s) necesitan seguimiento comercial.",
+                    "Abrir trials",
+                    "/trials",
+                    "info"
+            ));
+        }
+
+        long sesionesHoy = sesionClaseService.contarSesionesHoy();
+        if (sesionesHoy > 0) {
+            notifications.add(new ShellNotificationItem(
+                    "Sesiones de hoy",
+                    sesionesHoy + " sesion(es) programadas para la jornada.",
+                    "Ver sesiones",
+                    "/sesiones",
+                    "success"
+            ));
+        }
+
+        long membresiasVencidas = membresiaService.contarVencidas();
+        if (membresiasVencidas > 0) {
+            notifications.add(new ShellNotificationItem(
+                    "Membresias vencidas",
+                    membresiasVencidas + " contrato(s) requieren renovacion o revision.",
+                    "Gestionar membresias",
+                    "/membresias",
+                    "warning"
             ));
         }
 

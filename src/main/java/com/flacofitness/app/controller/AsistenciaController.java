@@ -2,8 +2,10 @@ package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.dto.AsistenciaCheckInBatchResult;
 import com.flacofitness.app.model.entity.Asistencia;
+import com.flacofitness.app.model.entity.SesionClase;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,20 +32,24 @@ public class AsistenciaController {
 
     private final AsistenciaService asistenciaService;
     private final UsuarioService usuarioService;
+    private final SesionClaseService sesionClaseService;
 
     public AsistenciaController(AsistenciaService asistenciaService,
-                                UsuarioService usuarioService) {
+                                UsuarioService usuarioService,
+                                SesionClaseService sesionClaseService) {
         this.asistenciaService = asistenciaService;
         this.usuarioService = usuarioService;
+        this.sesionClaseService = sesionClaseService;
     }
 
     @GetMapping
     public String listarAsistencias(@RequestParam(name = "fecha", required = false)
                                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
                                     @RequestParam(name = "usuarioId", required = false) Long usuarioId,
+                                    @RequestParam(name = "sesionId", required = false) Long sesionId,
                                     @RequestParam(name = "mes", required = false) String mes,
                                     Model model) {
-        return renderListado(fecha, usuarioId, mes, model);
+        return renderListado(fecha, usuarioId, sesionId, mes, model);
     }
 
     @PostMapping("/rapido")
@@ -85,9 +91,11 @@ public class AsistenciaController {
     public String mostrarFormularioNueva(Model model) {
         Asistencia asistencia = new Asistencia();
         asistencia.setUsuario(new Usuario());
+        asistencia.setSesionClase(new SesionClase());
         asistencia.setHoraEntrada(java.time.LocalTime.now().withSecond(0).withNano(0));
         model.addAttribute("asistencia", asistencia);
         model.addAttribute("usuarios", usuarioService.listarActivos());
+        model.addAttribute("sesiones", sesionClaseService.listarProximas());
         return "asistencias/form";
     }
 
@@ -101,6 +109,7 @@ public class AsistenciaController {
         if (bindingResult.hasErrors()) {
             prepararRelaciones(asistencia);
             model.addAttribute("usuarios", usuarioService.listarActivos());
+            model.addAttribute("sesiones", sesionClaseService.listarProximas());
             return "asistencias/form";
         }
 
@@ -119,20 +128,23 @@ public class AsistenciaController {
     public String listarPorUsuario(@PathVariable Long usuarioId,
                                    @RequestParam(name = "fecha", required = false)
                                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+                                   @RequestParam(name = "sesionId", required = false) Long sesionId,
                                    @RequestParam(name = "mes", required = false) String mes,
                                    Model model) {
-        return renderListado(fecha, usuarioId, mes, model);
+        return renderListado(fecha, usuarioId, sesionId, mes, model);
     }
 
-    private String renderListado(LocalDate fecha, Long usuarioId, String mes, Model model) {
+    private String renderListado(LocalDate fecha, Long usuarioId, Long sesionId, String mes, Model model) {
         Usuario usuarioFiltro = usuarioId != null ? usuarioService.buscarPorId(usuarioId) : null;
         YearMonth mesSeleccionado = resolverMes(mes, fecha);
-        List<Asistencia> asistencias = obtenerAsistenciasFiltradas(fecha, usuarioId);
+        List<Asistencia> asistencias = obtenerAsistenciasFiltradas(fecha, usuarioId, sesionId);
 
         model.addAttribute("asistencias", asistencias);
         model.addAttribute("usuariosCheckIn", usuarioService.listarActivos());
         model.addAttribute("usuariosFiltro", usuarioService.listarTodos());
+        model.addAttribute("sesionesFiltro", sesionClaseService.listarTodas());
         model.addAttribute("usuarioFiltroId", usuarioId);
+        model.addAttribute("sesionFiltroId", sesionId);
         model.addAttribute("usuarioFiltro", usuarioFiltro);
         model.addAttribute("fechaFiltro", fecha);
         model.addAttribute("mesFiltro", mesSeleccionado.toString());
@@ -145,7 +157,11 @@ public class AsistenciaController {
         return "asistencias/list";
     }
 
-    private List<Asistencia> obtenerAsistenciasFiltradas(LocalDate fecha, Long usuarioId) {
+    private List<Asistencia> obtenerAsistenciasFiltradas(LocalDate fecha, Long usuarioId, Long sesionId) {
+        if (sesionId != null) {
+            return asistenciaService.listarPorSesion(sesionId);
+        }
+
         if (fecha != null && usuarioId != null) {
             return asistenciaService.listarPorFechaYUsuario(fecha, usuarioId);
         }
@@ -212,6 +228,9 @@ public class AsistenciaController {
     private void prepararRelaciones(Asistencia asistencia) {
         if (asistencia.getUsuario() == null) {
             asistencia.setUsuario(new Usuario());
+        }
+        if (asistencia.getSesionClase() == null) {
+            asistencia.setSesionClase(new SesionClase());
         }
     }
 

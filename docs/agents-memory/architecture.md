@@ -49,6 +49,29 @@ FlacoFitness se plantea como una aplicación web monolítica basada en el patró
 - `exception`: manejo de errores y excepciones de negocio o infraestructura
 - `util`: utilidades técnicas reutilizables
 
+## Modulos funcionales actuales
+
+- `usuarios`: centro operativo del cliente, con foto, plan, pagos, asistencias, rutinas y acceso a historial de membresias.
+- `staff`: perfil interno ligado a `Usuario`, usado para entrenadores, recepcion y gerencia sin duplicar personas.
+- `membresias`: catalogo comercial basado en `Plan` y contratos reales mediante `MembresiaUsuario`.
+- `trials`: gestion de leads y dias de prueba, con conversion controlada a usuario.
+- `clases`: catalogo de actividades reutilizables.
+- `sesiones`: agenda de clases programadas, staff responsable, cupo, reservas y asistencia vinculada.
+- `rutinas`: biblioteca y asignacion de entrenamientos a usuarios, con staff responsable opcional.
+- `pagos`: cobros vinculados a usuario, plan y, cuando existe, contrato de membresia.
+- `asistencias`: check-in libre y asistencia opcionalmente asociada a sesion.
+
+## Criterio de modelado SaaS
+
+La arquitectura conserva el monolito MVC porque es suficiente para el alcance academico y para un MVP vendible local. La separacion clave del dominio es:
+
+- `Plan` define la oferta comercial.
+- `MembresiaUsuario` define el contrato de una persona.
+- `Pago` registra el cobro de ese contrato.
+- `Clase` define una actividad.
+- `SesionClase` define una fecha y hora concreta.
+- `ReservaSesion` conecta usuarios con sesiones y permite controlar cupo.
+
 ## Convención de paquetes
 
 Paquete base Java: `com.flacofitness.app`
