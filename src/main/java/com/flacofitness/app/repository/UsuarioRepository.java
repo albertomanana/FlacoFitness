@@ -23,6 +23,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     Optional<Usuario> findByEmail(String email);
 
     @EntityGraph(attributePaths = {"rol", "plan"})
+    Optional<Usuario> findFirstByActivoTrueAndRolNombreOrderByIdAsc(String rolNombre);
+
+    @EntityGraph(attributePaths = {"rol", "plan"})
     List<Usuario> findByActivoTrue();
 
     @EntityGraph(attributePaths = {"rol", "plan"})

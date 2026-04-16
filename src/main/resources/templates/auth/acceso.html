@@ -45,6 +45,19 @@
 
             <form th:action="@{/acceso}" method="post" class="vstack gap-3">
                 <div>
+                    <label for="profile" class="form-label fw-semibold">Perfil de acceso</label>
+                    <select id="profile"
+                            name="profile"
+                            class="form-select form-select-lg"
+                            th:disabled="${isLocked}">
+                        <option th:each="profile : ${accessProfiles}"
+                                th:value="${profile.name()}"
+                                th:text="${profile.label + ' · ' + profile.description}"
+                                th:selected="${profile.name() == 'ADMIN'}">Administrador</option>
+                    </select>
+                </div>
+
+                <div>
                     <label for="pin" class="form-label fw-semibold">PIN</label>
                     <input id="pin"
                            name="pin"

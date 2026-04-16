@@ -143,3 +143,18 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se ampliaron dashboard y notificaciones con staff activo, trials, sesiones de hoy y membresias activas/vencidas.
 - Se anadieron vistas Thymeleaf para staff, membresias, trials, clases y sesiones, manteniendo Bootstrap, DataTables y JavaScript ligero.
 - Se enriquecio el sembrado local/demo con datos de los nuevos modulos y se dejo `data.sql` seguro para MySQL real.
+
+### 2026-04-16
+
+- Se creo la rama `recovery/restore-core-saas-plan-a` y se preservo el estado sucio previo en un stash llamado `backup before recovery core saas plan a`.
+- Se recupero el nucleo SaaS avanzado desde `feature/core-saas-modules` evitando continuar sobre la integracion parcial rota.
+- Se elimino un artefacto temporal `.codex-temp/curlcookies.txt` que no aportaba valor al repositorio.
+- Se corrigio Maven eliminando una ruta absoluta local a `javac` y actualizando Lombok a `1.18.44` para compilar de forma portable con JDK moderno.
+- Se restauro la regla de datos segura: MySQL real no ejecuta seeds automaticos y el perfil `local` mantiene la demo H2 controlada.
+- Se termino el acceso MVP por PIN con perfiles de sesion `ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE` y `CLIENTE`.
+- Se anadio un panel cliente limitado en `/cliente` con membresia, pagos y rutinas propias.
+- Se filtro sidebar/topbar segun perfil y se reforzo el interceptor para bloquear rutas no autorizadas, no solo ocultar enlaces.
+- Se corrigio la incoherencia de staff: solo entrenadores o perfiles con `puedeImpartirClases` pueden ser responsables de sesiones o rutinas.
+- Se ajusto el seeder demo para no asignar gerentes como instructores por accidente.
+- Se anadio vista 403 coherente para accesos denegados.
+- Se validaron compilacion y tests con `mvnw.cmd clean -DskipTests compile` y `mvnw.cmd test`.

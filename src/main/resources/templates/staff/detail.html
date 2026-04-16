@@ -36,6 +36,7 @@
                             <div class="ff-card-body">
                                 <div class="ff-detail-grid">
                                     <div class="ff-detail-item"><span>Rol interno</span><strong th:text="${staffPerfil.rolStaff != null ? #strings.replace(staffPerfil.rolStaff.name(), '_', ' ') : '-'}">Rol</strong></div>
+                                    <div class="ff-detail-item"><span>Clases y rutinas</span><strong th:text="${staffPerfil.puedeImpartirClases == true ? 'Autorizado' : 'No autorizado'}">Autorizado</strong></div>
                                     <div class="ff-detail-item"><span>Email</span><strong th:text="${staffPerfil.usuario != null ? staffPerfil.usuario.email : '-'}">email</strong></div>
                                     <div class="ff-detail-item"><span>Telefono</span><strong th:text="${staffPerfil.usuario != null ? #strings.defaultString(staffPerfil.usuario.telefono, '-') : '-'}">telefono</strong></div>
                                     <div class="ff-detail-item"><span>Fecha de alta</span><strong th:text="${staffPerfil.fechaAlta != null ? #temporals.format(staffPerfil.fechaAlta, 'dd/MM/yyyy') : '-'}">fecha</strong></div>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Panel cliente')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('cliente')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Mi panel', 'Resumen personal de actividad, rutinas y cuotas.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack">
+            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+            <section class="ff-section-header">
+                <div>
+                    <span class="ff-section-eyebrow">Cliente</span>
+                    <h2 class="ff-section-title" th:text="${usuario.nombre + ' ' + #strings.defaultString(usuario.apellidos, '')}">Mi ficha</h2>
+                    <p class="ff-section-subtitle">Panel limitado para consultar membresia, rutinas, pagos y actividad.</p>
+                </div>
+            </section>
+
+            <section class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <article class="ff-surface-card ff-stat-card">
+                        <p class="ff-stat-label">Estado</p>
+                        <p class="ff-stat-value fs-5" th:text="${controlCenter.estadoActividad}">Activo</p>
+                        <p class="ff-stat-note" th:text="${controlCenter.segmento}">Segmento</p>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="ff-surface-card ff-stat-card">
+                        <p class="ff-stat-label">Asistencias</p>
+                        <p class="ff-stat-value" th:text="${controlCenter.totalAsistencias}">0</p>
+                        <p class="ff-stat-note" th:text="${controlCenter.ultimaAsistencia != null ? 'Ultima: ' + #temporals.format(controlCenter.ultimaAsistencia, 'dd/MM/yyyy') : 'Sin registros'}">Ultima</p>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="ff-surface-card ff-stat-card">
+                        <p class="ff-stat-label">Plan</p>
+                        <p class="ff-stat-value fs-5" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</p>
+                        <p class="ff-stat-note">Membresia actual</p>
+                    </article>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <article class="ff-surface-card ff-stat-card">
+                        <p class="ff-stat-label">Pagos</p>
+                        <p class="ff-stat-value fs-5" th:text="${controlCenter.estadoPago}">Al dia</p>
+                        <p class="ff-stat-note" th:text="${deudaTotalUsuario != null ? 'Deuda: ' + deudaTotalUsuario + ' EUR' : 'Sin deuda'}">Deuda</p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="row g-4">
+                <div class="col-lg-7">
+                    <article class="ff-surface-card h-100">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Rutinas asignadas</h3>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="vstack gap-2" th:if="${not #lists.isEmpty(controlCenter.rutinasAsignadas)}">
+                                <a class="ff-linked-row"
+                                   th:each="rutina : ${controlCenter.rutinasAsignadas}"
+                                   th:href="@{/rutinas/{id}(id=${rutina.id})}">
+                                    <span>
+                                        <strong th:text="${rutina.nombre}">Rutina</strong>
+                                        <small th:text="${rutina.tipoRutina != null ? rutina.tipoRutina : 'GENERAL'}">Tipo</small>
+                                    </span>
+                                    <span class="badge rounded-pill" th:classappend="${rutina.activa} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${rutina.activa ? 'Activa' : 'Inactiva'}">Activa</span>
+                                </a>
+                            </div>
+                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(controlCenter.rutinasAsignadas)}">Aun no tienes rutinas asignadas.</p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-lg-5">
+                    <article class="ff-surface-card h-100">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Pagos recientes</h3>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="vstack gap-2" th:if="${not #lists.isEmpty(controlCenter.pagosRecientes)}">
+                                <a class="ff-linked-row"
+                                   th:each="pago : ${controlCenter.pagosRecientes}"
+                                   th:href="@{/pagos/{id}(id=${pago.id})}">
+                                    <span>
+                                        <strong th:text="${pago.monto != null ? pago.monto + ' EUR' : 'Pago'}">Pago</strong>
+                                        <small th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">Fecha</small>
+                                    </span>
+                                    <span class="badge rounded-pill text-bg-light" th:text="${pago.estado}">Estado</span>
+                                </a>
+                            </div>
+                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(controlCenter.pagosRecientes)}">No hay pagos recientes.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <div th:replace="~{fragments/footer :: footer}"></div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

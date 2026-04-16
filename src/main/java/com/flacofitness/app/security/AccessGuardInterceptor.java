@@ -26,7 +26,19 @@ public class AccessGuardInterceptor implements HandlerInterceptor {
 
         HttpSession session = request.getSession(false);
         if (accessSessionService.isGranted(session)) {
-            return true;
+            String path = request.getRequestURI().substring(request.getContextPath().length());
+            AccessProfile profile = accessSessionService.getCurrentProfile(session);
+            if (profile == AccessProfile.CLIENTE && "/".equals(path)) {
+                response.sendRedirect(request.getContextPath() + profile.entryPoint());
+                return false;
+            }
+
+            if (accessSessionService.canAccess(session, path, request.getMethod())) {
+                return true;
+            }
+
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return false;
         }
 
         HttpSession writableSession = session != null ? session : request.getSession(true);

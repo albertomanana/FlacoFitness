@@ -212,7 +212,7 @@ public class SesionClaseController {
 
     private void cargarCatalogos(Model model) {
         model.addAttribute("clases", claseService.listarActivas());
-        model.addAttribute("staffActivos", staffService.listarActivos());
+        model.addAttribute("staffActivos", staffService.listarActivosParaEntrenamiento());
         model.addAttribute("rutinas", rutinaService.listarTodas());
         model.addAttribute("estadosSesion", EstadoSesion.values());
     }

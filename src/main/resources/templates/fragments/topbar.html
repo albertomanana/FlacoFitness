@@ -74,13 +74,14 @@
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                     aria-label="Sesion de acceso">
-                <div class="ff-topbar-avatar">AD</div>
-                <span class="ff-topbar-avatar-name">Acceso PIN</span>
+                <div class="ff-topbar-avatar" th:text="${accessProfile.initials}">AD</div>
+                <span class="ff-topbar-avatar-name" th:text="${accessProfile.label}">Acceso PIN</span>
             </button>
             <div class="dropdown-menu dropdown-menu-end ff-user-menu shadow-lg">
                 <div class="ff-user-menu-header">
                     <span class="ff-user-menu-label">Sesion activa</span>
-                    <strong class="ff-user-menu-title">Modo operador</strong>
+                    <strong class="ff-user-menu-title" th:text="${accessProfile.displayName}">Modo operador</strong>
+                    <small class="text-muted" th:text="${accessProfile.description}">Perfil activo</small>
                 </div>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item ff-user-menu-item" th:href="@{/}">Ir al dashboard</a>

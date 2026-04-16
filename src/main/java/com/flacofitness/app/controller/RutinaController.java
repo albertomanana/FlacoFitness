@@ -148,7 +148,7 @@ public class RutinaController {
 
     private void cargarCatalogos(Model model) {
         model.addAttribute("usuarios", usuarioService.listarActivos());
-        model.addAttribute("staffActivos", staffService.listarActivos());
+        model.addAttribute("staffActivos", staffService.listarActivosParaEntrenamiento());
         model.addAttribute("tiposRutina", TipoRutina.values());
     }
 

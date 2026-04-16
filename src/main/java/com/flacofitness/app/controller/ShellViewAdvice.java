@@ -1,6 +1,8 @@
 package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.dto.ShellNotificationItem;
+import com.flacofitness.app.security.AccessProfile;
+import com.flacofitness.app.security.AccessSessionService;
 import com.flacofitness.app.service.ShellNotificationService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,16 +23,20 @@ import java.util.List;
         SesionClaseController.class,
         GastoController.class,
         MaquinaController.class,
-        MaterialController.class
+        MaterialController.class,
+        ClientePortalController.class
 })
 public class ShellViewAdvice {
 
     public static final String ATTR_DISMISSED_SIGNATURE = "ff.shell.notifications.dismissedSignature";
 
     private final ShellNotificationService shellNotificationService;
+    private final AccessSessionService accessSessionService;
 
-    public ShellViewAdvice(ShellNotificationService shellNotificationService) {
+    public ShellViewAdvice(ShellNotificationService shellNotificationService,
+                           AccessSessionService accessSessionService) {
         this.shellNotificationService = shellNotificationService;
+        this.accessSessionService = accessSessionService;
     }
 
     @ModelAttribute("shellNotifications")
@@ -60,5 +66,10 @@ public class ShellViewAdvice {
     @ModelAttribute("shellNotificationCount")
     public int shellNotificationCount(HttpSession session) {
         return shellNotifications(session).size();
+    }
+
+    @ModelAttribute("accessProfile")
+    public AccessProfile accessProfile(HttpSession session) {
+        return accessSessionService.getCurrentProfile(session);
     }
 }

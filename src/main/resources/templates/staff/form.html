@@ -48,6 +48,12 @@
                                     <label class="form-check-label" for="activo">Activo</label>
                                 </div>
                             </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check form-switch mb-2">
+                                    <input id="puedeImpartirClases" type="checkbox" class="form-check-input" th:field="*{puedeImpartirClases}">
+                                    <label class="form-check-label" for="puedeImpartirClases">Puede impartir clases y rutinas</label>
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <label class="form-label" for="observaciones">Observaciones</label>
                                 <textarea id="observaciones" rows="4" class="form-control" th:field="*{observaciones}"></textarea>

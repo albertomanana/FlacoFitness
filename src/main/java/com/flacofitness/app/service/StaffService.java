@@ -43,6 +43,10 @@ public class StaffService {
         return staffPerfilRepository.findByActivoTrue();
     }
 
+    public List<StaffPerfil> listarActivosParaEntrenamiento() {
+        return staffPerfilRepository.findByActivoTrueAndPuedeImpartirClasesTrue();
+    }
+
     public long contarActivos() {
         return staffPerfilRepository.countByActivoTrue();
     }
@@ -85,6 +89,7 @@ public class StaffService {
         staffExistente.setEspecialidad(staffActualizado.getEspecialidad());
         staffExistente.setRolStaff(staffActualizado.getRolStaff());
         staffExistente.setActivo(staffActualizado.getActivo());
+        staffExistente.setPuedeImpartirClases(staffActualizado.getPuedeImpartirClases());
         staffExistente.setFechaAlta(staffActualizado.getFechaAlta());
         staffExistente.setObservaciones(staffActualizado.getObservaciones());
         normalizarPerfil(staffExistente);
@@ -124,6 +129,9 @@ public class StaffService {
         }
         if (staffPerfil.getRolStaff() == null) {
             staffPerfil.setRolStaff(RolStaff.ENTRENADOR);
+        }
+        if (staffPerfil.getPuedeImpartirClases() == null) {
+            staffPerfil.setPuedeImpartirClases(staffPerfil.getRolStaff() == RolStaff.ENTRENADOR);
         }
     }
 

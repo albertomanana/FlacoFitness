@@ -197,3 +197,27 @@ Se solicito implementar un plan cerrado con staff, membresias, trials, clases, s
 - Se amplio dashboard y notificaciones con KPIs de staff, trials, sesiones y membresias.
 - Se enriquecio `DemoDataSeeder` para el perfil local/demo y se dejo `data.sql` seguro para MySQL.
 - Se validaron compilacion, tests y rutas principales con servidor local.
+
+## Entrada 2026-04-16 (Recuperacion segura)
+
+### Fecha
+
+2026-04-16
+
+### Contexto
+
+Recuperacion del proyecto tras una integracion parcial que rompio coherencia de base de datos, tests y modulos SaaS.
+
+### Prompt
+
+Implementar el plan de recuperacion segura de FlacoFitness: preservar estado sucio, crear rama de recuperacion, restaurar el nucleo avanzado desde `feature/core-saas-modules`, corregir Maven, recuperar Plan A de roles/perfiles, dejar MySQL sin seeds automaticos, validar con Maven y actualizar documentacion viva.
+
+### Resultado
+
+- Se creo `recovery/restore-core-saas-plan-a`.
+- Se preservo el estado previo en stash `backup before recovery core saas plan a`.
+- Se recupero el modelo SaaS avanzado.
+- Se corrigio Maven para evitar ruta absoluta a JDK y fallo de Lombok con JDK moderno.
+- Se termino acceso PIN con perfiles de sesion y panel cliente.
+- Se corrigio staff responsable para que gerencia no aparezca como instructora por defecto.
+- Se validaron compilacion y tests.

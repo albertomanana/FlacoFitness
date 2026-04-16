@@ -776,6 +776,7 @@ public class DemoDataSeeder implements ApplicationRunner {
             RolStaff rolStaff = index == 0 ? RolStaff.GERENTE : (index == 1 ? RolStaff.ENTRENADOR : RolStaff.RECEPCION);
             String especialidad = index == 0 ? "Direccion operativa" : (index == 1 ? "Fuerza y recomposicion" : "Recepcion y atencion");
             String observaciones = "Perfil staff demo ligado al usuario " + row.get("EMAIL") + ".";
+            boolean puedeImpartirClases = rolStaff == RolStaff.ENTRENADOR;
 
             Integer total = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM staff_perfiles WHERE usuario_id = ?",
@@ -783,19 +784,21 @@ public class DemoDataSeeder implements ApplicationRunner {
 
             if (total == null || total == 0) {
                 jdbcTemplate.update(
-                        "INSERT INTO staff_perfiles (usuario_id, especialidad, rol_staff, activo, fecha_alta, observaciones) VALUES (?, ?, ?, ?, ?, ?)",
+                        "INSERT INTO staff_perfiles (usuario_id, especialidad, rol_staff, activo, puede_impartir_clases, fecha_alta, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?)",
                         userId,
                         especialidad,
                         rolStaff.name(),
                         true,
+                        puedeImpartirClases,
                         java.sql.Date.valueOf(LocalDate.now().minusDays(90L + index * 15L)),
                         observaciones);
             } else {
                 jdbcTemplate.update(
-                        "UPDATE staff_perfiles SET especialidad = ?, rol_staff = ?, activo = ?, observaciones = ? WHERE usuario_id = ?",
+                        "UPDATE staff_perfiles SET especialidad = ?, rol_staff = ?, activo = ?, puede_impartir_clases = ?, observaciones = ? WHERE usuario_id = ?",
                         especialidad,
                         rolStaff.name(),
                         true,
+                        puedeImpartirClases,
                         observaciones,
                         userId);
             }
@@ -940,8 +943,9 @@ public class DemoDataSeeder implements ApplicationRunner {
             return;
         }
 
-        Long staff1 = firstOrNull(staffProfileIds);
-        Long staff2 = staffProfileIds.size() > 1 ? staffProfileIds.get(1) : staff1;
+        List<Long> instructorProfileIds = findInstructorProfileIds();
+        Long staff1 = firstOrNull(instructorProfileIds);
+        Long staff2 = instructorProfileIds.size() > 1 ? instructorProfileIds.get(1) : staff1;
         Long rutinaHiit = findRoutineId("HIIT Metabolico");
         Long rutinaMovilidad = findRoutineId("Movilidad y Core");
 
@@ -1072,16 +1076,27 @@ public class DemoDataSeeder implements ApplicationRunner {
     }
 
     private void assignStaffToRoutines(List<Long> staffProfileIds) {
-        if (staffProfileIds.isEmpty()) {
+        List<Long> instructorProfileIds = findInstructorProfileIds();
+        if (instructorProfileIds.isEmpty()) {
             return;
         }
         List<Long> routineIds = jdbcTemplate.queryForList("SELECT id FROM rutinas WHERE activa = TRUE ORDER BY id ASC", Long.class);
         for (int index = 0; index < routineIds.size(); index++) {
             jdbcTemplate.update(
                     "UPDATE rutinas SET staff_responsable_id = ? WHERE id = ?",
-                    staffProfileIds.get(index % staffProfileIds.size()),
+                    instructorProfileIds.get(index % instructorProfileIds.size()),
                     routineIds.get(index));
         }
+    }
+
+    private List<Long> findInstructorProfileIds() {
+        return jdbcTemplate.queryForList("""
+                SELECT id
+                FROM staff_perfiles
+                WHERE activo = TRUE
+                  AND (rol_staff = 'ENTRENADOR' OR puede_impartir_clases = TRUE)
+                ORDER BY id ASC
+                """, Long.class);
     }
 
     private Long loadStaffProfileIdByUserId(Long userId) {

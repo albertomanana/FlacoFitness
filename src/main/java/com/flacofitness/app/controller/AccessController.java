@@ -2,6 +2,7 @@ package com.flacofitness.app.controller;
 
 import com.flacofitness.app.security.AccessAttemptResult;
 import com.flacofitness.app.config.AccessSettings;
+import com.flacofitness.app.security.AccessProfile;
 import com.flacofitness.app.security.AccessSessionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -41,18 +42,24 @@ public class AccessController {
         model.addAttribute("targetPath", accessSessionService.resolveTarget(session));
         model.addAttribute("maxAttempts", accessSettings.getMaxAttempts());
         model.addAttribute("lockMinutes", accessSettings.getLockDuration().toMinutes());
+        model.addAttribute("accessProfiles", AccessProfile.values());
         return "auth/acceso";
     }
 
     @PostMapping("/acceso")
     public String validarAcceso(@RequestParam(name = "pin", required = false) String pin,
+                                @RequestParam(name = "profile", required = false) String rawProfile,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
-        AccessAttemptResult result = accessSessionService.verifyPin(session, pin);
+        AccessProfile profile = AccessProfile.from(rawProfile);
+        AccessAttemptResult result = accessSessionService.verifyPin(session, pin, profile);
         if (result.granted()) {
             String target = accessSessionService.resolveTarget(session);
             accessSessionService.clearTarget(session);
-            redirectAttributes.addFlashAttribute("mensajeExito", "Acceso concedido. Bienvenido al panel operativo.");
+            if (!profile.canAccess(target, "GET")) {
+                target = profile.entryPoint();
+            }
+            redirectAttributes.addFlashAttribute("mensajeExito", "Acceso concedido en modo " + profile.getLabel() + ".");
             return "redirect:" + target;
         }
 

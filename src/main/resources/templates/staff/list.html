@@ -68,6 +68,7 @@
                                     <th>Staff</th>
                                     <th>Rol interno</th>
                                     <th>Especialidad</th>
+                                    <th>Clases</th>
                                     <th>Alta</th>
                                     <th>Estado</th>
                                     <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
@@ -86,6 +87,11 @@
                                     </td>
                                     <td th:text="${perfil.rolStaff != null ? #strings.replace(perfil.rolStaff.name(), '_', ' ') : '-'}">ENTRENADOR</td>
                                     <td th:text="${#strings.defaultString(perfil.especialidad, '-')}">Especialidad</td>
+                                    <td>
+                                        <span class="ff-status-badge"
+                                              th:classappend="${perfil.puedeImpartirClases == true} ? ' ff-status-active' : ' ff-status-inactive'"
+                                              th:text="${perfil.puedeImpartirClases == true} ? 'Autorizado' : 'No imparte'">Autorizado</span>
+                                    </td>
                                     <td th:text="${perfil.fechaAlta != null ? #temporals.format(perfil.fechaAlta, 'dd/MM/yyyy') : '-'}">Fecha</td>
                                     <td><span class="ff-status-badge" th:classappend="${perfil.activo == true} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${perfil.activo == true} ? 'Activo' : 'Inactivo'">Activo</span></td>
                                     <td class="text-end">
@@ -98,7 +104,7 @@
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(staff)}">
-                                <tr><td colspan="6" class="text-center ff-empty-state">No hay perfiles de staff todavia.</td></tr>
+                                <tr><td colspan="7" class="text-center ff-empty-state">No hay perfiles de staff todavia.</td></tr>
                                 </tbody>
                             </table>
                         </div>

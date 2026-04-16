@@ -1,132 +1,241 @@
 # Domain Model
 
-## Entidades planeadas
+## Vision general
+
+El dominio actual diferencia identidad, operacion diaria y parte comercial. La regla clave es no mezclar catalogo, contrato y cobro:
+
+- `Plan`: catalogo de membresias.
+- `MembresiaUsuario`: contrato real de una persona.
+- `Pago`: cobro o deuda.
+
+Tambien se separa actividad y horario:
+
+- `Clase`: actividad reutilizable.
+- `SesionClase`: ocurrencia programada.
+- `ReservaSesion`: inscripcion de usuario a una sesion.
+
+## Entidades principales
 
 ### Usuario
 
-Representa a una persona registrada en el sistema. Puede corresponder a cliente del gimnasio, entrenador o administrador, segun su rol y permisos funcionales futuros.
+Persona registrada en el sistema. Puede ser cliente, staff o admin segun su `Rol` y, para staff, su `StaffPerfil`.
 
-Estado actual:
-- entidad JPA implementada con relacion a `Rol` y `Plan`
-- campos disponibles para CRUD MVC: nombre, apellidos, dni, email, telefono, fecha de nacimiento, direccion, fotoPath, activo y fecha de registro
-- campo `fechaProximoPago` anadido para soportar renovacion automatica de cuotas segun el plan asignado
+Campos clave:
+- datos personales y contacto
+- `dni`
+- `fotoPath`
+- `activo`
+- `fechaRegistro`
+- `fechaProximoPago`
+- relacion con `Rol`
+- relacion legacy con `Plan`
+
+La relacion legacy con `Plan` se mantiene por compatibilidad; el contrato real vive en `MembresiaUsuario`.
 
 ### Rol
 
-Define el tipo de usuario dentro del sistema, por ejemplo staff o cliente. Permitira organizar responsabilidades y flujos internos sin incorporar todavia seguridad avanzada.
-
-Estado actual:
-- entidad JPA implementada
-- relacion `OneToMany` con `Usuario`
-
-### Plan
-
-Modela los planes o membresias del gimnasio, incluyendo nombre, precio, duracion y posibles beneficios asociados.
-
-Estado actual:
-- entidad JPA implementada
-- relacion `OneToMany` con `Usuario`
-- campo `activo` anadido para gestionar disponibilidad del plan
-
-### Rutina
-
-Agrupa una planificacion de entrenamiento asignable a uno o varios usuarios. Servira para registrar objetivos, tipo de rutina y estructura general del entrenamiento.
-
-Estado actual:
-- entidad JPA implementada
-- relacion `ManyToMany` con `Usuario` mediante la tabla intermedia `usuario_rutina`
-- enums `ObjetivoRutina` y `TipoRutina` definidos
-
-### Ejercicio
-
-Describe cada ejercicio individual que puede formar parte de una rutina, con informacion tecnica basica como nombre, grupo muscular y observaciones.
-
-### RutinaEjercicio
-
-Entidad intermedia para relacionar rutinas y ejercicios. Permitira registrar orden, series, repeticiones, tiempos o parametros especificos por ejercicio dentro de cada rutina.
-
-### Asistencia
-
-Registra la presencia de un usuario en el gimnasio en una fecha y hora determinada. Puede usarse para control de acceso y seguimiento de actividad.
-
-Estado actual:
-- entidad JPA implementada
-- relacion `ManyToOne` con `Usuario`
-- fecha automatica al persistir el registro
-
-### Pago
-
-Representa el registro de cobros o pagos asociados a usuarios y planes. Permitira controlar estado de cuotas, fechas y metodo de pago.
-
-Estado actual:
-- entidad JPA implementada
-- relacion `ManyToOne` con `Usuario` y `Plan`
-- enums `MetodoPago` y `EstadoPago` definidos
-- monto sincronizado automaticamente desde el `Plan`
-- referencia automatica generada con UUID
-- generacion automatica mensual disponible a traves de servicio y scheduler configurable
-- relacion opcional con `MembresiaUsuario` para conectar el cobro con un contrato comercial real sin romper pagos legacy
+Clasificacion base del usuario: `ADMIN`, `STAFF` o `CLIENTE` segun semillas y uso del sistema. No sustituye al perfil de acceso por PIN, pero ayuda a modelar identidad en base de datos.
 
 ### StaffPerfil
 
-Perfil operativo del equipo del gimnasio. No duplica personas: se vincula a `Usuario` mediante una relacion `OneToOne` y permite tratar a recepcion, entrenadores y gerencia como miembros internos del sistema.
+Perfil operativo ligado a `Usuario` mediante relacion `OneToOne`.
 
-Estado actual:
-- entidad JPA implementada
-- enum `RolStaff`: RECEPCION, ENTRENADOR, GERENTE, ADMINISTRACION
-- campos de especialidad, activo/inactivo, fecha de alta y observaciones
-- se puede asociar a sesiones y a rutinas como responsable operativo
+Campos clave:
+- usuario
+- especialidad
+- `RolStaff`
+- activo
+- `puedeImpartirClases`
+- fecha de alta
+- observaciones
+
+Regla recuperada:
+- Un `ENTRENADOR` puede impartir clases y gestionar rutinas.
+- Un `GERENTE` no imparte clases por defecto.
+- Un staff no entrenador solo puede impartir clases si `puedeImpartirClases = true` de forma explicita.
+
+### Plan
+
+Catalogo comercial de membresias.
+
+Campos clave:
+- nombre
+- precio mensual
+- duracion
+- tipo de membresia
+- beneficios
+- activo
 
 ### MembresiaUsuario
 
-Contrato real entre un usuario y un plan. Resuelve la diferencia entre catalogo comercial (`Plan`) y la membresia concreta contratada por una persona.
+Contrato real entre usuario y plan.
 
-Estado actual:
-- entidad JPA implementada
-- relacion `ManyToOne` con `Usuario` y `Plan`
-- fechas de inicio/fin, estado, precio snapshot, origen y observaciones
-- enum `EstadoMembresia`: ACTIVA, PENDIENTE, VENCIDA, CONGELADA, CANCELADA, PRUEBA
-- sincroniza `Usuario.plan` y `Usuario.fechaProximoPago` cuando el contrato activo cambia
+Campos clave:
+- usuario
+- plan
+- fecha inicio
+- fecha fin
+- estado
+- precio snapshot
+- origen
+- observaciones
+
+Permite que un usuario cambie de plan sin perder el historico comercial.
+
+### Pago
+
+Registro financiero de cobro o deuda.
+
+Campos clave:
+- usuario
+- plan
+- membresia usuario opcional
+- monto
+- fecha de pago
+- fecha de vencimiento
+- metodo de pago
+- estado
+- referencia
+
+Los pagos legacy sin membresia contractual siguen siendo validos.
 
 ### Trial
 
-Lead comercial o dia de prueba antes de convertirse en usuario real. Permite explicar el embudo de captacion de un gimnasio local.
+Lead comercial o dia de prueba.
 
-Estado actual:
-- entidad JPA implementada
-- datos de contacto, origen, fecha de prueba, estado y staff responsable opcional
-- enum `EstadoTrial`: PENDIENTE, ASISTIO, NO_ASISTIO, CONVERTIDO, CANCELADO
-- conversion controlada a `Usuario` desde servicio, reutilizando email si ya existe
+Campos clave:
+- nombre y apellidos
+- telefono
+- email
+- origen
+- fecha de prueba
+- estado
+- staff responsable opcional
+- observaciones
+
+Permite convertir un lead a `Usuario`.
+
+### Rutina
+
+Entrenamiento asignable a varios usuarios.
+
+Campos clave:
+- nombre
+- descripcion
+- tipo de rutina
+- activa
+- fecha de creacion
+- usuarios asignados
+- staff responsable opcional
+
+El campo ornamental `objetivo` fue eliminado del dominio para reducir ruido.
 
 ### Clase
 
-Catalogo reutilizable de actividades grupales como HIIT, Yoga o Spinning. Define la actividad, no el horario concreto.
+Catalogo de actividades como Yoga, HIIT o Spinning. No representa una fecha concreta.
 
-Estado actual:
-- entidad JPA implementada
-- nombre, descripcion, capacidad sugerida, activa y observaciones
+Campos clave:
+- nombre
+- descripcion
+- capacidad sugerida
+- activa
+- observaciones
 
 ### SesionClase
 
-Ocurrencia programada de una `Clase`. Representa fecha, hora, cupo, estado, staff responsable y rutina opcional.
+Clase programada en una fecha y hora.
 
-Estado actual:
-- entidad JPA implementada
-- relacion `ManyToOne` con `Clase`
-- relacion opcional con `StaffPerfil` y `Rutina`
-- enum `EstadoSesion`: PROGRAMADA, CANCELADA, FINALIZADA
-- soporta registro de asistencias vinculadas a una sesion concreta
+Campos clave:
+- clase
+- fecha
+- hora inicio
+- hora fin
+- cupo
+- estado
+- staff responsable opcional
+- rutina opcional
+- observaciones
+
+Regla recuperada:
+- El staff responsable debe estar activo y ser entrenador o tener capacidad explicita para impartir clases.
 
 ### ReservaSesion
 
-Relacion entre `Usuario` y `SesionClase` para gestionar inscripciones, cupos y asistencia a clases.
+Relacion entre usuario y sesion.
 
-Estado actual:
-- entidad JPA implementada
-- restriccion unica por usuario y sesion
-- enum `EstadoReservaSesion`: RESERVADA, ASISTIO, CANCELADA, NO_ASISTIO
-- permite reservar, quitar reserva y marcar asistencia desde la sesion
+Campos clave:
+- usuario
+- sesion clase
+- estado de reserva
+- fecha de reserva
 
-## Nota de modelado
+Evita reservas duplicadas por usuario y sesion.
 
-El modelo mantiene `Plan` como catalogo comercial, `MembresiaUsuario` como contrato y `Pago` como cobro. Esta separacion evita duplicidades y hace que el proyecto sea explicable como producto SaaS realista para un gimnasio local.
+### Asistencia
+
+Registro de presencia.
+
+Campos clave:
+- usuario
+- fecha
+- hora entrada
+- observaciones
+- sesion clase opcional
+
+Puede representar check-in libre o asistencia vinculada a clase/sesion.
+
+### Gasto
+
+Registro de gasto operativo o financiero del gimnasio.
+
+Campos clave:
+- concepto
+- categoria
+- monto
+- fecha
+- estado
+- observaciones
+
+### Maquina
+
+Elemento de equipamiento fisico.
+
+Campos clave:
+- nombre
+- codigo
+- estado
+- ubicacion
+- fecha de compra
+- mantenimiento
+
+### Material
+
+Inventario operativo no necesariamente maquina.
+
+Campos clave:
+- nombre
+- categoria
+- cantidad
+- estado
+- ubicacion
+
+## Enums relevantes
+
+- `RolStaff`: RECEPCION, ENTRENADOR, GERENTE, ADMINISTRACION.
+- `TipoMembresia`: MENSUAL, TRIMESTRAL, PREMIUM, ESTUDIANTE, PRUEBA.
+- `EstadoMembresia`: ACTIVA, PENDIENTE, VENCIDA, CONGELADA, CANCELADA, PRUEBA.
+- `EstadoTrial`: PENDIENTE, ASISTIO, NO_ASISTIO, CONVERTIDO, CANCELADO.
+- `EstadoSesion`: PROGRAMADA, CANCELADA, FINALIZADA.
+- `EstadoReservaSesion`: RESERVADA, ASISTIO, CANCELADA, NO_ASISTIO.
+- `EstadoPago`: PENDIENTE, PAGADO, VENCIDO.
+- `MetodoPago`: EFECTIVO, TARJETA, TRANSFERENCIA.
+- `TipoRutina`: GENERAL, PERSONALIZADA.
+
+## Compatibilidad legacy
+
+- `Usuario.plan` no se elimina todavia.
+- `Pago` puede existir sin `MembresiaUsuario`.
+- `Asistencia` puede existir sin `SesionClase`.
+- `Rutina` puede existir sin `StaffPerfil`.
+
+Esta compatibilidad permite recuperar el proyecto sin romper datos ya creados.

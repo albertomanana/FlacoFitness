@@ -1,95 +1,115 @@
 # Arquitectura
 
-## Descripción general
+## Descripcion general
 
-FlacoFitness se plantea como una aplicación web monolítica basada en el patrón MVC. La solución concentra backend, renderizado de vistas y acceso a datos en un único proyecto Spring Boot, lo que simplifica desarrollo, despliegue y defensa académica.
+FlacoFitness mantiene una arquitectura monolitica MVC con Spring Boot. La aplicacion renderiza vistas en servidor con Thymeleaf, usa Bootstrap 5 para interfaz y JavaScript ligero para interacciones concretas como dashboard, tablas, transiciones y filtros.
+
+La decision principal es conservar un monolito claro: es suficiente para el alcance academico, evita sobreingenieria y permite explicar facilmente el recorrido completo desde vista, controlador, servicio, repositorio y base de datos.
 
 ## Capas del sistema
 
-### Presentación
+### Presentacion
 
-- Vistas Thymeleaf
-- Fragmentos reutilizables HTML
-- Bootstrap 5 para maquetación y componentes
-- JavaScript ligero para comportamiento básico de interfaz
+- Vistas Thymeleaf en `src/main/resources/templates`.
+- Fragmentos reutilizables para `head`, `sidebar`, `topbar`, `footer` y alertas.
+- Bootstrap 5 como base visual.
+- CSS propio en `static/css/styles.css`.
+- JavaScript ligero en `static/js/`.
+- Chart.js para dashboard.
+- DataTables para listados interactivos.
 
 ### Controladores
 
-- Reciben peticiones HTTP
-- Preparan el modelo para las vistas
-- Delegan la lógica de negocio a servicios
-- Definen navegación entre pantallas
+- Reciben peticiones HTTP MVC.
+- Preparan modelos para Thymeleaf.
+- Delegan reglas de negocio a servicios.
+- Mantienen rutas de modulos como usuarios, rutinas, pagos, asistencias, staff, membresias, trials, clases y sesiones.
 
 ### Servicios
 
-- Centralizan reglas de negocio
-- Coordinan validaciones, transacciones y casos de uso
-- Orquestan interacción entre controladores y repositorios
+- Centralizan reglas de negocio.
+- Validan consistencia de relaciones.
+- Evitan duplicidades funcionales.
+- Orquestan casos de uso como alta de membresia, conversion de trial, reservas de sesion, pagos y check-in.
 
 ### Repositorios
 
-- Encapsulan acceso a datos mediante Spring Data JPA
-- Exponen operaciones de persistencia sobre entidades
+- Encapsulan persistencia con Spring Data JPA.
+- Exponen consultas por estado, usuario, fechas, membresia, sesion o staff.
 
 ### Modelo
 
-- Entidades JPA del dominio
-- DTO para intercambio de datos entre capas
-- Enumeraciones para estados y valores controlados
+- Entidades JPA en `model.entity`.
+- Enums en `model.enums`.
+- DTOs de respuesta o agregados en `model.dto`.
+- El modelo evita duplicar personas: `StaffPerfil` extiende operativamente a `Usuario`.
 
-## Responsabilidades por capa
+## Seguridad MVP
 
-- `controller`: flujo web MVC y endpoints de navegación
-- `service`: lógica de negocio y coordinación de casos de uso
-- `repository`: acceso a datos
-- `model.entity`: entidades persistentes
-- `model.dto`: objetos de transferencia para formularios y vistas
-- `model.enums`: catálogos y estados del dominio
-- `config`: configuración transversal de la aplicación
-- `exception`: manejo de errores y excepciones de negocio o infraestructura
-- `util`: utilidades técnicas reutilizables
+No se usa Spring Security en esta fase. El acceso esta protegido por un interceptor MVC y un PIN global configurable:
+
+- `AccessSettings`: lee PIN, intentos maximos y bloqueo temporal.
+- `AccessSessionService`: guarda acceso concedido, perfil de sesion y bloqueo.
+- `AccessGuardInterceptor`: protege rutas y aplica permisos por perfil.
+- `AccessProfile`: define perfiles y permisos de navegacion.
+
+Perfiles actuales:
+
+- `ADMIN`: control total.
+- `STAFF_ENTRENADOR`: rutinas, clases, sesiones y asistencias; lectura limitada de usuarios.
+- `STAFF_RECEPCION`: usuarios, trials, pagos operativos, asistencias y reservas.
+- `STAFF_GERENTE`: vision de gestion, finanzas e inventario; no imparte clases por defecto.
+- `CLIENTE`: panel personal limitado.
+
+Esta capa es intencionadamente simple y defendible. Spring Security queda como evolucion futura.
 
 ## Modulos funcionales actuales
 
-- `usuarios`: centro operativo del cliente, con foto, plan, pagos, asistencias, rutinas y acceso a historial de membresias.
-- `staff`: perfil interno ligado a `Usuario`, usado para entrenadores, recepcion y gerencia sin duplicar personas.
-- `membresias`: catalogo comercial basado en `Plan` y contratos reales mediante `MembresiaUsuario`.
-- `trials`: gestion de leads y dias de prueba, con conversion controlada a usuario.
-- `clases`: catalogo de actividades reutilizables.
-- `sesiones`: agenda de clases programadas, staff responsable, cupo, reservas y asistencia vinculada.
-- `rutinas`: biblioteca y asignacion de entrenamientos a usuarios, con staff responsable opcional.
-- `pagos`: cobros vinculados a usuario, plan y, cuando existe, contrato de membresia.
-- `asistencias`: check-in libre y asistencia opcionalmente asociada a sesion.
+- `usuarios`: centro operativo del cliente, con foto, datos, pagos, asistencias, rutinas y resumen inteligente.
+- `cliente`: panel limitado para perfil cliente.
+- `staff`: perfiles internos ligados a usuarios.
+- `membresias`: catalogo comercial basado en `Plan` y contratos mediante `MembresiaUsuario`.
+- `trials`: gestion de leads y dias de prueba.
+- `clases`: catalogo de actividades.
+- `sesiones`: agenda de clases programadas, cupo, staff responsable, reservas y asistencia.
+- `rutinas`: biblioteca y asignacion de entrenamientos, con staff responsable opcional.
+- `pagos`: cobros asociados a usuario, plan y contrato cuando existe.
+- `asistencias`: check-in libre o asistencia asociada a sesion.
+- `gastos`: control financiero basico.
+- `maquinas` y `materiales`: inventario operativo.
 
-## Criterio de modelado SaaS
+## Criterio de dominio
 
-La arquitectura conserva el monolito MVC porque es suficiente para el alcance academico y para un MVP vendible local. La separacion clave del dominio es:
+- `Plan` define una oferta comercial.
+- `MembresiaUsuario` define el contrato real de un usuario.
+- `Pago` registra cobros y estado financiero.
+- `Clase` define una actividad reutilizable.
+- `SesionClase` define una ocurrencia con fecha, hora, cupo y responsable.
+- `ReservaSesion` conecta usuarios con sesiones.
+- `Asistencia` conserva check-in libre y puede asociarse opcionalmente a una sesion.
+- `StaffPerfil` se liga a `Usuario` para no duplicar identidad.
 
-- `Plan` define la oferta comercial.
-- `MembresiaUsuario` define el contrato de una persona.
-- `Pago` registra el cobro de ese contrato.
-- `Clase` define una actividad.
-- `SesionClase` define una fecha y hora concreta.
-- `ReservaSesion` conecta usuarios con sesiones y permite controlar cupo.
-
-## Convención de paquetes
-
-Paquete base Java: `com.flacofitness.app`
-
-Convención prevista:
+## Convencion de paquetes
 
 ```text
 com.flacofitness.app
 ├── config
 ├── controller
-├── service
-├── repository
-├── model
-│   ├── entity
-│   ├── dto
-│   └── enums
 ├── exception
+├── model
+│   ├── dto
+│   ├── entity
+│   └── enums
+├── repository
+├── security
+├── service
 └── util
 ```
 
-Esta convención favorece localización rápida del código, separación de responsabilidades y mantenimiento progresivo del proyecto.
+## Reglas de mantenimiento
+
+- No introducir SPA ni frameworks frontend pesados.
+- No ejecutar seeds demo contra MySQL real.
+- Mantener controladores finos y servicios con reglas de negocio.
+- Mantener compatibilidad con datos legacy cuando una relacion nueva sea opcional.
+- Documentar decisiones relevantes en `docs/agents-memory/decisions-log.md`.

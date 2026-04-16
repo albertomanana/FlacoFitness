@@ -5,6 +5,7 @@ import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Rutina;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.RolStaff;
 import com.flacofitness.app.repository.RutinaRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
@@ -171,6 +172,19 @@ public class RutinaService {
             return null;
         }
         return staffPerfilRepository.findById(staffPerfil.getId())
+                .map(this::validarStaffEntrenador)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff no encontrado con id: " + staffPerfil.getId()));
+    }
+
+    private StaffPerfil validarStaffEntrenador(StaffPerfil staffPerfil) {
+        if (!Boolean.TRUE.equals(staffPerfil.getActivo())) {
+            throw new BusinessValidationException("El staff responsable debe estar activo");
+        }
+        boolean entrenador = staffPerfil.getRolStaff() == RolStaff.ENTRENADOR;
+        boolean excepcionExplicita = Boolean.TRUE.equals(staffPerfil.getPuedeImpartirClases());
+        if (!entrenador && !excepcionExplicita) {
+            throw new BusinessValidationException("Solo entrenadores o staff autorizado pueden responsabilizarse de rutinas");
+        }
+        return staffPerfil;
     }
 }

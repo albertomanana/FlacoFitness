@@ -49,6 +49,10 @@ public class StaffPerfil {
     @Column(nullable = false)
     private Boolean activo;
 
+    @NotNull
+    @Column(name = "puede_impartir_clases", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean puedeImpartirClases;
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "fecha_alta", nullable = false)
     private LocalDate fechaAlta;
@@ -66,6 +70,9 @@ public class StaffPerfil {
         }
         if (rolStaff == null) {
             rolStaff = RolStaff.ENTRENADOR;
+        }
+        if (puedeImpartirClases == null) {
+            puedeImpartirClases = rolStaff == RolStaff.ENTRENADOR;
         }
     }
 }

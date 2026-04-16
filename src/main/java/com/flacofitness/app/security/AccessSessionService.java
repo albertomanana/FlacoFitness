@@ -16,6 +16,7 @@ public class AccessSessionService {
     public static final String ATTR_FAILED_ATTEMPTS = "ff.access.failedAttempts";
     public static final String ATTR_LOCKED_UNTIL = "ff.access.lockedUntil";
     public static final String ATTR_TARGET_URI = "ff.access.targetUri";
+    public static final String ATTR_PROFILE = "ff.access.profile";
 
     private final AccessSettings accessSettings;
     private static final DateTimeFormatter LOCK_TIME_FORMATTER = DateTimeFormatter
@@ -106,7 +107,20 @@ public class AccessSessionService {
         session.setAttribute(ATTR_TARGET_URI, target);
     }
 
-    public AccessAttemptResult verifyPin(HttpSession session, String rawPin) {
+    public AccessProfile getCurrentProfile(HttpSession session) {
+        if (!isGranted(session)) {
+            return AccessProfile.ADMIN;
+        }
+
+        Object value = session.getAttribute(ATTR_PROFILE);
+        return value instanceof String rawProfile ? AccessProfile.from(rawProfile) : AccessProfile.ADMIN;
+    }
+
+    public boolean canAccess(HttpSession session, String path, String method) {
+        return getCurrentProfile(session).canAccess(path, method);
+    }
+
+    public AccessAttemptResult verifyPin(HttpSession session, String rawPin, AccessProfile profile) {
         if (session == null) {
             return new AccessAttemptResult(false, false, 0, null, "No se pudo abrir la sesion de acceso.");
         }
@@ -117,7 +131,7 @@ public class AccessSessionService {
 
         String normalizedPin = rawPin == null ? "" : rawPin.trim();
         if (accessSettings.getPin().equals(normalizedPin)) {
-            grantAccess(session);
+            grantAccess(session, profile);
             return new AccessAttemptResult(true, false, accessSettings.getMaxAttempts(), null, "Acceso concedido.");
         }
 
@@ -135,12 +149,13 @@ public class AccessSessionService {
                 "PIN incorrecto. Te quedan " + remainingAttempts + " intento(s).");
     }
 
-    public void grantAccess(HttpSession session) {
+    public void grantAccess(HttpSession session, AccessProfile profile) {
         if (session == null) {
             return;
         }
 
         session.setAttribute(ATTR_GRANTED, Boolean.TRUE);
+        session.setAttribute(ATTR_PROFILE, (profile == null ? AccessProfile.ADMIN : profile).name());
         session.setAttribute(ATTR_FAILED_ATTEMPTS, 0);
         session.removeAttribute(ATTR_LOCKED_UNTIL);
     }
