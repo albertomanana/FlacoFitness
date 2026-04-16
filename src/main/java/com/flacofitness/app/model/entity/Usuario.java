@@ -20,6 +20,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 @Table(name = "usuarios")
@@ -79,4 +82,7 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @ManyToMany(mappedBy = "usuarios", fetch = FetchType.LAZY)
+    private Set<Rutina> rutinas = new LinkedHashSet<>();
 }

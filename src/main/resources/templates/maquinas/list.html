@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Maquinas')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('maquinas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Maquinas', 'Inventario de equipamiento.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Operacion</span>
+                        <h2 class="ff-section-title">Catalogo de maquinas</h2>
+                        <p class="ff-section-subtitle">Estado operativo y calendario de revisiones.</p>
+                    </div>
+                    <a class="btn btn-success" th:href="@{/maquinas/nuevo}">Nueva maquina</a>
+                </section>
+
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-4">
+                        <article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Activas</p><p class="ff-stat-value" th:text="${maquinasActivas}">0</p><p class="ff-stat-note">Inventario operativo</p></article>
+                    </div>
+                    <div class="col-sm-4">
+                        <article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Fuera de servicio</p><p class="ff-stat-value" th:text="${maquinasFueraServicio}">0</p><p class="ff-stat-note">Mantenimiento o averia</p></article>
+                    </div>
+                    <div class="col-sm-4">
+                        <article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Revision proxima</p><p class="ff-stat-value" th:text="${revisionesProximas}">0</p><p class="ff-stat-note">Siguientes 7 dias</p></article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <form class="row g-3" th:action="@{/maquinas}" method="get">
+                            <div class="col-md-5">
+                                <label class="form-label" for="estado">Estado</label>
+                                <select id="estado" name="estado" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option th:each="estado : ${estadosMaquina}" th:value="${estado}" th:selected="${estadoFiltro != null and estadoFiltro == estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label" for="categoria">Categoria</label>
+                                <select id="categoria" name="categoria" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option th:each="categoria : ${categoriasMaquina}" th:value="${categoria}" th:selected="${categoriaFiltro != null and categoriaFiltro == categoria}" th:text="${#strings.replace(categoria.name(), '_', ' ')}">Categoria</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end gap-2">
+                                <button class="btn btn-success" type="submit">Filtrar</button>
+                                <a class="btn btn-outline-secondary" th:href="@{/maquinas}">Limpiar</a>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header"><div><h3 class="ff-card-title">Equipamiento</h3><p class="ff-card-subtitle">Semaforo visual por estado y revision.</p></div></div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table id="maquinasTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar maquina, marca o ubicacion...">
+                                <thead><tr><th>Maquina</th><th>Categoria</th><th>Ubicacion</th><th>Estado</th><th>Revision</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>
+                                <tbody th:if="${not #lists.isEmpty(maquinas)}">
+                                <tr th:each="maquina : ${maquinas}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/maquinas/{id}(id=${maquina.id})}">
+                                    <td><div class="ff-table-meta"><a class="ff-row-link ff-table-primary" th:href="@{/maquinas/{id}(id=${maquina.id})}" th:text="${maquina.nombre}">Maquina</a><span class="ff-table-secondary" th:text="${#strings.defaultString(maquina.marca, '-') + ' ' + #strings.defaultString(maquina.modelo, '')}">Marca</span></div></td>
+                                    <td th:text="${maquina.categoria != null ? #strings.replace(maquina.categoria.name(), '_', ' ') : '-'}">Categoria</td>
+                                    <td th:text="${#strings.defaultString(maquina.ubicacion, '-')}">Ubicacion</td>
+                                    <td>
+                                        <span class="ff-status-badge" th:classappend="${maquina.estado != null and maquina.estado.name() == 'OPERATIVA'} ? ' ff-status-active' : (${maquina.estado != null and maquina.estado.name() == 'MANTENIMIENTO'} ? ' ff-status-pending' : ' ff-status-overdue')" th:text="${maquina.estado != null ? #strings.replace(maquina.estado.name(), '_', ' ') : '-'}">Estado</span>
+                                    </td>
+                                    <td th:text="${maquina.proximaRevision != null ? #temporals.format(maquina.proximaRevision, 'dd/MM/yyyy') : 'Sin fecha'}">Sin fecha</td>
+                                    <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/maquinas/{id}/editar(id=${maquina.id})}">Editar</a></td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(maquinas)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay maquinas para el filtro actual.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

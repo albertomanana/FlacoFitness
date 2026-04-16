@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Trials')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('trials')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Trials', 'Seguimiento comercial.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-section-header ff-animate-in"><div><span class="ff-section-eyebrow">Comercial</span><h2 class="ff-section-title">Dias de prueba</h2><p class="ff-section-subtitle">Leads, pruebas y conversion a usuario.</p></div><a class="btn btn-success" th:href="@{/trials/nuevo}">Nuevo trial</a></section>
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Trials</p><p class="ff-stat-value" th:text="${#lists.size(trials)}">0</p><p class="ff-stat-note">Total registrados</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Pendientes</p><p class="ff-stat-value" th:text="${trialsPendientes}">0</p><p class="ff-stat-note">Seguimiento activo</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Hoy</p><p class="ff-stat-value" th:text="${trialsHoy}">0</p><p class="ff-stat-note">Pruebas previstas</p></article></div>
+                </section>
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header"><div><h3 class="ff-card-title">Pipeline de pruebas</h3><p class="ff-card-subtitle">Estado comercial y responsable.</p></div></div>
+                    <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="trialsTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="trialsEstadoFiltro">Estado</label>
+                                <select id="trialsEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="estado">
+                                    <option value="all">Todos</option>
+                                    <option value="pendiente">Pendiente</option>
+                                    <option value="asistio">Asistio</option>
+                                    <option value="no-asistio">No asistio</option>
+                                    <option value="convertido">Convertido</option>
+                                    <option value="cancelado">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="trialsTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar trial...">
+                                <thead><tr><th>Lead</th><th>Fecha</th><th>Estado</th><th>Staff</th><th>Origen</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>
+                                <tbody th:if="${not #lists.isEmpty(trials)}">
+                                <tr th:each="trial : ${trials}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/trials/{id}(id=${trial.id})},data-ff-row='1',data-ff-estado=${trial.estado != null ? #strings.toLowerCase(#strings.replace(trial.estado.name(), '_', '-')) : 'pendiente'}">
+                                    <td><div class="ff-table-meta"><a class="ff-row-link ff-table-primary" th:href="@{/trials/{id}(id=${trial.id})}" th:text="${trial.nombre + (trial.apellidos != null && !trial.apellidos.isBlank() ? ' ' + trial.apellidos : '')}">Lead</a><span class="ff-table-secondary" th:text="${#strings.defaultString(trial.email, #strings.defaultString(trial.telefono, '-'))}">contacto</span></div></td>
+                                    <td th:text="${trial.fechaPrueba != null ? #temporals.format(trial.fechaPrueba, 'dd/MM/yyyy') : '-'}">Fecha</td>
+                                    <td><span class="ff-status-badge" th:classappend="${trial.estado != null and trial.estado.name() == 'CONVERTIDO'} ? ' ff-status-active' : (${trial.estado != null and trial.estado.name() == 'PENDIENTE'} ? ' ff-status-pending' : ' ff-status-inactive')" th:text="${trial.estado}">Estado</span></td>
+                                    <td th:text="${trial.staffResponsable != null and trial.staffResponsable.usuario != null ? trial.staffResponsable.usuario.nombre : '-'}">Staff</td>
+                                    <td th:text="${#strings.defaultString(trial.origen, '-')}">Origen</td>
+                                    <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/trials/{id}/editar(id=${trial.id})}">Editar</a></td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(trials)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay trials registrados.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

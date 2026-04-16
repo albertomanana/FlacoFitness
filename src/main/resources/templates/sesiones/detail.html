@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle sesion')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('sesiones')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle sesion', 'Reservas y asistencia.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-section-header">
+                    <div><span class="ff-section-eyebrow">Sesion</span><h2 class="ff-section-title" th:text="${sesionClase.clase != null ? sesionClase.clase.nombre : 'Sesion'}">Sesion</h2><p class="ff-section-subtitle" th:text="${(sesionClase.fecha != null ? #temporals.format(sesionClase.fecha, 'dd/MM/yyyy') : '-') + ' · ' + (sesionClase.horaInicio != null ? #temporals.format(sesionClase.horaInicio, 'HH:mm') : '-')}">Horario</p></div>
+                    <div class="d-flex gap-2 flex-wrap"><a class="btn btn-outline-secondary" th:href="@{/sesiones}">Volver</a><a class="btn btn-success" th:href="@{/sesiones/{id}/editar(id=${sesionClase.id})}">Editar</a><form th:if="${sesionClase.estado != null and sesionClase.estado.name() == 'PROGRAMADA'}" th:action="@{/sesiones/{id}/cancelar(id=${sesionClase.id})}" method="post"><button class="btn btn-outline-danger" type="submit">Cancelar</button></form></div>
+                </section>
+                <section class="row g-3">
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Reservas</p><p class="ff-stat-value" th:text="${reservasActivas}">0</p><p class="ff-stat-note" th:text="${sesionClase.aforo != null ? 'de ' + sesionClase.aforo + ' plazas' : 'sin aforo'}">de 12</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Asistencias</p><p class="ff-stat-value" th:text="${#lists.size(asistencias)}">0</p><p class="ff-stat-note">Registradas</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Estado</p><p class="ff-stat-value fs-5" th:text="${sesionClase.estado}">PROGRAMADA</p><p class="ff-stat-note">Agenda</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Staff</p><p class="ff-stat-value fs-5" th:text="${sesionClase.staffResponsable != null and sesionClase.staffResponsable.usuario != null ? sesionClase.staffResponsable.usuario.nombre : '-'}">Staff</p><p class="ff-stat-note">Responsable</p></article></div>
+                </section>
+                <section class="row g-4">
+                    <div class="col-xl-4">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header"><div><h3 class="ff-card-title">Asignar usuarios</h3><p class="ff-card-subtitle">Reserva plazas para esta sesion.</p></div></div>
+                            <div class="ff-card-body">
+                                <form th:action="@{/sesiones/{id}/reservas(id=${sesionClase.id})}" method="post" class="d-flex flex-column gap-3">
+                                    <div class="ff-checkin-grid">
+                                        <label class="ff-checkin-card" th:each="usuario : ${usuarios}">
+                                            <input type="checkbox" name="usuarioIds" th:value="${usuario.id}" class="ff-checkin-checkbox">
+                                            <span class="ff-checkin-card-body">
+                                                <img class="ff-avatar ff-avatar-md" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" alt="Avatar">
+                                                <span class="ff-checkin-card-copy"><strong th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</strong><small th:text="${usuario.email}">email</small></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <button class="btn btn-success" type="submit">Reservar seleccionados</button>
+                                </form>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-xl-8">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header"><div><h3 class="ff-card-title">Reservas</h3><p class="ff-card-subtitle">Gestiona asistencia y cancelaciones.</p></div></div>
+                            <div class="ff-card-body pt-0">
+                                <form id="sessionAttendanceForm" th:action="@{/sesiones/{id}/asistencias(id=${sesionClase.id})}" method="post"></form>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle" data-ff-datatable data-page-length="8">
+                                        <thead><tr><th></th><th>Usuario</th><th>Estado</th><th>Reserva</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>
+                                        <tbody th:if="${not #lists.isEmpty(reservas)}">
+                                        <tr th:each="reserva : ${reservas}">
+                                            <td><input type="checkbox" form="sessionAttendanceForm" name="usuarioIds" th:value="${reserva.usuario.id}" th:disabled="${reserva.estado != null and reserva.estado.name() == 'CANCELADA'}"></td>
+                                            <td><a class="ff-table-primary" th:href="@{/usuarios/{id}(id=${reserva.usuario.id})}" th:text="${reserva.usuario.nombre + (reserva.usuario.apellidos != null && !reserva.usuario.apellidos.isBlank() ? ' ' + reserva.usuario.apellidos : '')}">Usuario</a></td>
+                                            <td><span class="ff-status-badge" th:classappend="${reserva.estado != null and reserva.estado.name() == 'ASISTIO'} ? ' ff-status-active' : (${reserva.estado != null and reserva.estado.name() == 'CANCELADA'} ? ' ff-status-inactive' : ' ff-status-pending')" th:text="${reserva.estado}">RESERVADA</span></td>
+                                            <td th:text="${reserva.fechaReserva != null ? #temporals.format(reserva.fechaReserva, 'dd/MM/yyyy HH:mm') : '-'}">fecha</td>
+                                            <td class="text-end"><form th:if="${reserva.estado != null and reserva.estado.name() != 'CANCELADA'}" th:action="@{/sesiones/{id}/reservas/{usuarioId}/quitar(id=${sesionClase.id}, usuarioId=${reserva.usuario.id})}" method="post"><button class="btn btn-outline-danger btn-sm" type="submit">Quitar</button></form></td>
+                                        </tr>
+                                        </tbody>
+                                        <tbody th:if="${#lists.isEmpty(reservas)}"><tr><td colspan="5" class="text-center ff-empty-state">No hay reservas para esta sesion.</td></tr></tbody>
+                                    </table>
+                                </div>
+                                <div class="ff-form-actions"><p class="ff-form-actions-note">Marca reservas y registra asistencia vinculada a esta sesion.</p><div class="d-flex gap-2"><input class="form-control" form="sessionAttendanceForm" name="observaciones" placeholder="Observacion opcional"><button class="btn btn-success" form="sessionAttendanceForm" type="submit">Registrar asistencia</button></div></div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+                <section class="ff-surface-card">
+                    <div class="ff-card-header"><h3 class="ff-card-title">Asistencias registradas</h3></div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" data-ff-datatable data-page-length="5">
+                                <thead><tr><th>Usuario</th><th>Hora</th><th>Observaciones</th></tr></thead>
+                                <tbody th:if="${not #lists.isEmpty(asistencias)}"><tr th:each="asistencia : ${asistencias}"><td><a th:href="@{/usuarios/{id}(id=${asistencia.usuario.id})}" th:text="${asistencia.usuario.nombre}">Usuario</a></td><td th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">Hora</td><td th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Obs</td></tr></tbody>
+                                <tbody th:if="${#lists.isEmpty(asistencias)}"><tr><td colspan="3" class="text-center ff-empty-state">Aun no hay asistencia vinculada.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

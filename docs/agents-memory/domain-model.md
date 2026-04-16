@@ -65,7 +65,68 @@ Estado actual:
 - monto sincronizado automaticamente desde el `Plan`
 - referencia automatica generada con UUID
 - generacion automatica mensual disponible a traves de servicio y scheduler configurable
+- relacion opcional con `MembresiaUsuario` para conectar el cobro con un contrato comercial real sin romper pagos legacy
+
+### StaffPerfil
+
+Perfil operativo del equipo del gimnasio. No duplica personas: se vincula a `Usuario` mediante una relacion `OneToOne` y permite tratar a recepcion, entrenadores y gerencia como miembros internos del sistema.
+
+Estado actual:
+- entidad JPA implementada
+- enum `RolStaff`: RECEPCION, ENTRENADOR, GERENTE, ADMINISTRACION
+- campos de especialidad, activo/inactivo, fecha de alta y observaciones
+- se puede asociar a sesiones y a rutinas como responsable operativo
+
+### MembresiaUsuario
+
+Contrato real entre un usuario y un plan. Resuelve la diferencia entre catalogo comercial (`Plan`) y la membresia concreta contratada por una persona.
+
+Estado actual:
+- entidad JPA implementada
+- relacion `ManyToOne` con `Usuario` y `Plan`
+- fechas de inicio/fin, estado, precio snapshot, origen y observaciones
+- enum `EstadoMembresia`: ACTIVA, PENDIENTE, VENCIDA, CONGELADA, CANCELADA, PRUEBA
+- sincroniza `Usuario.plan` y `Usuario.fechaProximoPago` cuando el contrato activo cambia
+
+### Trial
+
+Lead comercial o dia de prueba antes de convertirse en usuario real. Permite explicar el embudo de captacion de un gimnasio local.
+
+Estado actual:
+- entidad JPA implementada
+- datos de contacto, origen, fecha de prueba, estado y staff responsable opcional
+- enum `EstadoTrial`: PENDIENTE, ASISTIO, NO_ASISTIO, CONVERTIDO, CANCELADO
+- conversion controlada a `Usuario` desde servicio, reutilizando email si ya existe
+
+### Clase
+
+Catalogo reutilizable de actividades grupales como HIIT, Yoga o Spinning. Define la actividad, no el horario concreto.
+
+Estado actual:
+- entidad JPA implementada
+- nombre, descripcion, capacidad sugerida, activa y observaciones
+
+### SesionClase
+
+Ocurrencia programada de una `Clase`. Representa fecha, hora, cupo, estado, staff responsable y rutina opcional.
+
+Estado actual:
+- entidad JPA implementada
+- relacion `ManyToOne` con `Clase`
+- relacion opcional con `StaffPerfil` y `Rutina`
+- enum `EstadoSesion`: PROGRAMADA, CANCELADA, FINALIZADA
+- soporta registro de asistencias vinculadas a una sesion concreta
+
+### ReservaSesion
+
+Relacion entre `Usuario` y `SesionClase` para gestionar inscripciones, cupos y asistencia a clases.
+
+Estado actual:
+- entidad JPA implementada
+- restriccion unica por usuario y sesion
+- enum `EstadoReservaSesion`: RESERVADA, ASISTIO, CANCELADA, NO_ASISTIO
+- permite reservar, quitar reserva y marcar asistencia desde la sesion
 
 ## Nota de modelado
 
-El modelo definitivo se concretara en la fase de implementacion del dominio. Este documento sirve como referencia base para mantener coherencia entre backend, vistas, base de datos y documentacion.
+El modelo mantiene `Plan` como catalogo comercial, `MembresiaUsuario` como contrato y `Pago` como cobro. Esta separacion evita duplicidades y hace que el proyecto sea explicable como producto SaaS realista para un gimnasio local.

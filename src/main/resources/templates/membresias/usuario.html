@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Membresias del usuario')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('membresias')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Membresias del usuario', 'Contrato comercial.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-section-header"><div><span class="ff-section-eyebrow">Usuario</span><h2 class="ff-section-title" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</h2><p class="ff-section-subtitle">Historial y alta de membresia contractual.</p></div><div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/usuarios/{id}(id=${usuario.id})}">Ficha usuario</a><a class="btn btn-outline-secondary" th:href="@{/membresias}">Catalogo</a></div></section>
+                <section class="row g-4">
+                    <div class="col-lg-5">
+                        <form class="ff-surface-card" th:object="${contrato}" th:action="@{/usuarios/{id}/membresias(id=${usuario.id})}" method="post">
+                            <div class="ff-card-header"><h3 class="ff-card-title">Asignar membresia</h3></div>
+                            <div class="ff-card-body">
+                                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</div>
+                                <input type="hidden" th:field="*{usuario.id}">
+                                <div class="mb-3"><label class="form-label" for="plan">Membresia</label><select id="plan" class="form-select" th:field="*{plan.id}"><option value="">Seleccionar</option><option th:each="plan : ${planes}" th:value="${plan.id}" th:text="${plan.nombre + ' - ' + #numbers.formatDecimal(plan.precioMensual, 1, 'POINT', 2, 'COMMA') + ' EUR'}">Plan</option></select></div>
+                                <div class="mb-3"><label class="form-label" for="fechaInicio">Fecha inicio</label><input id="fechaInicio" type="date" class="form-control" th:field="*{fechaInicio}"></div>
+                                <div class="mb-3"><label class="form-label" for="estado">Estado</label><select id="estado" class="form-select" th:field="*{estado}"><option th:each="estado : ${estadosMembresia}" th:value="${estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option></select></div>
+                                <div class="mb-3"><label class="form-label" for="origen">Origen</label><input id="origen" class="form-control" th:field="*{origen}" placeholder="Alta manual, trial, renovacion..."></div>
+                                <div><label class="form-label" for="observaciones">Observaciones</label><textarea id="observaciones" rows="3" class="form-control" th:field="*{observaciones}"></textarea></div>
+                            </div>
+                            <div class="ff-form-actions"><p class="ff-form-actions-note">Al activarla se sincroniza el plan actual del usuario.</p><button class="btn btn-success" type="submit">Asignar</button></div>
+                        </form>
+                    </div>
+                    <div class="col-lg-7">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-header"><h3 class="ff-card-title">Historial contractual</h3></div>
+                            <div class="ff-card-body pt-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle" data-ff-datatable data-page-length="6">
+                                        <thead><tr><th>Membresia</th><th>Inicio</th><th>Fin</th><th>Precio</th><th>Estado</th><th></th></tr></thead>
+                                        <tbody th:if="${not #lists.isEmpty(contratos)}">
+                                        <tr th:each="item : ${contratos}">
+                                            <td th:text="${item.plan != null ? item.plan.nombre : '-'}">Plan</td>
+                                            <td th:text="${item.fechaInicio != null ? #temporals.format(item.fechaInicio, 'dd/MM/yyyy') : '-'}">Inicio</td>
+                                            <td th:text="${item.fechaFin != null ? #temporals.format(item.fechaFin, 'dd/MM/yyyy') : '-'}">Fin</td>
+                                            <td th:text="${item.precioSnapshot != null ? #numbers.formatDecimal(item.precioSnapshot, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">Precio</td>
+                                            <td><span class="ff-status-badge" th:classappend="${item.estado != null and item.estado.name() == 'ACTIVA'} ? ' ff-status-active' : (${item.estado != null and item.estado.name() == 'VENCIDA'} ? ' ff-status-overdue' : ' ff-status-pending')" th:text="${item.estado}">Estado</span></td>
+                                            <td class="text-end"><form th:if="${item.estado != null and item.estado.name() != 'CANCELADA'}" th:action="@{/usuarios/{usuarioId}/membresias/{contratoId}/cancelar(usuarioId=${usuario.id}, contratoId=${item.id})}" method="post"><button class="btn btn-outline-danger btn-sm" type="submit">Cancelar</button></form></td>
+                                        </tr>
+                                        </tbody>
+                                        <tbody th:if="${#lists.isEmpty(contratos)}"><tr><td colspan="6" class="text-center ff-empty-state">Este usuario aun no tiene contratos.</td></tr></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

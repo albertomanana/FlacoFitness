@@ -1,6 +1,5 @@
 package com.flacofitness.app.model.entity;
 
-import com.flacofitness.app.model.enums.ObjetivoRutina;
 import com.flacofitness.app.model.enums.TipoRutina;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -50,17 +50,16 @@ public class Rutina {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private ObjetivoRutina objetivo;
-
-    @NotNull
-    @Enumerated(EnumType.STRING)
     @Column(name = "tipo_rutina", nullable = false, length = 20)
     private TipoRutina tipoRutina;
 
     @NotNull
     @Column(nullable = false)
     private Boolean activa;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_responsable_id")
+    private StaffPerfil staffResponsable;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

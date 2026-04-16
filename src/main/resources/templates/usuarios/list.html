@@ -70,8 +70,26 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="usuariosTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="usuariosEstadoFiltro">Estado</label>
+                                <select id="usuariosEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="status">
+                                    <option value="all">Todos</option>
+                                    <option value="activo">Activos</option>
+                                    <option value="inactivo">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="usuariosPlanFiltro">Plan</label>
+                                <select id="usuariosPlanFiltro" class="form-select form-select-sm" data-ff-filter-key="plan">
+                                    <option value="all">Todos</option>
+                                    <option value="con-plan">Con plan</option>
+                                    <option value="sin-plan">Sin plan</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle"
+                            <table id="usuariosTable" class="table table-hover align-middle"
                                    data-ff-datatable
                                    data-page-length="10"
                                    data-order-column="1"
@@ -91,7 +109,7 @@
                                 <tr th:each="usuario : ${usuarios}"
                                     class="ff-clickable-row"
                                     tabindex="0"
-                                    th:attr="data-row-href=@{/usuarios/{id}(id=${usuario.id})}">
+                                    th:attr="data-row-href=@{/usuarios/{id}(id=${usuario.id})},data-ff-row='1',data-ff-status=${usuario.activo ? 'activo' : 'inactivo'},data-ff-plan=${usuario.plan != null ? 'con-plan' : 'sin-plan'}">
                                     <td>
                                         <div class="ff-user-cell">
                                             <img class="ff-avatar"

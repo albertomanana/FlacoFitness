@@ -36,10 +36,14 @@ public class Pago {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "fecha_pago")
+    private LocalDate fechaPago;
+
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Column(name = "fecha_pago", nullable = false)
-    private LocalDate fechaPago;
+    @Column(name = "fecha_vencimiento", nullable = false)
+    private LocalDate fechaVencimiento;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal monto;
@@ -65,6 +69,10 @@ public class Pago {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "membresia_usuario_id")
+    private MembresiaUsuario membresiaUsuario;
 
     @PrePersist
     @PreUpdate

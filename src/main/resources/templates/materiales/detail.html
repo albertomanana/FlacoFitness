@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle material')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('materiales')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de material', 'Estado de stock.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header ff-animate-in">
+                    <div><span class="ff-section-eyebrow">Inventario</span><h2 class="ff-section-title" th:text="${material.nombre}">Detalle</h2></div>
+                    <div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/materiales}">Volver</a><a class="btn btn-success" th:href="@{/materiales/{id}/editar(id=${material.id})}">Editar</a></div>
+                </section>
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><strong>Categoria:</strong> <span th:text="${material.categoria != null ? #strings.replace(material.categoria.name(), '_', ' ') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Estado:</strong> <span th:text="${material.estado != null ? #strings.replace(material.estado.name(), '_', ' ') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Stock:</strong> <span th:text="${material.stock}">0</span></div>
+                            <div class="col-md-6"><strong>Stock minimo:</strong> <span th:text="${material.stockMinimo}">0</span></div>
+                            <div class="col-md-6"><strong>Ubicacion:</strong> <span th:text="${#strings.defaultString(material.ubicacion, '-')}">-</span></div>
+                            <div class="col-md-6"><strong>Proveedor:</strong> <span th:text="${#strings.defaultString(material.proveedor, '-')}">-</span></div>
+                            <div class="col-md-6"><strong>Coste unitario:</strong> <span th:text="${material.costeUnitario != null ? #numbers.formatDecimal(material.costeUnitario, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span></div>
+                            <div class="col-12"><strong>Observaciones:</strong><p class="mb-0" th:text="${#strings.defaultString(material.observaciones, 'Sin observaciones')}">Sin observaciones</p></div>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

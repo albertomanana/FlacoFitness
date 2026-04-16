@@ -46,6 +46,10 @@ public class Asistencia {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sesion_clase_id")
+    private SesionClase sesionClase;
+
     @PrePersist
     private void asignarFechaActualSiFalta() {
         if (fecha == null) {

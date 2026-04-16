@@ -195,7 +195,10 @@ function syncSelectFromList(assignedList, originalSelect, allUsers) {
         option.value = user.id;
         option.textContent = user.name;
         option.dataset.photoUrl = user.photoUrl;
-        option.selected = assignedIds.has(user.id);
+        if (assignedIds.has(user.id)) {
+            option.selected = true;
+            option.setAttribute("selected", "selected");
+        }
         originalSelect.appendChild(option);
     });
 }

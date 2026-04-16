@@ -12,18 +12,18 @@ import java.util.Optional;
 public interface RutinaRepository extends JpaRepository<Rutina, Long> {
 
     @Override
-    @EntityGraph(attributePaths = {"usuarios"})
+    @EntityGraph(attributePaths = {"usuarios", "staffResponsable", "staffResponsable.usuario"})
     List<Rutina> findAll();
 
     @Override
-    @EntityGraph(attributePaths = {"usuarios"})
+    @EntityGraph(attributePaths = {"usuarios", "staffResponsable", "staffResponsable.usuario"})
     Optional<Rutina> findById(Long id);
 
-    @EntityGraph(attributePaths = {"usuarios"})
+    @EntityGraph(attributePaths = {"usuarios", "staffResponsable", "staffResponsable.usuario"})
     @Query("select distinct rutina from Rutina rutina join rutina.usuarios usuario where usuario.id = :usuarioId")
     List<Rutina> findByUsuarioId(@Param("usuarioId") Long usuarioId);
 
-    @EntityGraph(attributePaths = {"usuarios"})
+    @EntityGraph(attributePaths = {"usuarios", "staffResponsable", "staffResponsable.usuario"})
     List<Rutina> findByActivaTrue();
 
     long countByActivaTrue();

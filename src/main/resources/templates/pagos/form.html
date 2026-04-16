@@ -41,12 +41,18 @@
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Datos del movimiento</h4>
-                                                <p class="ff-form-section-text">Fecha, metodo y estado.</p>
+                                                <p class="ff-form-section-text">Vencimiento, estado y fecha de cobro real.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-md-4">
+                                                    <label for="fechaVencimiento" class="form-label">Fecha de vencimiento</label>
+                                                    <input id="fechaVencimiento" type="date" class="form-control" th:field="*{fechaVencimiento}" data-payment-due-date>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaVencimiento')}"
+                                                         th:errors="*{fechaVencimiento}">Error</div>
+                                                </div>
+                                                <div class="col-md-4">
                                                     <label for="fechaPago" class="form-label">Fecha de pago</label>
-                                                    <input id="fechaPago" type="date" class="form-control" th:field="*{fechaPago}">
+                                                    <input id="fechaPago" type="date" class="form-control" th:field="*{fechaPago}" data-payment-date>
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPago')}"
                                                          th:errors="*{fechaPago}">Error</div>
                                                 </div>
@@ -62,9 +68,9 @@
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('metodoPago')}"
                                                          th:errors="*{metodoPago}">Error</div>
                                                 </div>
-                                                <div class="col-md-4">
+                                                <div class="col-md-6">
                                                     <label for="estado" class="form-label">Estado</label>
-                                                    <select id="estado" class="form-select" th:field="*{estado}">
+                                                    <select id="estado" class="form-select" th:field="*{estado}" data-payment-status>
                                                         <option value="">Seleccionar estado</option>
                                                         <option th:each="estado : ${estadosPago}" th:value="${estado}"
                                                                 th:text="${#strings.replace(estado.name(), '_', ' ')}">
@@ -73,6 +79,9 @@
                                                     </select>
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('estado')}"
                                                          th:errors="*{estado}">Error</div>
+                                                </div>
+                                                <div class="col-md-6 d-flex align-items-end">
+                                                    <p class="form-text mb-0">Si el estado es <strong>PAGADO</strong> y no indicas fecha de pago, se completa automaticamente con hoy.</p>
                                                 </div>
                                             </div>
                                         </section>
@@ -88,7 +97,7 @@
                                                     <select id="usuario" class="form-select" th:field="*{usuario.id}" data-payment-user>
                                                         <option value="">Seleccionar usuario</option>
                                                         <option th:each="usuario : ${usuarios}" th:value="${usuario.id}"
-                                                                th:attr="data-plan-id=${usuario.plan != null ? usuario.plan.id : ''},data-plan-nombre=${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'},data-plan-precio=${usuario.plan != null && usuario.plan.precioMensual != null ? usuario.plan.precioMensual : ''}"
+                                                                th:attr="data-plan-id=${usuario.plan != null ? usuario.plan.id : ''},data-plan-nombre=${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'},data-plan-precio=${usuario.plan != null && usuario.plan.precioMensual != null ? usuario.plan.precioMensual : ''},data-plan-duracion=${usuario.plan != null ? usuario.plan.duracionDias : ''},data-next-payment=${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'yyyy-MM-dd') : ''}"
                                                                 th:text="${usuario.nombre + (usuario.apellidos != null ? ' ' + usuario.apellidos : '')}">
                                                             Usuario
                                                         </option>
@@ -97,11 +106,11 @@
                                                          th:errors="*{usuario.id}">Error</div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="plan" class="form-label">Plan</label>
+                                                    <label for="plan" class="form-label">Plan (opcional, sobrescribe el del usuario)</label>
                                                     <select id="plan" class="form-select" th:field="*{plan.id}" data-payment-plan>
                                                         <option value="">Usar plan del usuario</option>
                                                         <option th:each="plan : ${planes}" th:value="${plan.id}"
-                                                                th:attr="data-plan-nombre=${plan.nombre},data-plan-precio=${plan.precioMensual}"
+                                                                th:attr="data-plan-nombre=${plan.nombre},data-plan-precio=${plan.precioMensual},data-plan-duracion=${plan.duracionDias}"
                                                                 th:text="${plan.nombre}">
                                                             Plan
                                                         </option>
@@ -110,7 +119,7 @@
                                                          th:errors="*{plan.id}">Error</div>
                                                 </div>
                                                 <div class="col-12">
-                                                    <div class="form-text">El importe y la referencia se completan automaticamente durante el guardado.</div>
+                                                    <div class="form-text">El monto se deriva del plan y la referencia se genera automaticamente durante el guardado.</div>
                                                 </div>
                                             </div>
                                         </section>
@@ -149,6 +158,10 @@
                                         <div class="ff-side-item">
                                             <span class="ff-side-label">Plan</span>
                                             <span class="ff-side-value" data-payment-plan-name>Puede seleccionarse o heredarse desde el usuario</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Vencimiento sugerido</span>
+                                            <span class="ff-side-value" data-payment-due-preview>Se propone segun plan y proximo cobro del usuario</span>
                                         </div>
                                     </div>
                             </div>
