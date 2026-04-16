@@ -16,7 +16,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Rutinas</span>
                         <h2 class="ff-section-title" th:text="${tituloListado ?: 'Biblioteca de rutinas'}">Biblioteca de rutinas</h2>
-                        <p class="ff-section-subtitle" th:text="${subtituloListado ?: 'Objetivo, tipo y asignaciones.'}">Objetivo, tipo y asignaciones.</p>
+                        <p class="ff-section-subtitle" th:text="${subtituloListado ?: 'Tipo y asignaciones.'}">Tipo y asignaciones.</p>
                     </div>
                     <a class="btn btn-success" th:href="@{/rutinas/nueva}">Nueva rutina</a>
                 </section>
@@ -63,17 +63,34 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="rutinasTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="rutinasEstadoFiltro">Estado</label>
+                                <select id="rutinasEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="status">
+                                    <option value="all">Todas</option>
+                                    <option value="activa">Activas</option>
+                                    <option value="inactiva">Inactivas</option>
+                                </select>
+                            </div>
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="rutinasTipoFiltro">Tipo</label>
+                                <select id="rutinasTipoFiltro" class="form-select form-select-sm" data-ff-filter-key="tipo">
+                                    <option value="all">Todos</option>
+                                    <option value="general">General</option>
+                                    <option value="personalizada">Personalizada</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle"
+                            <table id="rutinasTable" class="table table-hover align-middle"
                                    data-ff-datatable
                                    data-page-length="10"
                                    data-order-column="0"
                                    data-order-direction="asc"
-                                   data-search-placeholder="Buscar rutina, objetivo o usuario...">
+                                   data-search-placeholder="Buscar rutina, tipo o usuario...">
                                 <thead>
                                 <tr>
                                     <th>Rutina</th>
-                                    <th>Objetivo</th>
                                     <th>Usuarios</th>
                                     <th>Fecha de creacion</th>
                                     <th>Estado</th>
@@ -81,17 +98,16 @@
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(rutinas)}">
-                                <tr th:each="rutina : ${rutinas}">
+                                <tr th:each="rutina : ${rutinas}"
+                                    class="ff-clickable-row"
+                                    tabindex="0"
+                                    th:attr="data-row-href=@{/rutinas/{id}(id=${rutina.id})},data-ff-row='1',data-ff-status=${rutina.activa ? 'activa' : 'inactiva'},data-ff-tipo=${rutina.tipoRutina != null ? #strings.toLowerCase(#strings.replace(rutina.tipoRutina.name(), '_', '-')) : 'general'}">
                                     <td>
                                         <div class="ff-table-meta">
                                             <span class="ff-table-primary" th:text="${rutina.nombre}">Nombre</span>
                                             <span class="ff-table-secondary"
                                                   th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin tipo'}">Tipo</span>
                                         </div>
-                                    </td>
-                                    <td>
-                                        <span class="ff-soft-badge"
-                                              th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : '-'}">Objetivo</span>
                                     </td>
                                     <td>
                                         <div class="ff-table-meta">
@@ -114,7 +130,6 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/rutinas/{id}(id=${rutina.id})}">Ver</a>
                                             <a class="btn btn-outline-success btn-sm" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
                                             <form th:if="${rutina.activa}"
                                                   th:action="@{/rutinas/{id}/desactivar(id=${rutina.id})}"
@@ -141,7 +156,7 @@
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(rutinas)}">
                                 <tr>
-                                    <td colspan="6" class="text-center ff-empty-state">
+                                    <td colspan="5" class="text-center ff-empty-state">
                                         Todavia no hay rutinas registradas.
                                     </td>
                                 </tr>

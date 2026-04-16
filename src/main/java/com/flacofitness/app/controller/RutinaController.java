@@ -1,10 +1,11 @@
 package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.entity.Rutina;
+import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Usuario;
-import com.flacofitness.app.model.enums.ObjetivoRutina;
 import com.flacofitness.app.model.enums.TipoRutina;
 import com.flacofitness.app.service.RutinaService;
+import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -29,10 +30,14 @@ public class RutinaController {
 
     private final RutinaService rutinaService;
     private final UsuarioService usuarioService;
+    private final StaffService staffService;
 
-    public RutinaController(RutinaService rutinaService, UsuarioService usuarioService) {
+    public RutinaController(RutinaService rutinaService,
+                            UsuarioService usuarioService,
+                            StaffService staffService) {
         this.rutinaService = rutinaService;
         this.usuarioService = usuarioService;
+        this.staffService = staffService;
     }
 
     @GetMapping
@@ -143,13 +148,16 @@ public class RutinaController {
 
     private void cargarCatalogos(Model model) {
         model.addAttribute("usuarios", usuarioService.listarActivos());
-        model.addAttribute("objetivos", ObjetivoRutina.values());
+        model.addAttribute("staffActivos", staffService.listarActivos());
         model.addAttribute("tiposRutina", TipoRutina.values());
     }
 
     private void prepararRelaciones(Rutina rutina) {
         if (rutina.getUsuarios() == null) {
             rutina.setUsuarios(new LinkedHashSet<>());
+        }
+        if (rutina.getStaffResponsable() == null) {
+            rutina.setStaffResponsable(new StaffPerfil());
         }
     }
 

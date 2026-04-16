@@ -21,33 +21,73 @@
         </div>
     </div>
 
-    <div class="ff-topbar-search d-none d-md-flex">
-        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input type="text" id="topbarSearch" placeholder="Buscar..." autocomplete="off">
-    </div>
-
     <div class="ff-topbar-actions">
-        <button class="ff-topbar-btn" type="button" aria-label="Notificaciones" title="Notificaciones">
-            <span class="ff-notif-badge" aria-hidden="true"></span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-        </button>
+        <div class="dropdown ff-notifications-dropdown">
+            <button class="ff-topbar-btn dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    data-bs-auto-close="outside"
+                    aria-expanded="false"
+                    aria-label="Notificaciones"
+                    title="Notificaciones">
+                <span class="ff-notif-badge" aria-hidden="true" th:if="${shellNotificationCount > 0}"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end ff-notification-menu shadow-lg">
+                <div class="ff-notification-menu-header">
+                    <div>
+                        <p class="ff-notification-menu-title">Centro de alertas</p>
+                        <p class="ff-notification-menu-subtitle" th:text="${shellNotificationCount > 0 ? shellNotificationCount + ' alertas activas' : 'Sin alertas pendientes'}">Sin alertas pendientes</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="ff-notification-pill" th:if="${shellNotificationCount > 0}" th:text="${shellNotificationCount}">0</span>
+                        <form th:if="${shellNotificationCount > 0}" th:action="@{/notificaciones/marcar-leidas}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-link btn-sm p-0 ff-notification-clear-btn">Marcar leidas</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="ff-notification-list" th:if="${shellNotifications != null and !#lists.isEmpty(shellNotifications)}">
+                    <a class="ff-notification-item"
+                       th:each="notification : ${shellNotifications}"
+                       th:href="${notification.actionUrl}">
+                        <span class="ff-notification-item-mark" th:classappend="' is-' + ${notification.tone}"></span>
+                        <span class="ff-notification-item-body">
+                            <span class="ff-notification-item-title" th:text="${notification.title}">Pago pendiente</span>
+                            <span class="ff-notification-item-text" th:text="${notification.description}">Revisa el estado del cobro.</span>
+                            <span class="ff-notification-item-link" th:text="${notification.actionLabel}">Abrir modulo</span>
+                        </span>
+                    </a>
+                </div>
+                <div class="ff-notification-empty" th:if="${shellNotifications == null or #lists.isEmpty(shellNotifications)}">
+                    No hay novedades operativas. Cuando cambie el estado de pagos, asistencias o renovaciones, apareceran aqui.
+                </div>
+            </div>
+        </div>
 
-        <div class="ff-topbar-avatar-btn">
-            <div class="ff-topbar-avatar">AD</div>
-            <span class="ff-topbar-avatar-name">Admin</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-                 style="color: var(--ff-text-soft)">
-                <polyline points="6 9 12 15 18 9"/>
-            </svg>
+        <div class="dropdown ff-user-dropdown">
+            <button class="ff-topbar-avatar-btn dropdown-toggle"
+                    type="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    aria-label="Sesion de acceso">
+                <div class="ff-topbar-avatar">AD</div>
+                <span class="ff-topbar-avatar-name">Acceso PIN</span>
+            </button>
+            <div class="dropdown-menu dropdown-menu-end ff-user-menu shadow-lg">
+                <div class="ff-user-menu-header">
+                    <span class="ff-user-menu-label">Sesion activa</span>
+                    <strong class="ff-user-menu-title">Modo operador</strong>
+                </div>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item ff-user-menu-item" th:href="@{/}">Ir al dashboard</a>
+                <form th:action="@{/salir}" method="post" class="m-0">
+                    <button class="dropdown-item ff-user-menu-item text-danger" type="submit">Cerrar acceso</button>
+                </form>
+            </div>
         </div>
     </div>
 </header>

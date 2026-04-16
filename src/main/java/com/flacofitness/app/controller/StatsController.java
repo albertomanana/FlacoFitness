@@ -9,8 +9,12 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.MembresiaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.RutinaService;
+import com.flacofitness.app.service.SesionClaseService;
+import com.flacofitness.app.service.StaffService;
+import com.flacofitness.app.service.TrialService;
 import com.flacofitness.app.service.UsuarioService;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,17 +30,29 @@ public class StatsController {
     private final PagoService pagoService;
     private final AsistenciaService asistenciaService;
     private final RutinaService rutinaService;
+    private final StaffService staffService;
+    private final TrialService trialService;
+    private final SesionClaseService sesionClaseService;
+    private final MembresiaService membresiaService;
 
     public StatsController(UsuarioService usuarioService,
                            PlanService planService,
                            PagoService pagoService,
                            AsistenciaService asistenciaService,
-                           RutinaService rutinaService) {
+                           RutinaService rutinaService,
+                           StaffService staffService,
+                           TrialService trialService,
+                           SesionClaseService sesionClaseService,
+                           MembresiaService membresiaService) {
         this.usuarioService = usuarioService;
         this.planService = planService;
         this.pagoService = pagoService;
         this.asistenciaService = asistenciaService;
         this.rutinaService = rutinaService;
+        this.staffService = staffService;
+        this.trialService = trialService;
+        this.sesionClaseService = sesionClaseService;
+        this.membresiaService = membresiaService;
     }
 
     @GetMapping("/usuarios")
@@ -90,7 +106,19 @@ public class StatsController {
                 asistenciaService.obtenerAsistenciasUltimosDias(rangoNormalizado),
                 pagoService.obtenerIngresosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
-                usuarioService.obtenerAltasMensuales()
+                usuarioService.obtenerAltasMensuales(),
+                // NUEVAS MÉTRICAS
+                asistenciaService.contarUsuariosActivos(),
+                asistenciaService.contarUsuariosInactivos(),
+                pagoService.contarUsuariosAlDia(),
+                pagoService.contarUsuariosConDeuda(),
+                pagoService.contarUsuariosConPagosVencidos(),
+                staffService.contarActivos(),
+                trialService.contarPendientes(),
+                trialService.contarHoy(),
+                sesionClaseService.contarSesionesHoy(),
+                membresiaService.contarActivas(),
+                membresiaService.contarVencidas()
         );
     }
 

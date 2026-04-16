@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle trial')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('trials')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle trial', 'Seguimiento comercial.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-section-header"><div><span class="ff-section-eyebrow">Trial</span><h2 class="ff-section-title" th:text="${trial.nombre + (trial.apellidos != null && !trial.apellidos.isBlank() ? ' ' + trial.apellidos : '')}">Trial</h2><p class="ff-section-subtitle" th:text="${trial.fechaPrueba != null ? 'Prueba el ' + #temporals.format(trial.fechaPrueba, 'dd/MM/yyyy') : 'Dia de prueba'}">Prueba</p></div><div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/trials}">Volver</a><a class="btn btn-success" th:href="@{/trials/{id}/editar(id=${trial.id})}">Editar</a></div></section>
+                <section class="row g-4">
+                    <div class="col-lg-8"><article class="ff-surface-card"><div class="ff-card-header"><h3 class="ff-card-title">Datos comerciales</h3></div><div class="ff-card-body"><div class="ff-detail-grid"><div class="ff-detail-item"><span>Email</span><strong th:text="${#strings.defaultString(trial.email, '-')}">email</strong></div><div class="ff-detail-item"><span>Telefono</span><strong th:text="${#strings.defaultString(trial.telefono, '-')}">telefono</strong></div><div class="ff-detail-item"><span>Origen</span><strong th:text="${#strings.defaultString(trial.origen, '-')}">origen</strong></div><div class="ff-detail-item"><span>Estado</span><strong th:text="${trial.estado}">estado</strong></div><div class="ff-detail-item"><span>Staff</span><strong th:text="${trial.staffResponsable != null and trial.staffResponsable.usuario != null ? trial.staffResponsable.usuario.nombre : '-'}">staff</strong></div><div class="ff-detail-item ff-detail-item-wide"><span>Observaciones</span><strong th:text="${#strings.defaultString(trial.observaciones, '-')}">obs</strong></div></div></div></article></div>
+                    <div class="col-lg-4"><article class="ff-surface-card"><div class="ff-card-header"><h3 class="ff-card-title">Acciones</h3></div><div class="ff-card-body d-flex flex-column gap-2"><form th:if="${trial.estado == null or trial.estado.name() != 'CONVERTIDO'}" th:action="@{/trials/{id}/convertir(id=${trial.id})}" method="post"><button class="btn btn-success w-100" type="submit">Convertir a usuario</button></form><form th:action="@{/trials/{id}/estado(id=${trial.id})}" method="post" class="d-flex gap-2"><select class="form-select" name="estado"><option th:each="estado : ${T(com.flacofitness.app.model.enums.EstadoTrial).values()}" th:value="${estado}" th:text="${estado}" th:selected="${trial.estado == estado}">Estado</option></select><button class="btn btn-outline-secondary" type="submit">Cambiar</button></form><a th:if="${trial.usuarioConvertido != null}" class="btn btn-outline-success" th:href="@{/usuarios/{id}(id=${trial.usuarioConvertido.id})}">Abrir usuario</a></div></article></div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

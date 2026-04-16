@@ -16,7 +16,7 @@ function initializeDashboard() {
     const initialStats = readInitialDashboardStats();
 
     if (initialStats) {
-        hydrateDashboard(initialStats, utils);
+        hydrateDashboard(initialStats, utils, { animateStats: false });
     }
 
     if (typeof Chart === "undefined") {
@@ -31,7 +31,7 @@ function initializeDashboard() {
 
         try {
             const stats = await fetchDashboardStats(dashboard.dataset.statsDashboardUrl, range);
-            hydrateDashboard(stats, utils);
+            hydrateDashboard(stats, utils, { animateStats: true });
             toggleDashboardAlert(false);
             updateDashboardTimestamp();
         } catch (error) {
@@ -60,8 +60,8 @@ function initializeDashboard() {
     }, 150);
 }
 
-function hydrateDashboard(stats, utils) {
-    updateDashboardStats(stats, utils);
+function hydrateDashboard(stats, utils, options = {}) {
+    updateDashboardStats(stats, utils, options);
     updateDashboardRangeLabel(stats.rangoDias || 30);
     renderPlanChart(stats.usuariosPorPlan || []);
     renderIngresosChart(stats.ingresosMensualesSerie || [], utils);
@@ -111,49 +111,76 @@ function normalizeDashboardRange(range) {
     return Math.max(7, Math.min(parsed, 365));
 }
 
-function updateDashboardStats(stats, utils) {
-    animateDashboardStat("totalUsuarios", stats.totalUsuarios, "integer", utils);
-    animateDashboardStat("usuariosActivos", stats.usuariosActivos, "integer", utils);
-    animateDashboardStat("planesActivos", stats.planesActivos, "integer", utils);
-    animateDashboardStat("pagosPendientes", stats.pagosPendientes, "integer", utils);
-    animateDashboardStat("pagosVencidos", stats.pagosVencidos, "integer", utils);
-    animateDashboardStat("renovacionesProximas", stats.renovacionesProximas, "integer", utils);
-    animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency", utils);
-    animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils);
-    animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils);
-    animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils);
+function updateDashboardStats(stats, utils, options = {}) {
+    const animate = options.animateStats !== false;
+
+    animateDashboardStat("totalUsuarios", stats.totalUsuarios, "integer", utils, animate);
+    animateDashboardStat("usuariosActivos", stats.usuariosActivos, "integer", utils, animate);
+    animateDashboardStat("planesActivos", stats.planesActivos, "integer", utils, animate);
+    animateDashboardStat("pagosPendientes", stats.pagosPendientes, "integer", utils, animate);
+    animateDashboardStat("pagosVencidos", stats.pagosVencidos, "integer", utils, animate);
+    animateDashboardStat("renovacionesProximas", stats.renovacionesProximas, "integer", utils, animate);
+    animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency", utils, animate);
+    animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils, animate);
+    animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils, animate);
+    animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils, animate);
+    animateDashboardStat("staffActivos", stats.staffActivos, "integer", utils, animate);
+    animateDashboardStat("trialsPendientes", stats.trialsPendientes, "integer", utils, animate);
+    animateDashboardStat("trialsHoy", stats.trialsHoy, "integer", utils, animate);
+    animateDashboardStat("sesionesHoy", stats.sesionesHoy, "integer", utils, animate);
+    animateDashboardStat("membresiasActivas", stats.membresiasActivas, "integer", utils, animate);
+    animateDashboardStat("membresiasVencidas", stats.membresiasVencidas, "integer", utils, animate);
 }
 
-function animateDashboardStat(key, rawValue, kind, utils) {
+function animateDashboardStat(key, rawValue, kind, utils, animate = true) {
     document.querySelectorAll(`[data-stat="${key}"]`).forEach((target) => {
         const nextValue = Number(rawValue || 0);
         const currentValue = Number(target.dataset.statRaw || 0);
 
+        cancelDashboardStatAnimation(target);
         target.dataset.statRaw = String(nextValue);
 
-        if (currentValue === nextValue) {
+        if (!animate || currentValue === nextValue || shouldReduceDashboardMotion()) {
             target.textContent = formatDashboardValue(nextValue, kind, utils);
             return;
         }
 
         const startTime = performance.now();
-        const duration = 450;
+        const duration = 980;
 
         function step(timestamp) {
             const progress = Math.min((timestamp - startTime) / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
+            const eased = easeOutQuart(progress);
             const animatedValue = currentValue + ((nextValue - currentValue) * eased);
             target.textContent = formatDashboardValue(animatedValue, kind, utils, progress < 1);
 
             if (progress < 1) {
-                window.requestAnimationFrame(step);
+                target.dataset.statAnimationFrame = String(window.requestAnimationFrame(step));
             } else {
                 target.textContent = formatDashboardValue(nextValue, kind, utils);
+                delete target.dataset.statAnimationFrame;
             }
         }
 
-        window.requestAnimationFrame(step);
+        target.dataset.statAnimationFrame = String(window.requestAnimationFrame(step));
     });
+}
+
+function cancelDashboardStatAnimation(target) {
+    const frameId = Number(target.dataset.statAnimationFrame);
+
+    if (frameId) {
+        window.cancelAnimationFrame(frameId);
+        delete target.dataset.statAnimationFrame;
+    }
+}
+
+function easeOutQuart(progress) {
+    return 1 - Math.pow(1 - progress, 4);
+}
+
+function shouldReduceDashboardMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function formatDashboardValue(value, kind, utils, isAnimating = false) {

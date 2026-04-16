@@ -64,12 +64,17 @@ public class UsuarioControlCenterService {
         String segmento = resolverSegmento(usuario, actividadReciente, pagosPendientes, pagosVencidos);
         int score = calcularScore(usuario, totalAsistencias, diasSinAsistencia, pagosPendientes, pagosVencidos);
 
+        int rachaActual = asistenciaService.calcularRachaActual(usuario.getId());
+        boolean enRiesgo = asistenciaService.esUsuarioEnRiesgo(usuario.getId());
+
         return new UsuarioControlCenterView(
                 totalAsistencias,
                 ultimaAsistencia,
                 diasSinAsistencia,
                 actividadReciente,
                 estadoActividad,
+                rachaActual,
+                enRiesgo,
                 pagosPendientes,
                 pagosVencidos,
                 pagosAlDia,

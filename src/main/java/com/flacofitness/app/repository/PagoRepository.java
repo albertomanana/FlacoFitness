@@ -14,26 +14,40 @@ import java.util.Optional;
 
 public interface PagoRepository extends JpaRepository<Pago, Long> {
 
+        @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
+        List<Pago> findAllByOrderByFechaVencimientoDescIdDesc();
+
     @Override
-    @EntityGraph(attributePaths = {"usuario", "plan"})
+    @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
     List<Pago> findAll();
 
     @Override
-    @EntityGraph(attributePaths = {"usuario", "plan"})
+    @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
     Optional<Pago> findById(Long id);
 
-    @EntityGraph(attributePaths = {"usuario", "plan"})
+    @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
     List<Pago> findByUsuarioId(Long usuarioId);
 
-    @EntityGraph(attributePaths = {"usuario", "plan"})
-    List<Pago> findTop5ByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
+        @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
+        List<Pago> findByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
 
-    boolean existsByUsuarioIdAndFechaPago(Long usuarioId, LocalDate fechaPago);
+        @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
+        List<Pago> findByEstadoOrderByFechaVencimientoDescIdDesc(EstadoPago estado);
 
-    Optional<Pago> findTopByUsuarioIdOrderByFechaPagoDescIdDesc(Long usuarioId);
+        @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
+        List<Pago> findByUsuarioIdAndEstadoOrderByFechaVencimientoDescIdDesc(Long usuarioId, EstadoPago estado);
 
-    @EntityGraph(attributePaths = {"usuario", "plan"})
-    List<Pago> findTop8ByOrderByFechaPagoDescIdDesc();
+    @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
+    List<Pago> findTop5ByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
+
+    boolean existsByUsuarioIdAndFechaVencimiento(Long usuarioId, LocalDate fechaVencimiento);
+
+        boolean existsByUsuarioIdAndFechaVencimientoAndIdNot(Long usuarioId, LocalDate fechaVencimiento, Long id);
+
+    Optional<Pago> findTopByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
+
+    @EntityGraph(attributePaths = {"usuario", "plan", "membresiaUsuario", "membresiaUsuario.plan"})
+    List<Pago> findTop8ByOrderByFechaVencimientoDescIdDesc();
 
     long countByEstado(EstadoPago estado);
 
@@ -49,7 +63,7 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
                                           @Param("mes") int mes);
 
     @Query("select year(pago.fechaPago) as anio, month(pago.fechaPago) as mes, coalesce(sum(pago.monto), 0) as total " +
-            "from Pago pago where pago.estado = :estado " +
+            "from Pago pago where pago.estado = :estado and pago.fechaPago is not null " +
             "group by year(pago.fechaPago), month(pago.fechaPago) " +
             "order by year(pago.fechaPago), month(pago.fechaPago)")
     List<IngresoPorMesView> sumMontoGroupedByMes(@Param("estado") EstadoPago estado);

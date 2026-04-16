@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar staff' : 'Nuevo staff')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar staff' : 'Nuevo staff', 'Perfil operativo vinculado a un usuario.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Staff</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Editar perfil' : 'Crear perfil'">Crear perfil</h2>
+                        <p class="ff-section-subtitle">El staff reutiliza un usuario existente para no duplicar datos personales.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/staff}">Volver</a>
+                </section>
+                <form class="ff-surface-card" th:object="${staffPerfil}" th:action="${modoEdicion} ? @{/staff/{id}(id=${staffPerfil.id})} : @{/staff}" method="post">
+                    <div class="ff-card-body">
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="usuario">Usuario</label>
+                                <select id="usuario" class="form-select" th:field="*{usuario.id}">
+                                    <option value="">Seleccionar usuario</option>
+                                    <option th:each="usuario : ${usuarios}" th:value="${usuario.id}" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '') + ' - ' + usuario.email}">Usuario</option>
+                                </select>
+                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario')}" th:errors="*{usuario}"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="rolStaff">Rol interno</label>
+                                <select id="rolStaff" class="form-select" th:field="*{rolStaff}">
+                                    <option th:each="rol : ${rolesStaff}" th:value="${rol}" th:text="${#strings.replace(rol.name(), '_', ' ')}">Rol</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="especialidad">Especialidad</label>
+                                <input id="especialidad" class="form-control" th:field="*{especialidad}" placeholder="Fuerza, movilidad, recepcion...">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="fechaAlta">Fecha de alta</label>
+                                <input id="fechaAlta" type="date" class="form-control" th:field="*{fechaAlta}">
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="form-check form-switch mb-2">
+                                    <input id="activo" type="checkbox" class="form-check-input" th:field="*{activo}">
+                                    <label class="form-check-label" for="activo">Activo</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" for="observaciones">Observaciones</label>
+                                <textarea id="observaciones" rows="4" class="form-control" th:field="*{observaciones}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ff-form-actions">
+                        <p class="ff-form-actions-note">El rol del usuario se sincroniza como STAFF al guardar.</p>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" type="submit">Guardar</button>
+                            <a class="btn btn-outline-secondary" th:href="@{/staff}">Cancelar</a>
+                        </div>
+                    </div>
+                </form>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

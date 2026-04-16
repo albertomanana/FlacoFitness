@@ -1,4 +1,10 @@
 (() => {
+    const SPLASH_SESSION_KEY = "flacofitness:splash-seen:v1";
+    const PAGE_TRANSITION_DELAY = 140;
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    document.documentElement.classList.add("ff-motion-enabled");
+
     const utils = {
         formatInteger(value) {
             return new Intl.NumberFormat("es-ES", {
@@ -46,39 +52,159 @@
     };
 
     window.ffUtils = utils;
+    primeSplashVisibility();
 
     document.addEventListener("DOMContentLoaded", () => {
+        initializeSplashScreen();
+        initializePageTransitions();
         updateCurrentYear();
-        initializeTopbarSearch();
         initializeClickableRows();
         initializeRevealBlocks();
         initializePaymentFormAssistant();
     });
 
-    function updateCurrentYear() {
-        document.querySelectorAll("[data-current-year]").forEach((element) => {
-            element.textContent = String(new Date().getFullYear());
-        });
-    }
+    window.addEventListener("pageshow", () => {
+        document.body.classList.remove("ff-page-exiting");
+        revealCurrentPage();
+    });
 
-    function initializeTopbarSearch() {
-        const searchInput = document.getElementById("topbarSearch");
-        if (!searchInput) {
+    function primeSplashVisibility() {
+        const splash = document.querySelector("[data-app-splash]");
+
+        if (!splash || !shouldSkipSplash()) {
             return;
         }
 
-        const syncSearch = utils.debounce((query) => {
-            if (!Array.isArray(window.ffTables) || window.ffTables.length === 0) {
+        splash.classList.add("ff-app-splash-hidden");
+        document.body.classList.add("ff-splash-skipped");
+    }
+
+    function initializeSplashScreen() {
+        const splash = document.querySelector("[data-app-splash]");
+
+        if (!splash || shouldSkipSplash()) {
+            hideSplashImmediately(splash);
+            revealCurrentPage();
+            return;
+        }
+
+        document.body.classList.add("ff-splash-active");
+        splash.setAttribute("aria-hidden", "false");
+        rememberSplashSeen();
+
+        window.setTimeout(() => {
+            splash.classList.add("ff-app-splash-leaving");
+            document.body.classList.remove("ff-splash-active");
+            let finished = false;
+
+            const finish = () => {
+                if (finished) {
+                    return;
+                }
+                finished = true;
+                splash.classList.add("ff-app-splash-hidden");
+                splash.setAttribute("aria-hidden", "true");
+                revealCurrentPage();
+            };
+
+            splash.addEventListener("transitionend", finish, { once: true });
+            window.setTimeout(finish, 420);
+        }, 950);
+    }
+
+    function hideSplashImmediately(splash) {
+        if (!splash) {
+            return;
+        }
+
+        splash.classList.add("ff-app-splash-hidden");
+        splash.setAttribute("aria-hidden", "true");
+        document.body.classList.add("ff-splash-skipped");
+    }
+
+    function revealCurrentPage() {
+        window.requestAnimationFrame(() => {
+            document.body.classList.add("ff-page-ready");
+        });
+    }
+
+    function shouldSkipSplash() {
+        if (motionQuery.matches) {
+            return true;
+        }
+
+        try {
+            return window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "true";
+        } catch (error) {
+            return true;
+        }
+    }
+
+    function rememberSplashSeen() {
+        try {
+            window.sessionStorage.setItem(SPLASH_SESSION_KEY, "true");
+        } catch (error) {
+            // If sessionStorage is blocked, the splash remains harmlessly per page load.
+        }
+    }
+
+    function initializePageTransitions() {
+        document.addEventListener("click", (event) => {
+            const link = event.target.closest("a[href]");
+
+            if (!link || !shouldTransitionLink(event, link)) {
                 return;
             }
 
-            window.ffTables.forEach((tableInstance) => {
-                tableInstance.search(query).draw();
-            });
-        }, 120);
+            event.preventDefault();
+            navigateWithTransition(link.href);
+        });
+    }
 
-        searchInput.addEventListener("input", (event) => {
-            syncSearch(event.target.value.trim());
+    function shouldTransitionLink(event, link) {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return false;
+        }
+
+        if (link.target || link.download || link.hasAttribute("data-no-transition") || link.hasAttribute("data-bs-toggle")) {
+            return false;
+        }
+
+        const rawHref = link.getAttribute("href") || "";
+        if (rawHref.startsWith("#") || rawHref.startsWith("javascript:")) {
+            return false;
+        }
+
+        const url = new URL(link.href, window.location.href);
+
+        if (url.origin !== window.location.origin || !["http:", "https:"].includes(url.protocol)) {
+            return false;
+        }
+
+        const currentUrl = new URL(window.location.href);
+
+        if (url.pathname === currentUrl.pathname && url.search === currentUrl.search && url.hash) {
+            return false;
+        }
+
+        return url.href !== currentUrl.href;
+    }
+
+    function navigateWithTransition(destination) {
+        if (!destination || motionQuery.matches) {
+            window.location.href = destination;
+            return;
+        }
+
+        document.body.classList.add("ff-page-exiting");
+        window.setTimeout(() => {
+            window.location.href = destination;
+        }, PAGE_TRANSITION_DELAY);
+    }
+
+    function updateCurrentYear() {
+        document.querySelectorAll("[data-current-year]").forEach((element) => {
+            element.textContent = String(new Date().getFullYear());
         });
     }
 
@@ -89,7 +215,7 @@
                     return;
                 }
 
-                window.location.href = row.dataset.rowHref;
+                navigateWithTransition(row.dataset.rowHref);
             });
 
             row.addEventListener("keydown", (event) => {
@@ -98,7 +224,7 @@
                 }
 
                 event.preventDefault();
-                window.location.href = row.dataset.rowHref;
+                navigateWithTransition(row.dataset.rowHref);
             });
         });
     }
@@ -148,36 +274,91 @@
 
         const userSelect = form.querySelector("[data-payment-user]");
         const planSelect = form.querySelector("[data-payment-plan]");
+        const dueDateInput = form.querySelector("[data-payment-due-date]");
+        const paymentDateInput = form.querySelector("[data-payment-date]");
+        const statusSelect = form.querySelector("[data-payment-status]");
         const amountTarget = document.querySelector("[data-payment-amount]");
         const planNameTarget = document.querySelector("[data-payment-plan-name]");
+        const duePreviewTarget = document.querySelector("[data-payment-due-preview]");
 
-        if (!userSelect || !planSelect || !amountTarget || !planNameTarget) {
+        if (!userSelect || !planSelect || !amountTarget || !planNameTarget || !dueDateInput || !paymentDateInput || !statusSelect || !duePreviewTarget) {
             return;
         }
+
+        const toIsoDate = (dateValue) => {
+            if (!dateValue) {
+                return "";
+            }
+
+            const date = new Date(dateValue);
+            if (Number.isNaN(date.getTime())) {
+                return "";
+            }
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+            return `${year}-${month}-${day}`;
+        };
+
+        const sumarDias = (fechaIso, dias) => {
+            if (!fechaIso) {
+                return "";
+            }
+
+            const base = new Date(`${fechaIso}T00:00:00`);
+            if (Number.isNaN(base.getTime())) {
+                return "";
+            }
+
+            base.setDate(base.getDate() + Number(dias || 0));
+            return toIsoDate(base);
+        };
 
         const updateSummary = () => {
             const selectedPlanOption = planSelect.options[planSelect.selectedIndex];
             const selectedUserOption = userSelect.options[userSelect.selectedIndex];
             const explicitPlanId = planSelect.value;
 
-            const sourceOption = explicitPlanId ? selectedPlanOption : selectedUserOption;
+            if (!explicitPlanId && selectedUserOption?.dataset.planId) {
+                planSelect.value = selectedUserOption.dataset.planId;
+            }
+
+            const currentPlanOption = planSelect.options[planSelect.selectedIndex];
+            const sourceOption = currentPlanOption?.value ? currentPlanOption : selectedUserOption;
             const planName = sourceOption?.dataset.planNombre || "Se usara el plan asociado al usuario";
             const planPrice = sourceOption?.dataset.planPrecio;
+            const planDuration = sourceOption?.dataset.planDuracion;
+            const nextPayment = selectedUserOption?.dataset.nextPayment;
 
             planNameTarget.textContent = planName;
             amountTarget.textContent = planPrice
                 ? utils.formatCurrency(planPrice)
                 : "Se derivara automaticamente al guardar";
 
-            if (!explicitPlanId && selectedUserOption?.dataset.planId) {
-                planSelect.dataset.inheritedPlanId = selectedUserOption.dataset.planId;
-            } else {
-                delete planSelect.dataset.inheritedPlanId;
+            const suggestedDueDate = nextPayment || sumarDias(toIsoDate(new Date()), planDuration || 30);
+
+            if (!dueDateInput.value && suggestedDueDate) {
+                dueDateInput.value = suggestedDueDate;
+            }
+
+            duePreviewTarget.textContent = dueDateInput.value
+                ? utils.formatShortDate(dueDateInput.value)
+                : "Se propone segun plan y proximo cobro del usuario";
+
+            if (statusSelect.value === "PAGADO" && !paymentDateInput.value) {
+                paymentDateInput.value = toIsoDate(new Date());
+            }
+
+            if (statusSelect.value !== "PAGADO") {
+                paymentDateInput.value = "";
             }
         };
 
         userSelect.addEventListener("change", updateSummary);
         planSelect.addEventListener("change", updateSummary);
+        dueDateInput.addEventListener("change", updateSummary);
+        statusSelect.addEventListener("change", updateSummary);
         updateSummary();
     }
 })();

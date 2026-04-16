@@ -174,3 +174,26 @@ Todo el trabajo quedo completo en esta sesion. No hay archivos a medio tocar. Pa
 3. Abordar items del backlog: CRUD de planes/roles, modo oscuro, pruebas unitarias.
 4. Considerar promocion a `main` si la defensa academica es inminente.
 
+## Entrada 2026-04-15 (Nucleo vendible SaaS)
+
+### Fecha
+
+2026-04-15
+
+### Contexto
+
+Implementacion del nucleo vendible de FlacoFitness para evolucionar el proyecto academico hacia un MVP SaaS realista para gimnasio local.
+
+### Prompt
+
+Se solicito implementar un plan cerrado con staff, membresias, trials, clases, sesiones, horarios, reservas, integracion con pagos/asistencias y actualizacion de dashboard, semillas y documentacion. Restricciones: mantener MVC, Thymeleaf, Bootstrap, JavaScript ligero, no introducir Spring Security ni pagos online reales, y no romper CRUDs existentes.
+
+### Resultado
+
+- Se creo la rama `feature/core-saas-modules`.
+- Se implementaron `StaffPerfil`, `MembresiaUsuario`, `Trial`, `Clase`, `SesionClase` y `ReservaSesion`.
+- Se actualizaron `Plan`, `Pago`, `Asistencia` y `Rutina` para conectar el nuevo dominio sin romper compatibilidad.
+- Se crearon repositorios, servicios, controladores y vistas Thymeleaf para staff, membresias, trials, clases y sesiones.
+- Se amplio dashboard y notificaciones con KPIs de staff, trials, sesiones y membresias.
+- Se enriquecio `DemoDataSeeder` para el perfil local/demo y se dejo `data.sql` seguro para MySQL.
+- Se validaron compilacion, tests y rutas principales con servidor local.

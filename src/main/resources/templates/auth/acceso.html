@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Acceso PIN')}"></head>
+<body class="ff-access-page">
+<main class="ff-access-shell">
+    <section class="ff-access-card ff-animate-in">
+        <div class="ff-access-hero">
+            <a class="ff-error-brand" th:href="@{/}" aria-label="Ir al dashboard">
+                <img th:src="@{/img/logo.svg}" alt="FlacoFitness">
+            </a>
+
+            <span class="ff-access-badge">Acceso restringido</span>
+            <h1 class="ff-access-title">Ingresa el PIN para continuar</h1>
+            <p class="ff-access-message">
+                El panel queda protegido con un acceso simple y explicable. Tres intentos fallidos activan un bloqueo temporal antes de volver a permitir el ingreso.
+            </p>
+
+            <div class="ff-access-meta">
+                <div class="ff-access-stat">
+                    <span class="ff-access-stat-label">Intentos permitidos</span>
+                    <span class="ff-access-stat-value" th:text="${maxAttempts}">3</span>
+                </div>
+                <div class="ff-access-stat">
+                    <span class="ff-access-stat-label">Bloqueo temporal</span>
+                    <span class="ff-access-stat-value"><span th:text="${lockMinutes}">5</span> min</span>
+                </div>
+                <div class="ff-access-stat">
+                    <span class="ff-access-stat-label">Intentos restantes</span>
+                    <span class="ff-access-stat-value" th:text="${remainingAttempts}">3</span>
+                </div>
+                <div class="ff-access-stat">
+                    <span class="ff-access-stat-label">Destino solicitado</span>
+                    <span class="ff-access-stat-value" th:text="${targetPath}">/</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="ff-access-form">
+            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+            <h2 class="ff-access-form-title">Validacion de acceso</h2>
+            <p class="ff-access-form-text">
+                Si ya existia una ruta pendiente, volveras a ella despues de autenticarte.
+            </p>
+
+            <form th:action="@{/acceso}" method="post" class="vstack gap-3">
+                <div>
+                    <label for="pin" class="form-label fw-semibold">PIN</label>
+                    <input id="pin"
+                           name="pin"
+                           type="password"
+                           class="form-control form-control-lg"
+                           inputmode="numeric"
+                           autocomplete="one-time-code"
+                           maxlength="16"
+                           placeholder="Introduce el PIN de acceso"
+                           th:disabled="${isLocked}"
+                           autofocus>
+                </div>
+
+                <button class="btn btn-success btn-lg w-100" type="submit" th:disabled="${isLocked}">
+                    Entrar al panel
+                </button>
+            </form>
+
+            <div class="ff-access-help" th:if="${!isLocked}">
+                Quedan <strong th:text="${remainingAttempts}">3</strong> intentos antes del bloqueo.
+            </div>
+            <div class="ff-access-lock" th:if="${isLocked}">
+                Acceso bloqueado temporalmente hasta <strong th:text="${lockedUntilText}">12:00</strong>.
+            </div>
+            <div class="ff-access-help" th:if="${isLocked}">
+                El desbloqueo es automatico. No es necesario crear una nueva sesion.
+            </div>
+
+            <p class="ff-access-meta-note">FlacoFitness · acceso simple por PIN para entorno academico</p>
+        </div>
+    </section>
+</main>
+</body>
+</html>
