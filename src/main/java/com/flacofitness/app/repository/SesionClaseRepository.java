@@ -29,6 +29,10 @@ public interface SesionClaseRepository extends JpaRepository<SesionClase, Long> 
     List<SesionClase> findByFechaOrderByHoraInicioAscIdAsc(LocalDate fecha);
 
     @EntityGraph(attributePaths = {"clase", "staffResponsable", "staffResponsable.usuario", "rutina"})
+    @Query("select sesion from SesionClase sesion where (:estado is null or sesion.estado = :estado) and (:fecha is null or sesion.fecha = :fecha) order by sesion.fecha desc, sesion.horaInicio desc, sesion.id desc")
+    List<SesionClase> findByFiltros(@Param("fecha") LocalDate fecha, @Param("estado") EstadoSesion estado);
+
+    @EntityGraph(attributePaths = {"clase", "staffResponsable", "staffResponsable.usuario", "rutina"})
     List<SesionClase> findTop8ByFechaGreaterThanEqualAndEstadoOrderByFechaAscHoraInicioAscIdAsc(LocalDate fecha, EstadoSesion estado);
 
     long countByFechaAndEstado(LocalDate fecha, EstadoSesion estado);

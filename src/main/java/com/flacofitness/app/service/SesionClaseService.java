@@ -72,6 +72,13 @@ public class SesionClaseService {
         return sesionClaseRepository.findByFechaOrderByHoraInicioAscIdAsc(fecha);
     }
 
+    public List<SesionClase> listarFiltrados(LocalDate fecha, EstadoSesion estado) {
+        if (fecha == null && estado == null) {
+            return listarTodas();
+        }
+        return sesionClaseRepository.findByFiltros(fecha, estado);
+    }
+
     public List<SesionClase> listarProximas() {
         return sesionClaseRepository.findTop8ByFechaGreaterThanEqualAndEstadoOrderByFechaAscHoraInicioAscIdAsc(
                 LocalDate.now(), EstadoSesion.PROGRAMADA);

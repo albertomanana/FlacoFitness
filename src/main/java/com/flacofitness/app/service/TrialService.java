@@ -42,6 +42,13 @@ public class TrialService {
         return trialRepository.findAllByOrderByFechaPruebaDescIdDesc();
     }
 
+    public List<Trial> listarFiltrados(EstadoTrial estado) {
+        if (estado == null) {
+            return listarTodos();
+        }
+        return trialRepository.findAllByEstadoOrderByFechaPruebaDescIdDesc(estado);
+    }
+
     public List<Trial> listarProximos() {
         return trialRepository.findTop6ByFechaPruebaGreaterThanEqualOrderByFechaPruebaAscIdAsc(LocalDate.now());
     }

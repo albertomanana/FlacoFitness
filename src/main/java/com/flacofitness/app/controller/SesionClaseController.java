@@ -54,9 +54,12 @@ public class SesionClaseController {
     @GetMapping
     public String listar(@RequestParam(name = "fecha", required = false)
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+                         @RequestParam(name = "estado", required = false) EstadoSesion estado,
                          Model model) {
-        model.addAttribute("sesiones", fecha != null ? sesionClaseService.listarPorFecha(fecha) : sesionClaseService.listarTodas());
+        model.addAttribute("sesiones", sesionClaseService.listarFiltrados(fecha, estado));
         model.addAttribute("fechaFiltro", fecha);
+        model.addAttribute("estadoFiltro", estado);
+        model.addAttribute("estadosSesion", EstadoSesion.values());
         model.addAttribute("sesionesHoy", sesionClaseService.contarSesionesHoy());
         model.addAttribute("sesionesProgramadas", sesionClaseService.contarProgramadas());
         return "sesiones/list";

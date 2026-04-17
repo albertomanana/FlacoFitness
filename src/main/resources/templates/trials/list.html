@@ -16,21 +16,8 @@
                     <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Hoy</p><p class="ff-stat-value" th:text="${trialsHoy}">0</p><p class="ff-stat-note">Pruebas previstas</p></article></div>
                 </section>
                 <section class="ff-surface-card ff-animate-in">
-                    <div class="ff-card-header"><div><h3 class="ff-card-title">Pipeline de pruebas</h3><p class="ff-card-subtitle">Estado comercial y responsable.</p></div></div>
+                    <div class="ff-card-header"><div class="ff-card-toolbar w-100"><div><h3 class="ff-card-title">Pipeline de pruebas</h3><p class="ff-card-subtitle">Estado comercial y responsable.</p></div><form class="d-flex gap-2" th:action="@{/trials}" method="get"><select name="estado" class="form-select form-select-sm"><option value="">Todos los estados</option><option th:each="est : ${estadosTrial}" th:value="${est.name()}" th:text="${est.name()}" th:selected="${estadoFiltro != null and estadoFiltro.name() == est.name()}"></option></select><button class="btn btn-outline-secondary btn-sm" type="submit">Filtrar</button><a class="btn btn-outline-secondary btn-sm" th:href="@{/trials}">Limpiar</a></form></div></div>
                     <div class="ff-card-body pt-0">
-                        <div class="ff-table-filters" data-ff-table-filters data-target-table="trialsTable">
-                            <div class="ff-table-filter-field">
-                                <label class="ff-table-filter-label" for="trialsEstadoFiltro">Estado</label>
-                                <select id="trialsEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="estado">
-                                    <option value="all">Todos</option>
-                                    <option value="pendiente">Pendiente</option>
-                                    <option value="asistio">Asistio</option>
-                                    <option value="no-asistio">No asistio</option>
-                                    <option value="convertido">Convertido</option>
-                                    <option value="cancelado">Cancelado</option>
-                                </select>
-                            </div>
-                        </div>
                         <div class="table-responsive">
                             <table id="trialsTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar trial...">
                                 <thead><tr><th>Lead</th><th>Fecha</th><th>Estado</th><th>Staff</th><th>Origen</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>

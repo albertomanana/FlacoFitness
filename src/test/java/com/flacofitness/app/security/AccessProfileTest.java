@@ -33,4 +33,39 @@ class AccessProfileTest {
         assertThat(AccessProfile.STAFF_RECEPCION.canAccess("/sesiones/nueva", "GET")).isFalse();
         assertThat(AccessProfile.STAFF_RECEPCION.canAccess("/sesiones/2/reservas", "POST")).isTrue();
     }
+
+    @Test
+    void entrenadorPuedeOperarRutinasYClasesPeroNoMaquinas() {
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canAccess("/rutinas", "POST")).isTrue();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canAccess("/clases/nueva", "GET")).isTrue();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canAccess("/sesiones/2/asistencias", "POST")).isTrue();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canAccess("/maquinas/1", "GET")).isTrue();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canAccess("/maquinas", "POST")).isFalse();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canAccess("/usuarios/1/editar", "GET")).isFalse();
+    }
+
+    @Test
+    void adminTieneAccesoTotal() {
+        assertThat(AccessProfile.ADMIN.canAccess("/cualquier-ruta", "GET")).isTrue();
+        assertThat(AccessProfile.ADMIN.canAccess("/otra-ruta", "POST")).isTrue();
+    }
+
+    @Test
+    void todosPuedenAccederASalirYNotificaciones() {
+        for (AccessProfile profile : AccessProfile.values()) {
+            assertThat(profile.canAccess("/salir", "POST")).isTrue();
+            assertThat(profile.canAccess("/notificaciones/1", "GET")).isTrue();
+        }
+    }
+
+    @Test
+    void canSeeSectionFuncionaCorrectamente() {
+        assertThat(AccessProfile.CLIENTE.canSeeSection("cliente")).isTrue();
+        assertThat(AccessProfile.CLIENTE.canSeeSection("usuarios")).isFalse();
+        assertThat(AccessProfile.STAFF_GERENTE.canSeeSection("gastos")).isTrue();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canSeeSection("rutinas")).isTrue();
+        assertThat(AccessProfile.STAFF_ENTRENADOR.canSeeSection("gastos")).isFalse();
+        assertThat(AccessProfile.STAFF_RECEPCION.canSeeSection("pagos")).isTrue();
+        assertThat(AccessProfile.STAFF_RECEPCION.canSeeSection("staff")).isFalse();
+    }
 }
