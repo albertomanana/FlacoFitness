@@ -1,10 +1,12 @@
 package com.flacofitness.app.service;
 
-import com.flacofitness.app.model.dto.ShellNotificationItem;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.flacofitness.app.model.dto.ShellNotificationItem;
 
 @Service
 public class ShellNotificationService {
@@ -18,6 +20,7 @@ public class ShellNotificationService {
     private final GastoService gastoService;
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
+    private final OperationalClockService operationalClockService;
 
     public ShellNotificationService(PagoService pagoService,
                                     UsuarioService usuarioService,
@@ -27,7 +30,8 @@ public class ShellNotificationService {
                                     SesionClaseService sesionClaseService,
                                     GastoService gastoService,
                                     MaquinaService maquinaService,
-                                    MaterialService materialService) {
+                                    MaterialService materialService,
+                                    OperationalClockService operationalClockService) {
         this.pagoService = pagoService;
         this.usuarioService = usuarioService;
         this.asistenciaService = asistenciaService;
@@ -37,6 +41,7 @@ public class ShellNotificationService {
         this.gastoService = gastoService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<ShellNotificationItem> buildNotifications() {
@@ -69,8 +74,8 @@ public class ShellNotificationService {
             notifications.add(new ShellNotificationItem(
                     "Renovaciones proximas",
                     renovaciones + " socio(s) renuevan en los proximos 7 dias.",
-                    "Revisar usuarios",
-                    "/usuarios",
+                    "Revisar membresias",
+                    "/membresias",
                     "info"
             ));
         }
@@ -86,6 +91,17 @@ public class ShellNotificationService {
             ));
         }
 
+        long usuariosInactivos = asistenciaService.contarUsuariosInactivos();
+        if (usuariosInactivos > 0) {
+            notifications.add(new ShellNotificationItem(
+                    "Usuarios inactivos",
+                    usuariosInactivos + " socio(s) llevan mas de 14 dias sin check-in.",
+                    "Reactivar miembros",
+                    "/asistencias",
+                    "warning"
+            ));
+        }
+
         long trialsHoy = trialService.contarHoy();
         if (trialsHoy > 0) {
             notifications.add(new ShellNotificationItem(
@@ -97,14 +113,35 @@ public class ShellNotificationService {
             ));
         }
 
+        long trialsSinSeguimiento = trialService.contarSinSeguimiento(3);
+        if (trialsSinSeguimiento > 0) {
+            notifications.add(new ShellNotificationItem(
+                    "Trials sin seguimiento",
+                    trialsSinSeguimiento + " lead(s) requieren contacto comercial.",
+                    "Gestionar trials",
+                    "/trials?estado=PENDIENTE",
+                    "warning"
+            ));
+        }
+
         long sesionesHoy = sesionClaseService.contarSesionesHoy();
         if (sesionesHoy > 0) {
             notifications.add(new ShellNotificationItem(
                     "Sesiones de hoy",
                     sesionesHoy + " sesion(es) programadas para la jornada.",
                     "Ver sesiones",
-                    "/sesiones",
+                    "/sesiones?fecha=" + operationalClockService.today(),
                     "success"
+            ));
+        }
+
+        if (!sesionClaseService.listarProximas().isEmpty()) {
+            notifications.add(new ShellNotificationItem(
+                    "Clase proxima a iniciar",
+                    "Tienes sesiones proximas en agenda para hoy. Revisa aforo y asistencia.",
+                    "Abrir agenda",
+                    "/sesiones",
+                    "info"
             ));
         }
 
@@ -152,18 +189,40 @@ public class ShellNotificationService {
             ));
         }
 
+        long maquinasRevision = maquinaService.contarRevisionProxima(7);
+        if (maquinasRevision > 0) {
+            notifications.add(new ShellNotificationItem(
+                    "Revision de maquinaria",
+                    maquinasRevision + " equipo(s) deben revisarse en los proximos 7 dias.",
+                    "Programar revisiones",
+                    "/maquinas",
+                    "info"
+            ));
+        }
+
         long materialesBajoStock = materialService.contarBajoStock();
         if (materialesBajoStock > 0) {
             notifications.add(new ShellNotificationItem(
                     "Material bajo stock",
                     materialesBajoStock + " item(s) necesitan reposicion.",
                     "Abrir materiales",
-                    "/materiales",
+                    "/materiales?estado=BAJO_STOCK",
                     "info"
             ));
         }
 
+        notifications.sort(Comparator.comparingInt(item -> priorityForTone(item.tone())));
         return notifications;
+    }
+
+    private int priorityForTone(String tone) {
+        return switch (tone) {
+            case "danger" -> 0;
+            case "warning" -> 1;
+            case "info" -> 2;
+            case "success" -> 3;
+            default -> 4;
+        };
     }
 
     public String buildSignature(List<ShellNotificationItem> notifications) {

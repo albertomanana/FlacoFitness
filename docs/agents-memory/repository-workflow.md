@@ -1,6 +1,6 @@
 # Repository Workflow
 
-Fecha de referencia: 2026-03-24
+Fecha de referencia: 2026-04-17
 
 ## Objetivo
 
@@ -47,7 +47,8 @@ Definir un flujo de repositorio consistente para que el desarrollo de FlacoFitne
 
 ## Estado actual
 
-- Repositorio local previsto con ramas base `main` y `develop`
-- Workflow de CI inicial orientado a compilación y test Maven
+- Rama activa de recuperacion funcional: `recovery/restore-core-saas-plan-a`
+- Se mantienen ramas base `main` y `develop` como estrategia objetivo de integracion
+- Workflow de CI orientado a compilacion y test Maven
 - Repositorio remoto publicado en GitHub
-- Pendiente activar manualmente protección de ramas en la interfaz de GitHub
+- Pendiente activar manualmente proteccion de ramas en la interfaz de GitHub

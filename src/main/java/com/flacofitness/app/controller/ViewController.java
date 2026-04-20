@@ -1,7 +1,17 @@
 package com.flacofitness.app.controller;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flacofitness.app.model.dto.DashboardStatsResponse;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.GastoService;
+import com.flacofitness.app.service.MaquinaService;
+import com.flacofitness.app.service.MaterialService;
 import com.flacofitness.app.service.MembresiaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
@@ -10,15 +20,6 @@ import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.TrialService;
 import com.flacofitness.app.service.UsuarioService;
-import com.flacofitness.app.service.GastoService;
-import com.flacofitness.app.service.MaquinaService;
-import com.flacofitness.app.service.MaterialService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class ViewController {
@@ -100,10 +101,13 @@ public class ViewController {
         model.addAttribute("membresiasActivas", membresiaService.contarActivas());
         model.addAttribute("membresiasVencidas", membresiaService.contarVencidas());
         model.addAttribute("gastoMesActual", gastoService.calcularGastoMesActual());
+        model.addAttribute("beneficioEstimado", pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()));
         model.addAttribute("gastosCriticos", gastoService.contarCriticos());
         model.addAttribute("gastosRecurrentesProximos", gastoService.contarRecurrentesProximos(7));
         model.addAttribute("maquinasFueraServicio", maquinaService.contarFueraDeServicio());
+        model.addAttribute("maquinasRevisionProxima", maquinaService.contarRevisionProxima(7));
         model.addAttribute("materialesBajoStock", materialService.contarBajoStock());
+        model.addAttribute("trialsSemana", trialService.contarSemanaActual());
         model.addAttribute("proximasSesiones", sesionClaseService.listarProximas());
         model.addAttribute("proximosTrials", trialService.listarProximos());
         DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado);
@@ -122,11 +126,14 @@ public class ViewController {
                 usuarioService.contarRenovacionesProximas(7),
                 pagoService.calcularIngresosTotales(),
                 pagoService.calcularIngresosMesActual(),
+                gastoService.calcularGastoMesActual(),
+                pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()),
                 asistenciaService.contarHoy(),
                 rutinaService.contarActivas(),
                 rangoDias,
                 asistenciaService.obtenerAsistenciasUltimosDias(rangoDias),
                 pagoService.obtenerIngresosMensuales(),
+                gastoService.obtenerGastosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
                 usuarioService.obtenerAltasMensuales(),
                 // NUEVAS MÉTRICAS
@@ -138,9 +145,12 @@ public class ViewController {
                 staffService.contarActivos(),
                 trialService.contarPendientes(),
                 trialService.contarHoy(),
+                trialService.contarSemanaActual(),
                 sesionClaseService.contarSesionesHoy(),
                 membresiaService.contarActivas(),
-                membresiaService.contarVencidas()
+                membresiaService.contarVencidas(),
+                maquinaService.contarRevisionProxima(7),
+                materialService.contarBajoStock()
         );
     }
 

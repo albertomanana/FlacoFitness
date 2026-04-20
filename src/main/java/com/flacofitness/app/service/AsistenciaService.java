@@ -37,13 +37,16 @@ public class AsistenciaService {
     private final AsistenciaRepository asistenciaRepository;
     private final UsuarioRepository usuarioRepository;
     private final SesionClaseRepository sesionClaseRepository;
+    private final OperationalClockService operationalClockService;
 
     public AsistenciaService(AsistenciaRepository asistenciaRepository,
                              UsuarioRepository usuarioRepository,
-                             SesionClaseRepository sesionClaseRepository) {
+                             SesionClaseRepository sesionClaseRepository,
+                             OperationalClockService operationalClockService) {
         this.asistenciaRepository = asistenciaRepository;
         this.usuarioRepository = usuarioRepository;
         this.sesionClaseRepository = sesionClaseRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Asistencia> listarTodas() {
@@ -87,7 +90,7 @@ public class AsistenciaService {
     }
 
     public long contarHoy() {
-        return asistenciaRepository.countByFecha(LocalDate.now());
+        return asistenciaRepository.countByFecha(operationalClockService.today());
     }
 
     public List<AsistenciaDiariaStatsItem> obtenerAsistenciasPorDia() {
@@ -97,7 +100,7 @@ public class AsistenciaService {
     }
 
     public List<AsistenciaDiariaStatsItem> obtenerAsistenciasUltimosDias(int dias) {
-        LocalDate fechaDesde = LocalDate.now().minusDays(Math.max(dias - 1, 0));
+        LocalDate fechaDesde = operationalClockService.today().minusDays(Math.max(dias - 1, 0));
         return asistenciaRepository.countGroupedByFechaDesde(fechaDesde).stream()
                 .map(item -> new AsistenciaDiariaStatsItem(item.getFecha(), item.getTotal() == null ? 0L : item.getTotal()))
                 .toList();
@@ -112,7 +115,7 @@ public class AsistenciaService {
     }
 
     public AsistenciaCalendarView construirCalendarioMensual(YearMonth mes, LocalDate fechaSeleccionada) {
-        YearMonth mesObjetivo = mes != null ? mes : YearMonth.now();
+        YearMonth mesObjetivo = mes != null ? mes : operationalClockService.currentYearMonth();
         LocalDate primerDiaMes = mesObjetivo.atDay(1);
         LocalDate ultimoDiaMes = mesObjetivo.atEndOfMonth();
 
@@ -130,7 +133,7 @@ public class AsistenciaService {
                         fecha,
                         fecha.getDayOfMonth(),
                         fecha.getMonthValue() == mesObjetivo.getMonthValue(),
-                        fecha.equals(LocalDate.now()),
+                        fecha.equals(operationalClockService.today()),
                         fechaSeleccionada != null && fecha.equals(fechaSeleccionada),
                         totalesPorDia.getOrDefault(fecha, 0L)))
                 .toList();
@@ -155,6 +158,12 @@ public class AsistenciaService {
     public Asistencia registrar(Asistencia asistencia) {
         asistencia.setUsuario(obtenerUsuarioValido(asistencia.getUsuario()));
         asistencia.setSesionClase(obtenerSesionOpcional(asistencia.getSesionClase()));
+        if (asistencia.getFecha() == null) {
+            asistencia.setFecha(operationalClockService.today());
+        }
+        if (asistencia.getHoraEntrada() == null) {
+            asistencia.setHoraEntrada(operationalClockService.time().withSecond(0).withNano(0));
+        }
         return asistenciaRepository.save(asistencia);
     }
 
@@ -186,8 +195,8 @@ public class AsistenciaService {
             throw new ResourceNotFoundException("Usuario no encontrado con id: " + usuarioFaltante);
         }
 
-        LocalDate fechaRegistro = LocalDate.now();
-        LocalTime horaRegistro = LocalTime.now();
+        LocalDate fechaRegistro = operationalClockService.today();
+        LocalTime horaRegistro = operationalClockService.time().withSecond(0).withNano(0);
         String observacion = normalizarObservaciones(observaciones);
         int creados = 0;
         int omitidos = 0;
@@ -222,7 +231,7 @@ public class AsistenciaService {
         }
 
         int racha = 0;
-        LocalDate fechaEvaluar = LocalDate.now();
+        LocalDate fechaEvaluar = operationalClockService.today();
 
         for (Asistencia asistencia : asistencias) {
             long diff = java.time.temporal.ChronoUnit.DAYS.between(asistencia.getFecha(), fechaEvaluar);
@@ -243,7 +252,7 @@ public class AsistenciaService {
             return true;
         }
 
-        long daysSinceLast = java.time.temporal.ChronoUnit.DAYS.between(ultima.get().getFecha(), LocalDate.now());
+        long daysSinceLast = java.time.temporal.ChronoUnit.DAYS.between(ultima.get().getFecha(), operationalClockService.today());
         return daysSinceLast >= 14;
     }
 
@@ -257,34 +266,36 @@ public class AsistenciaService {
             return EstadoActividad.INACTIVO;
         }
 
-        long daysSinceLast = java.time.temporal.ChronoUnit.DAYS.between(ultima.get().getFecha(), LocalDate.now());
+        long daysSinceLast = java.time.temporal.ChronoUnit.DAYS.between(ultima.get().getFecha(), operationalClockService.today());
         return daysSinceLast <= 7 ? EstadoActividad.ACTIVO : EstadoActividad.INACTIVO;
     }
 
     public long contarAsistenciasMesActual(Long usuarioId) {
-        LocalDate inicioMes = LocalDate.now().withDayOfMonth(1);
-        return asistenciaRepository.countByUsuarioIdAndFechaBetween(usuarioId, inicioMes, LocalDate.now());
+        LocalDate hoy = operationalClockService.today();
+        LocalDate inicioMes = hoy.withDayOfMonth(1);
+        return asistenciaRepository.countByUsuarioIdAndFechaBetween(usuarioId, inicioMes, hoy);
     }
 
     public long contarAsistenciasUltimosDias(Long usuarioId, int dias) {
-        LocalDate desde = LocalDate.now().minusDays(dias);
-        return asistenciaRepository.countByUsuarioIdAndFechaBetween(usuarioId, desde, LocalDate.now());
+        LocalDate hoy = operationalClockService.today();
+        LocalDate desde = hoy.minusDays(dias);
+        return asistenciaRepository.countByUsuarioIdAndFechaBetween(usuarioId, desde, hoy);
     }
 
     public List<UsuarioAsistenciaCountDto> obtenerRankingUsuariosActivos(int top) {
-        LocalDate inicioMes = LocalDate.now().minusMonths(1);
+        LocalDate inicioMes = operationalClockService.today().minusMonths(1);
         return asistenciaRepository.findTopUsuariosByAsistenciasDesde(inicioMes).stream()
                 .limit(top)
                 .toList();
     }
 
     public long contarUsuariosActivos() {
-        LocalDate desde = LocalDate.now().minusDays(7);
+        LocalDate desde = operationalClockService.today().minusDays(7);
         return asistenciaRepository.countDistinctUsuariosActivosDesde(desde);
     }
 
     public long contarUsuariosInactivos() {
-        LocalDate desde = LocalDate.now().minusDays(14);
+        LocalDate desde = operationalClockService.today().minusDays(14);
         return Math.max(0, usuarioRepository.countByActivoTrue() - asistenciaRepository.countDistinctUsuariosActivosDesde(desde));
     }
 

@@ -1,5 +1,15 @@
 package com.flacofitness.app.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Locale;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.dto.IngresoMensualStatsItem;
@@ -12,14 +22,6 @@ import com.flacofitness.app.repository.GastoRepository;
 import com.flacofitness.app.repository.MaquinaRepository;
 import com.flacofitness.app.repository.MaterialRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -29,15 +31,18 @@ public class GastoService {
     private final StaffPerfilRepository staffPerfilRepository;
     private final MaquinaRepository maquinaRepository;
     private final MaterialRepository materialRepository;
+    private final OperationalClockService operationalClockService;
 
     public GastoService(GastoRepository gastoRepository,
                         StaffPerfilRepository staffPerfilRepository,
                         MaquinaRepository maquinaRepository,
-                        MaterialRepository materialRepository) {
+                        MaterialRepository materialRepository,
+                        OperationalClockService operationalClockService) {
         this.gastoRepository = gastoRepository;
         this.staffPerfilRepository = staffPerfilRepository;
         this.maquinaRepository = maquinaRepository;
         this.materialRepository = materialRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Gasto> listarFiltrados(LocalDate desde, LocalDate hasta, CategoriaGasto categoria) {
@@ -54,16 +59,16 @@ public class GastoService {
     }
 
     public long contarCriticos() {
-        return gastoRepository.countByActivoTrueAndPagadoFalseAndFechaLessThanEqual(LocalDate.now());
+        return gastoRepository.countByActivoTrueAndPagadoFalseAndFechaLessThanEqual(operationalClockService.today());
     }
 
     public long contarRecurrentesProximos(int dias) {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = operationalClockService.today();
         return gastoRepository.countByActivoTrueAndRecurrenteTrueAndPagadoFalseAndFechaBetween(hoy, hoy.plusDays(Math.max(1, dias)));
     }
 
     public BigDecimal calcularGastoMesActual() {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = operationalClockService.today();
         return gastoRepository.sumImporteByPeriodo(hoy.getYear(), hoy.getMonthValue());
     }
 
@@ -73,6 +78,68 @@ public class GastoService {
                         YearMonth.of(item.getAnio(), item.getMes()).toString(),
                         item.getTotal()))
                 .toList();
+    }
+
+    public List<Gasto> listarProximos(int dias) {
+        LocalDate hoy = operationalClockService.today();
+        return gastoRepository.findByActivoTrueAndPagadoFalseAndFechaBetweenOrderByFechaAscIdAsc(
+                hoy,
+                hoy.plusDays(Math.max(1, dias)));
+    }
+
+    public List<Gasto> listarPorStaff(Long staffId) {
+        return gastoRepository.findByActivoTrueAndStaffResponsableIdOrderByFechaDescIdDesc(staffId);
+    }
+
+    public List<Gasto> listarPorMaquina(Long maquinaId) {
+        return gastoRepository.findByActivoTrueAndMaquinaIdOrderByFechaDescIdDesc(maquinaId);
+    }
+
+    public List<Gasto> listarPorMaterial(Long materialId) {
+        return gastoRepository.findByActivoTrueAndMaterialIdOrderByFechaDescIdDesc(materialId);
+    }
+
+    @Transactional
+    public int procesarGastosRecurrentes() {
+        LocalDate hoy = operationalClockService.today();
+        List<Gasto> base = gastoRepository.findByActivoTrueAndRecurrenteTrueAndFechaLessThanEqualOrderByFechaAscIdAsc(hoy);
+        int generados = 0;
+
+        for (Gasto gasto : base) {
+            if (gasto.getFrecuencia() == null) {
+                continue;
+            }
+
+            LocalDate proximaFecha = calcularSiguienteFecha(gasto.getFecha(), gasto.getFrecuencia());
+            if (proximaFecha == null) {
+                continue;
+            }
+
+            if (gastoRepository.existsByConceptoAndCategoriaAndFechaAndActivoTrue(
+                    gasto.getConcepto(), gasto.getCategoria(), proximaFecha)) {
+                continue;
+            }
+
+            Gasto clon = new Gasto();
+            clon.setConcepto(gasto.getConcepto());
+            clon.setCategoria(gasto.getCategoria());
+            clon.setImporte(gasto.getImporte());
+            clon.setFecha(proximaFecha);
+            clon.setRecurrente(true);
+            clon.setFrecuencia(gasto.getFrecuencia());
+            clon.setPagado(false);
+            clon.setProveedor(gasto.getProveedor());
+            clon.setObservaciones(gasto.getObservaciones());
+            clon.setStaffResponsable(gasto.getStaffResponsable());
+            clon.setMaquina(gasto.getMaquina());
+            clon.setMaterial(gasto.getMaterial());
+            clon.setActivo(true);
+            normalizarYValidar(clon);
+            gastoRepository.save(clon);
+            generados++;
+        }
+
+        return generados;
     }
 
     @Transactional
@@ -125,8 +192,8 @@ public class GastoService {
         if (gasto.getFecha() == null) {
             throw new BusinessValidationException("Debes indicar la fecha del gasto");
         }
-        if (gasto.getCategoria() == null) {
-            gasto.setCategoria(CategoriaGasto.OTROS);
+        if (gasto.getCategoria() == null || gasto.getCategoria() == CategoriaGasto.OTROS) {
+            gasto.setCategoria(clasificarCategoria(gasto));
         }
         if (gasto.getRecurrente() == null) {
             gasto.setRecurrente(false);
@@ -146,6 +213,45 @@ public class GastoService {
         gasto.setStaffResponsable(validarStaff(gasto.getStaffResponsable()));
         gasto.setMaquina(validarMaquina(gasto.getMaquina()));
         gasto.setMaterial(validarMaterial(gasto.getMaterial()));
+    }
+
+    private CategoriaGasto clasificarCategoria(Gasto gasto) {
+        if (gasto.getStaffResponsable() != null && gasto.getStaffResponsable().getId() != null) {
+            return CategoriaGasto.NOMINA;
+        }
+        if (gasto.getMaterial() != null && gasto.getMaterial().getId() != null) {
+            return CategoriaGasto.COMPRA_MATERIAL;
+        }
+        if (gasto.getMaquina() != null && gasto.getMaquina().getId() != null) {
+            return CategoriaGasto.MANTENIMIENTO;
+        }
+
+        String concepto = gasto.getConcepto() == null ? "" : gasto.getConcepto().toLowerCase(Locale.ROOT);
+        if (concepto.contains("alquiler") || concepto.contains("renta") || concepto.contains("local")) {
+            return CategoriaGasto.ALQUILER;
+        }
+        if (concepto.contains("nomina") || concepto.contains("salario") || concepto.contains("sueldo")) {
+            return CategoriaGasto.NOMINA;
+        }
+        if (concepto.contains("luz") || concepto.contains("agua") || concepto.contains("internet")) {
+            return CategoriaGasto.SUMINISTROS;
+        }
+
+        return CategoriaGasto.OTROS;
+    }
+
+    private LocalDate calcularSiguienteFecha(LocalDate fechaBase, com.flacofitness.app.model.enums.FrecuenciaGasto frecuencia) {
+        if (fechaBase == null || frecuencia == null) {
+            return null;
+        }
+
+        return switch (frecuencia) {
+            case SEMANAL -> fechaBase.plusWeeks(1);
+            case QUINCENAL -> fechaBase.plusDays(15);
+            case MENSUAL -> fechaBase.plusMonths(1);
+            case TRIMESTRAL -> fechaBase.plusMonths(3);
+            case ANUAL -> fechaBase.plusYears(1);
+        };
     }
 
     private StaffPerfil validarStaff(StaffPerfil staffPerfil) {

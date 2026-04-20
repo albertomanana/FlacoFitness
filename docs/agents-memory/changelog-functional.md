@@ -53,7 +53,7 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se corrigio el error 500 al crear rutinas asociadas a usuarios en la base MySQL real.
 - Se mejoraron los datos semilla para evitar dependencia de IDs fijos en roles y planes.
 - Se reforzo el contraste visual del logo en sidebar y de textos clave del dashboard para mejorar legibilidad.
-- Se mantuvo el perfil `local` con H2 sembrado para desarrollo rapido sin dependencia de MySQL.
+- Se mantuvo un flujo local de demostracion controlado sin afectar datos reales de MySQL.
 - Se refactorizo la interfaz para consolidar un sistema visual SaaS coherente en dashboard, sidebar, tablas y vistas de usuario.
 - Se anadieron tablas interactivas con DataTables en usuarios, pagos, asistencias, rutinas y actividad reciente del dashboard.
 - Se rehizo el dashboard principal con KPIs mas utiles, graficos de ingresos, asistencias, usuarios por plan y altas recientes.
@@ -93,8 +93,8 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 ### 2026-04-09
 
-- Se estabilizo la fuente de datos por perfil: el sembrado SQL queda restringido al perfil `local` (H2) y se deshabilita por defecto en MySQL para evitar inconsistencias y contaminacion de datos demo.
-- Se mejoro el diagnostico de arranque: el log de inicio ahora reporta el producto de base de datos y el catalogo activo (MySQL/MariaDB vs H2) para que la ejecucion sea explicable en defensa.
+- Se estabilizo la fuente de datos por perfil: el sembrado SQL queda deshabilitado por defecto en MySQL para evitar inconsistencias y contaminacion de datos demo.
+- Se mejoro el diagnostico de arranque para que la ejecucion con MySQL/MariaDB sea explicable en defensa.
 - Se refactorizo la UX de usuarios: se elimina el boton de “ojo” en listados y la fila completa es clicable para abrir el detalle sin romper acciones de editar/desactivar (incluye accesibilidad por teclado).
 - En el detalle de usuario, la foto queda como solo consulta: el cambio de imagen se realiza exclusivamente desde la vista de edicion.
 - Se corrigio una regresion critica del dashboard: la home fallaba al renderizar por truncar referencias de pago cortas con `substring(0, 8)`, lo que impedia que la pagina llegara a pintar los graficos.
@@ -150,7 +150,7 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se recupero el nucleo SaaS avanzado desde `feature/core-saas-modules` evitando continuar sobre la integracion parcial rota.
 - Se elimino un artefacto temporal `.codex-temp/curlcookies.txt` que no aportaba valor al repositorio.
 - Se corrigio Maven eliminando una ruta absoluta local a `javac` y actualizando Lombok a `1.18.44` para compilar de forma portable con JDK moderno.
-- Se restauro la regla de datos segura: MySQL real no ejecuta seeds automaticos y el perfil `local` mantiene la demo H2 controlada.
+- Se restauro la regla de datos segura: MySQL real no ejecuta seeds automaticos y conserva datos existentes.
 - Se termino el acceso MVP por PIN con perfiles de sesion `ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE` y `CLIENTE`.
 - Se anadio un panel cliente limitado en `/cliente` con membresia, pagos y rutinas propias.
 - Se filtro sidebar/topbar segun perfil y se reforzo el interceptor para bloquear rutas no autorizadas, no solo ocultar enlaces.
@@ -158,3 +158,21 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se ajusto el seeder demo para no asignar gerentes como instructores por accidente.
 - Se anadio vista 403 coherente para accesos denegados.
 - Se validaron compilacion y tests con `mvnw.cmd clean -DskipTests compile` y `mvnw.cmd test`.
+
+### 2026-04-17
+
+- Se reforzo el dashboard como panel financiero-operativo con comparativa `Ingresos vs Gastos` y KPIs conectados a inventario, trials y revision de maquinas.
+- Se consolido el modo oscuro con selector en topbar y persistencia local para mantener continuidad visual entre sesiones.
+- Se mejoro el centro de notificaciones con orden por criticidad y mensajes accionables para guiar operacion diaria.
+- Se corrigio la inconsistencia de iconografia global incorporando Font Awesome de forma centralizada en el fragmento `head`.
+- Se mejoro la UX de formularios con estados de validacion invalidos mas visibles en tema claro y oscuro.
+- Se pulio la legibilidad de tablas responsive para reducir friccion en uso movil durante demos y operacion.
+- Se sincronizo la documentacion viva de `docs/agents-memory` con el estado real de arquitectura, roadmap, backlog y setup.
+
+### 2026-04-20
+
+- Se fijo MySQL/phpMyAdmin como unica base de datos valida del proyecto, usando la base `flacofitness` y desactivando cualquier inicializacion destructiva.
+- Se configuro `spring.sql.init.mode=never` y `spring.jpa.hibernate.ddl-auto=update` para conservar datos existentes mientras Hibernate crea columnas/tablas nuevas.
+- Se anadio el reloj operativo persistido en `app_clock_settings`, visible en el topbar y configurable por ADMIN para simular meses anteriores o siguientes.
+- Se conecto el reloj operativo con servicios de asistencias, pagos, membresias, sesiones, gastos, maquinaria, staff, trials, renovaciones y notificaciones.
+- Se verifico la existencia de la base `flacofitness` y la tabla `app_clock_settings` desde MySQL con las credenciales `flaco_user/flaco_pass`.

@@ -1,24 +1,5 @@
 package com.flacofitness.app.config;
 
-import com.flacofitness.app.model.enums.EstadoPago;
-import com.flacofitness.app.model.enums.EstadoMembresia;
-import com.flacofitness.app.model.enums.EstadoReservaSesion;
-import com.flacofitness.app.model.enums.EstadoSesion;
-import com.flacofitness.app.model.enums.EstadoTrial;
-import com.flacofitness.app.model.enums.MetodoPago;
-import com.flacofitness.app.model.enums.RolStaff;
-import com.flacofitness.app.model.enums.TipoMembresia;
-import com.flacofitness.app.model.enums.TipoRutina;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.context.annotation.Profile;
-import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -41,14 +22,36 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
-import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import com.flacofitness.app.model.enums.EstadoMembresia;
+import com.flacofitness.app.model.enums.EstadoPago;
+import com.flacofitness.app.model.enums.EstadoReservaSesion;
+import com.flacofitness.app.model.enums.EstadoSesion;
+import com.flacofitness.app.model.enums.EstadoTrial;
+import com.flacofitness.app.model.enums.MetodoPago;
+import com.flacofitness.app.model.enums.RolStaff;
+import com.flacofitness.app.model.enums.TipoMembresia;
+import com.flacofitness.app.model.enums.TipoRutina;
 
 @Component
 @Profile({"local", "demo"})
+@ConditionalOnProperty(name = "app.demo-seeder.enabled", havingValue = "true")
 @Order(2)
 public class DemoDataSeeder implements ApplicationRunner {
 
@@ -1018,23 +1021,28 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private void upsertReservation(Long sessionId, Long userId, EstadoReservaSesion estado) {
         Integer total = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM reservas_sesion WHERE sesion_clase_id = ? AND usuario_id = ?",
+                "SELECT COUNT(*) FROM reservas_sesion WHERE (sesion_id = ? OR sesion_clase_id = ?) AND usuario_id = ?",
                 Integer.class,
+                sessionId,
                 sessionId,
                 userId);
         if (total == null || total == 0) {
             jdbcTemplate.update(
-                    "INSERT INTO reservas_sesion (sesion_clase_id, usuario_id, estado, fecha_reserva, observaciones) VALUES (?, ?, ?, ?, ?)",
+                    "INSERT INTO reservas_sesion (sesion_id, sesion_clase_id, usuario_id, estado, asistio, fecha_reserva, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    sessionId,
                     sessionId,
                     userId,
                     estado.name(),
+                    estado == EstadoReservaSesion.ASISTIO,
                     Timestamp.valueOf(LocalDateTime.now().minusDays(1)),
                     "Reserva demo.");
         } else {
             jdbcTemplate.update(
-                    "UPDATE reservas_sesion SET estado = ?, observaciones = ? WHERE sesion_clase_id = ? AND usuario_id = ?",
+                    "UPDATE reservas_sesion SET estado = ?, asistio = ?, observaciones = ? WHERE (sesion_id = ? OR sesion_clase_id = ?) AND usuario_id = ?",
                     estado.name(),
+                    estado == EstadoReservaSesion.ASISTIO,
                     "Reserva demo.",
+                    sessionId,
                     sessionId,
                     userId);
         }

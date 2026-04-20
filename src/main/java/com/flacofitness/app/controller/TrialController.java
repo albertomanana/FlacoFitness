@@ -5,6 +5,7 @@ import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Trial;
 import com.flacofitness.app.model.enums.EstadoTrial;
 import com.flacofitness.app.service.StaffService;
+import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.TrialService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -26,10 +27,14 @@ public class TrialController {
 
     private final TrialService trialService;
     private final StaffService staffService;
+    private final OperationalClockService operationalClockService;
 
-    public TrialController(TrialService trialService, StaffService staffService) {
+    public TrialController(TrialService trialService,
+                           StaffService staffService,
+                           OperationalClockService operationalClockService) {
         this.trialService = trialService;
         this.staffService = staffService;
+        this.operationalClockService = operationalClockService;
     }
 
     @GetMapping
@@ -45,7 +50,7 @@ public class TrialController {
     @GetMapping("/nuevo")
     public String nuevo(Model model) {
         Trial trial = new Trial();
-        trial.setFechaPrueba(LocalDate.now());
+        trial.setFechaPrueba(operationalClockService.today());
         trial.setEstado(EstadoTrial.PENDIENTE);
         trial.setStaffResponsable(new StaffPerfil());
         cargarCatalogos(model);

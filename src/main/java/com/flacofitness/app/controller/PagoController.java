@@ -8,6 +8,7 @@ import com.flacofitness.app.model.enums.EstadoPago;
 import com.flacofitness.app.model.enums.MetodoPago;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
+import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -28,13 +29,16 @@ public class PagoController {
     private final PagoService pagoService;
     private final UsuarioService usuarioService;
     private final PlanService planService;
+    private final OperationalClockService operationalClockService;
 
     public PagoController(PagoService pagoService,
                           UsuarioService usuarioService,
-                          PlanService planService) {
+                          PlanService planService,
+                          OperationalClockService operationalClockService) {
         this.pagoService = pagoService;
         this.usuarioService = usuarioService;
         this.planService = planService;
+        this.operationalClockService = operationalClockService;
     }
 
     @GetMapping
@@ -58,7 +62,7 @@ public class PagoController {
         pago.setUsuario(new Usuario());
         pago.setPlan(new Plan());
         pago.setEstado(EstadoPago.PENDIENTE);
-        pago.setFechaVencimiento(java.time.LocalDate.now().plusDays(30));
+        pago.setFechaVencimiento(operationalClockService.today().plusDays(30));
         cargarCatalogos(model);
         model.addAttribute("pago", pago);
         model.addAttribute("modoEdicion", false);

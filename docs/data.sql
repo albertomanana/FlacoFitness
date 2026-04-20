@@ -1,6 +1,6 @@
 ﻿-- FlacoFitness — data.sql (script de datos demo completo, sintaxis MySQL pura)
 -- Ejecutar DESPUÉS de init.sql o sobre la BD ya inicializada por Hibernate.
--- Compatible: MySQL 8+ / MariaDB. Sin funciones H2.
+-- Compatible: MySQL 8+ / MariaDB.
 -- Uso: mysql -u root flacofitness < docs/data.sql
 
 SET FOREIGN_KEY_CHECKS = 0;

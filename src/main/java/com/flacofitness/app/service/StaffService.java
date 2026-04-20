@@ -1,21 +1,30 @@
 package com.flacofitness.app.service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.DuplicateResourceException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Rol;
+import com.flacofitness.app.model.entity.SesionClase;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoReservaSesion;
 import com.flacofitness.app.model.enums.RolStaff;
+import com.flacofitness.app.repository.AsistenciaRepository;
+import com.flacofitness.app.repository.ReservaSesionRepository;
 import com.flacofitness.app.repository.RolRepository;
+import com.flacofitness.app.repository.SesionClaseRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -26,13 +35,25 @@ public class StaffService {
     private final StaffPerfilRepository staffPerfilRepository;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final SesionClaseRepository sesionClaseRepository;
+    private final ReservaSesionRepository reservaSesionRepository;
+    private final AsistenciaRepository asistenciaRepository;
+    private final OperationalClockService operationalClockService;
 
     public StaffService(StaffPerfilRepository staffPerfilRepository,
                         UsuarioRepository usuarioRepository,
-                        RolRepository rolRepository) {
+                        RolRepository rolRepository,
+                        SesionClaseRepository sesionClaseRepository,
+                        ReservaSesionRepository reservaSesionRepository,
+                        AsistenciaRepository asistenciaRepository,
+                        OperationalClockService operationalClockService) {
         this.staffPerfilRepository = staffPerfilRepository;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
+        this.sesionClaseRepository = sesionClaseRepository;
+        this.reservaSesionRepository = reservaSesionRepository;
+        this.asistenciaRepository = asistenciaRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<StaffPerfil> listarTodos() {
@@ -58,6 +79,49 @@ public class StaffService {
 
     public Optional<StaffPerfil> buscarPorUsuario(Long usuarioId) {
         return staffPerfilRepository.findByUsuarioId(usuarioId);
+    }
+
+    public List<SesionClase> listarSesionesHoy(Long staffId) {
+        return sesionClaseRepository.findByFechaAndStaffResponsableIdOrderByHoraInicioAscIdAsc(operationalClockService.today(), staffId);
+    }
+
+    public long contarMiembrosAsignadosHoy(Long staffId) {
+        Set<Long> usuarioIds = new HashSet<>();
+        List<SesionClase> sesionesHoy = listarSesionesHoy(staffId);
+        for (SesionClase sesion : sesionesHoy) {
+            reservaSesionRepository.findBySesionClaseIdOrderByFechaReservaDescIdDesc(sesion.getId()).stream()
+                    .filter(reserva -> reserva.getEstado() == EstadoReservaSesion.RESERVADA
+                            || reserva.getEstado() == EstadoReservaSesion.ASISTIO)
+                    .map(reserva -> reserva.getUsuario().getId())
+                    .forEach(usuarioIds::add);
+
+            asistenciaRepository.findBySesionClaseIdOrderByHoraEntradaDescIdDesc(sesion.getId()).stream()
+                    .map(asistencia -> asistencia.getUsuario().getId())
+                    .forEach(usuarioIds::add);
+        }
+        return usuarioIds.size();
+    }
+
+    public List<Usuario> listarClientesInactivosAsignados(Long staffId, int diasSinActividad) {
+        Set<Long> usuariosAsignados = new HashSet<>();
+        List<SesionClase> sesiones = sesionClaseRepository.findByStaffResponsableIdOrderByFechaDescHoraInicioDescIdDesc(staffId);
+
+        for (SesionClase sesion : sesiones) {
+            reservaSesionRepository.findBySesionClaseIdOrderByFechaReservaDescIdDesc(sesion.getId()).stream()
+                    .map(reserva -> reserva.getUsuario().getId())
+                    .forEach(usuariosAsignados::add);
+        }
+
+        LocalDate hoy = operationalClockService.today();
+        return usuariosAsignados.stream()
+                .map(usuarioRepository::findById)
+                .flatMap(Optional::stream)
+                .filter(usuario -> Boolean.TRUE.equals(usuario.getActivo()))
+                .filter(usuario -> asistenciaRepository.findTopByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(usuario.getId())
+                        .map(ultima -> ChronoUnit.DAYS.between(ultima.getFecha(), hoy) >= Math.max(1, diasSinActividad))
+                        .orElse(true))
+                .limit(8)
+                .toList();
     }
 
     @Transactional
@@ -122,7 +186,7 @@ public class StaffService {
 
     private void normalizarPerfil(StaffPerfil staffPerfil) {
         if (staffPerfil.getFechaAlta() == null) {
-            staffPerfil.setFechaAlta(LocalDate.now());
+            staffPerfil.setFechaAlta(operationalClockService.today());
         }
         if (staffPerfil.getActivo() == null) {
             staffPerfil.setActivo(true);

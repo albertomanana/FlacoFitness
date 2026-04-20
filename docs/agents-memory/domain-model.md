@@ -184,6 +184,17 @@ Campos clave:
 
 Puede representar check-in libre o asistencia vinculada a clase/sesion.
 
+### AppClockSetting
+
+Configuracion persistida del reloj operativo de la aplicacion.
+
+Campos clave:
+- fecha y hora operativa simulada
+- indicador `simulado`
+- fecha de ultima actualizacion
+
+Permite avanzar o retroceder meses para demos, pagos, asistencias y renovaciones sin cambiar la fecha del sistema ni borrar datos de MySQL.
+
 ### Gasto
 
 Registro de gasto operativo o financiero del gimnasio.
@@ -237,5 +248,6 @@ Campos clave:
 - `Pago` puede existir sin `MembresiaUsuario`.
 - `Asistencia` puede existir sin `SesionClase`.
 - `Rutina` puede existir sin `StaffPerfil`.
+- `AppClockSetting` puede no tener fila inicial; el sistema usa fecha real hasta que ADMIN fija una fecha simulada.
 
 Esta compatibilidad permite recuperar el proyecto sin romper datos ya creados.

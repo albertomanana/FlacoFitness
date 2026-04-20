@@ -5,8 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -28,23 +28,18 @@ public class Clase {
     @Column(nullable = false, length = 120)
     private String nombre;
 
-    @Column(columnDefinition = "TEXT")
-    private String descripcion;
-
-    @Column(name = "capacidad_sugerida")
+    @NotNull
+    @Min(1)
+    @Column(name = "capacidad_sugerida", nullable = false)
     private Integer capacidadSugerida;
 
     @NotNull
     @Column(nullable = false)
-    private Boolean activa;
+    private Boolean activa = true;
+
+    @Column(columnDefinition = "TEXT")
+    private String descripcion;
 
     @Column(columnDefinition = "TEXT")
     private String observaciones;
-
-    @PrePersist
-    private void inicializarValores() {
-        if (activa == null) {
-            activa = true;
-        }
-    }
 }

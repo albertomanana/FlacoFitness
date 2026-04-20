@@ -1,11 +1,5 @@
 package com.flacofitness.app.controller;
 
-import com.flacofitness.app.exception.BusinessValidationException;
-import com.flacofitness.app.model.entity.Material;
-import com.flacofitness.app.model.enums.CategoriaMaterial;
-import com.flacofitness.app.model.enums.EstadoMaterial;
-import com.flacofitness.app.service.MaterialService;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,14 +11,26 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.flacofitness.app.exception.BusinessValidationException;
+import com.flacofitness.app.model.entity.Material;
+import com.flacofitness.app.model.enums.CategoriaMaterial;
+import com.flacofitness.app.model.enums.EstadoMaterial;
+import com.flacofitness.app.service.GastoService;
+import com.flacofitness.app.service.MaterialService;
+
+import jakarta.validation.Valid;
+
 @Controller
 @RequestMapping("/materiales")
 public class MaterialController {
 
     private final MaterialService materialService;
+    private final GastoService gastoService;
 
-    public MaterialController(MaterialService materialService) {
+    public MaterialController(MaterialService materialService,
+                              GastoService gastoService) {
         this.materialService = materialService;
+        this.gastoService = gastoService;
     }
 
     @GetMapping
@@ -77,6 +83,7 @@ public class MaterialController {
     @GetMapping("/{id}")
     public String detalle(@PathVariable Long id, Model model) {
         model.addAttribute("material", materialService.buscarPorId(id));
+        model.addAttribute("gastosRelacionados", gastoService.listarPorMaterial(id).stream().limit(6).toList());
         return "materiales/detail";
     }
 

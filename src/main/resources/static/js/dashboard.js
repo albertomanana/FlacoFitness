@@ -14,6 +14,7 @@ function initializeDashboard() {
     const refreshButton = dashboard.querySelector("[data-dashboard-refresh]");
     const defaultRange = normalizeDashboardRange(Number(dashboard.dataset.defaultRange || 30));
     const initialStats = readInitialDashboardStats();
+    let latestStats = initialStats;
 
     if (initialStats) {
         hydrateDashboard(initialStats, utils, { animateStats: false });
@@ -31,6 +32,7 @@ function initializeDashboard() {
 
         try {
             const stats = await fetchDashboardStats(dashboard.dataset.statsDashboardUrl, range);
+            latestStats = stats;
             hydrateDashboard(stats, utils, { animateStats: true });
             toggleDashboardAlert(false);
             updateDashboardTimestamp();
@@ -55,6 +57,13 @@ function initializeDashboard() {
         });
     }
 
+    window.addEventListener("ff:themechange", () => {
+        if (!latestStats) {
+            return;
+        }
+        hydrateDashboard(latestStats, utils, { animateStats: false });
+    });
+
     window.setTimeout(() => {
         loadDashboard(defaultRange);
     }, 150);
@@ -64,7 +73,7 @@ function hydrateDashboard(stats, utils, options = {}) {
     updateDashboardStats(stats, utils, options);
     updateDashboardRangeLabel(stats.rangoDias || 30);
     renderPlanChart(stats.usuariosPorPlan || []);
-    renderIngresosChart(stats.ingresosMensualesSerie || [], utils);
+    renderIngresosGastosChart(stats.ingresosMensualesSerie || [], stats.gastosMensualesSerie || [], utils);
     renderAsistenciasChart(stats.asistenciasRecientes || []);
     renderAltasChart(stats.altasRecientes || []);
 }
@@ -121,15 +130,20 @@ function updateDashboardStats(stats, utils, options = {}) {
     animateDashboardStat("pagosVencidos", stats.pagosVencidos, "integer", utils, animate);
     animateDashboardStat("renovacionesProximas", stats.renovacionesProximas, "integer", utils, animate);
     animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency", utils, animate);
+    animateDashboardStat("gastoMesActual", stats.gastoMesActual, "currency", utils, animate);
+    animateDashboardStat("beneficioEstimado", stats.beneficioEstimado, "currency", utils, animate);
     animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils, animate);
     animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils, animate);
     animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils, animate);
     animateDashboardStat("staffActivos", stats.staffActivos, "integer", utils, animate);
     animateDashboardStat("trialsPendientes", stats.trialsPendientes, "integer", utils, animate);
     animateDashboardStat("trialsHoy", stats.trialsHoy, "integer", utils, animate);
+    animateDashboardStat("trialsSemana", stats.trialsSemana, "integer", utils, animate);
     animateDashboardStat("sesionesHoy", stats.sesionesHoy, "integer", utils, animate);
     animateDashboardStat("membresiasActivas", stats.membresiasActivas, "integer", utils, animate);
     animateDashboardStat("membresiasVencidas", stats.membresiasVencidas, "integer", utils, animate);
+    animateDashboardStat("materialesBajoStock", stats.materialesBajoStock, "integer", utils, animate);
+    animateDashboardStat("maquinasRevisionProxima", stats.maquinasRevisionProxima, "integer", utils, animate);
 }
 
 function animateDashboardStat(key, rawValue, kind, utils, animate = true) {
@@ -250,27 +264,45 @@ function renderPlanChart(planDistribution) {
     });
 }
 
-function renderIngresosChart(ingresosMensuales, utils) {
-    if (!Array.isArray(ingresosMensuales) || ingresosMensuales.length === 0) {
-        toggleChartEmptyState("ingresos", true);
+function renderIngresosGastosChart(ingresosMensuales, gastosMensuales, utils) {
+    const ingresos = Array.isArray(ingresosMensuales) ? ingresosMensuales : [];
+    const gastos = Array.isArray(gastosMensuales) ? gastosMensuales : [];
+
+    if (ingresos.length === 0 && gastos.length === 0) {
+        toggleChartEmptyState("ingresosGastos", true);
         return;
     }
 
-    toggleChartEmptyState("ingresos", false);
-    createChart("ingresosChart", "bar", {
-        labels: ingresosMensuales.map((item) => utils.formatPeriod(item.periodo)),
-        datasets: [{
-            label: "Ingresos",
-            data: ingresosMensuales.map((item) => Number(item.total || 0)),
-            backgroundColor: "rgba(22, 163, 74, 0.82)",
-            hoverBackgroundColor: "rgba(21, 128, 61, 0.92)",
-            borderRadius: 14,
-            borderSkipped: false,
-            maxBarThickness: 42
-        }]
+    const ingresosByPeriod = new Map(ingresos.map((item) => [item.periodo, Number(item.total || 0)]));
+    const gastosByPeriod = new Map(gastos.map((item) => [item.periodo, Number(item.total || 0)]));
+    const orderedPeriods = Array.from(new Set([...ingresosByPeriod.keys(), ...gastosByPeriod.keys()])).sort();
+
+    toggleChartEmptyState("ingresosGastos", false);
+    createChart("ingresosGastosChart", "bar", {
+        labels: orderedPeriods.map((period) => utils.formatPeriod(period)),
+        datasets: [
+            {
+                label: "Ingresos",
+                data: orderedPeriods.map((period) => ingresosByPeriod.get(period) || 0),
+                backgroundColor: "rgba(22, 163, 74, 0.82)",
+                hoverBackgroundColor: "rgba(21, 128, 61, 0.92)",
+                borderRadius: 12,
+                borderSkipped: false,
+                maxBarThickness: 34
+            },
+            {
+                label: "Gastos",
+                data: orderedPeriods.map((period) => gastosByPeriod.get(period) || 0),
+                backgroundColor: "rgba(239, 68, 68, 0.72)",
+                hoverBackgroundColor: "rgba(220, 38, 38, 0.84)",
+                borderRadius: 12,
+                borderSkipped: false,
+                maxBarThickness: 34
+            }
+        ]
     }, {
         plugins: {
-            legend: { display: false },
+            legend: { display: true, position: "bottom" },
             tooltip: {
                 callbacks: {
                     label(context) {
@@ -375,6 +407,7 @@ function createChart(canvasId, type, data, options) {
     }
 
     const radialChart = isRadialChart(type);
+    const theme = getChartTheme();
     const baseOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -391,13 +424,13 @@ function createChart(canvasId, type, data, options) {
                 labels: {
                     usePointStyle: true,
                     boxWidth: 8,
-                    color: "#475569"
+                    color: theme.textSecondary
                 }
             },
             tooltip: {
-                backgroundColor: "#1d2939",
-                titleColor: "#ffffff",
-                bodyColor: "#ffffff",
+                backgroundColor: theme.tooltipBg,
+                titleColor: theme.tooltipText,
+                bodyColor: theme.tooltipText,
                 padding: 12,
                 displayColors: false
             }
@@ -407,12 +440,12 @@ function createChart(canvasId, type, data, options) {
     if (!radialChart) {
         baseOptions.scales = {
             x: {
-                ticks: { color: "#475569" },
+                ticks: { color: theme.textSecondary },
                 grid: { display: false }
             },
             y: {
-                ticks: { color: "#475569" },
-                grid: { color: "rgba(148, 163, 184, 0.18)" }
+                ticks: { color: theme.textSecondary },
+                grid: { color: theme.grid }
             }
         };
     }
@@ -475,6 +508,17 @@ function toggleDashboardAlert(visible, message) {
             }
         }
     }
+}
+
+function getChartTheme() {
+    const styles = window.getComputedStyle(document.documentElement);
+
+    return {
+        textSecondary: (styles.getPropertyValue("--ff-text-muted") || "#475569").trim(),
+        grid: (styles.getPropertyValue("--ff-chart-grid") || "rgba(148, 163, 184, 0.18)").trim(),
+        tooltipBg: (styles.getPropertyValue("--ff-chart-tooltip-bg") || "#1d2939").trim(),
+        tooltipText: (styles.getPropertyValue("--ff-chart-tooltip-text") || "#ffffff").trim()
+    };
 }
 
 function createDashboardUtils() {

@@ -1,16 +1,17 @@
 package com.flacofitness.app.repository;
 
-import com.flacofitness.app.model.entity.Gasto;
-import com.flacofitness.app.model.enums.CategoriaGasto;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import com.flacofitness.app.model.entity.Gasto;
+import com.flacofitness.app.model.enums.CategoriaGasto;
 
 public interface GastoRepository extends JpaRepository<Gasto, Long> {
 
@@ -47,4 +48,21 @@ public interface GastoRepository extends JpaRepository<Gasto, Long> {
     long countByActivoTrueAndRecurrenteTrueAndFechaLessThanEqual(LocalDate fecha);
 
     long countByActivoTrueAndRecurrenteTrueAndPagadoFalseAndFechaBetween(LocalDate desde, LocalDate hasta);
+
+        @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "maquina", "material"})
+        List<Gasto> findByActivoTrueAndRecurrenteTrueAndFechaLessThanEqualOrderByFechaAscIdAsc(LocalDate fecha);
+
+        @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "maquina", "material"})
+        List<Gasto> findByActivoTrueAndPagadoFalseAndFechaBetweenOrderByFechaAscIdAsc(LocalDate desde, LocalDate hasta);
+
+        @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "maquina", "material"})
+        List<Gasto> findByActivoTrueAndStaffResponsableIdOrderByFechaDescIdDesc(Long staffResponsableId);
+
+        @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "maquina", "material"})
+        List<Gasto> findByActivoTrueAndMaquinaIdOrderByFechaDescIdDesc(Long maquinaId);
+
+        @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "maquina", "material"})
+        List<Gasto> findByActivoTrueAndMaterialIdOrderByFechaDescIdDesc(Long materialId);
+
+        boolean existsByConceptoAndCategoriaAndFechaAndActivoTrue(String concepto, CategoriaGasto categoria, LocalDate fecha);
 }

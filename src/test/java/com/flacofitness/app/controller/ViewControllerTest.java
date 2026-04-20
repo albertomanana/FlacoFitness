@@ -47,6 +47,7 @@ class ViewControllerTest {
     @MockBean private GastoRepository gastoRepository;
     @MockBean private MaquinaRepository maquinaRepository;
     @MockBean private MaterialRepository materialRepository;
+    @MockBean private AppClockSettingRepository appClockSettingRepository;
 
     @Test
     void rutasProtegidasRedirigenAAccesoSiNoHaySesion() throws Exception {

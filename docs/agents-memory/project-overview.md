@@ -6,7 +6,7 @@ FlacoFitness
 
 ## Objetivo general
 
-FlacoFitness es una aplicacion web academica de gestion para gimnasio con enfoque de panel SaaS administrativo. El objetivo actual es mantener una base funcional, defendible y potencialmente vendible para un gimnasio local, cubriendo captacion, clientes, staff, membresias, pagos, rutinas, clases, sesiones y asistencias.
+FlacoFitness es una aplicacion web academica de gestion para gimnasio con enfoque de panel SaaS administrativo. El objetivo actual es consolidar una experiencia conectada y automatizada, defendible en contexto academico y potencialmente vendible para un gimnasio local, cubriendo captacion, clientes, staff, membresias, pagos, rutinas, clases, sesiones, asistencias, gastos e inventario.
 
 ## Stack tecnologico
 
@@ -17,8 +17,7 @@ FlacoFitness es una aplicacion web academica de gestion para gimnasio con enfoqu
 - Bootstrap 5.
 - JavaScript ligero.
 - Chart.js y DataTables.
-- MySQL para ejecucion real.
-- H2 en perfil `local` para demo controlada.
+- MySQL/phpMyAdmin como unica base de datos valida.
 - Maven Wrapper.
 
 ## Alcance actual
@@ -38,13 +37,21 @@ FlacoFitness es una aplicacion web academica de gestion para gimnasio con enfoqu
 
 ## Estado actual del proyecto
 
-- Fecha de referencia: 2026-04-16.
+- Fecha de referencia: 2026-04-20.
 - Rama de trabajo: `recovery/restore-core-saas-plan-a`.
-- Estado: recuperacion funcional avanzada tras una integracion parcial rota.
-- Backend: compila y los tests pasan con Maven Wrapper.
-- Frontend: shell SaaS con sidebar, topbar, dashboard, tablas, formularios y vistas de detalle.
-- Base de datos: perfil `local` usa H2 con demo; MySQL real queda protegido con `spring.sql.init.mode=never`.
+- Estado: cierre funcional avanzado con automatizaciones activas y shell SaaS premium estabilizado.
+- Backend: compila y los tests pasan con Maven Wrapper en la rama de recuperacion.
+- Frontend: shell SaaS con sidebar, topbar, dashboard con KPIs conectados, comparativa ingresos vs gastos y tablas optimizadas para mobile/desktop.
+- Base de datos: perfil `local` y ejecucion principal usan MySQL sobre la base `flacofitness`; `spring.sql.init.mode=never` evita borrar o duplicar datos.
 - Acceso: PIN global con perfil de sesion `ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE` o `CLIENTE`.
+
+## Capacidades diferenciales actuales
+
+- Dashboard operativo con actualizacion de metricas y lectura cruzada de negocio (pagos, gastos, trials, stock y estado de maquinas).
+- Centro de notificaciones accionables priorizadas por criticidad para pagos vencidos, inactividad, sesiones y renovaciones.
+- Modo oscuro con persistencia local para mejorar experiencia de uso continuo.
+- Modulos conectados mediante redirecciones contextuales (usuario, pago, asistencia, rutina, membresia y sesiones).
+- Reloj operativo persistido en MySQL para simular meses anteriores o siguientes sin modificar la fecha real del servidor ni borrar datos.
 
 ## Nota de continuidad
 

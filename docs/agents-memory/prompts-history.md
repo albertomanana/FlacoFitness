@@ -56,7 +56,7 @@ Actua como un lead engineer senior especializado en Spring Boot, Thymeleaf, Boot
 
 Contexto real del proyecto:
 - Nombre: FlacoFitness
-- Stack: Java 17, Spring Boot 3, Spring Data JPA, Thymeleaf, Bootstrap 5, MySQL, H2 local, Maven, Docker
+- Stack: Java 17, Spring Boot 3, Spring Data JPA, Thymeleaf, Bootstrap 5, MySQL, Maven, Docker
 - Arquitectura: monolito MVC
 - Paquete base: com.flacofitness.app
 - Ya existen CRUDs funcionales para usuarios, rutinas, pagos y asistencias
@@ -169,7 +169,7 @@ MegaPrompt extendido solicitando correcciones criticas (Chart.js, solapamiento f
 ### Handoff Note
 
 Todo el trabajo quedo completo en esta sesion. No hay archivos a medio tocar. Para la siguiente iteracion:
-1. Verificar graficos con datos reales en MySQL (esta sesion uso H2 local).
+1. Verificar graficos con datos reales persistidos en MySQL.
 2. Hacer pruebas responsive en dispositivos fisicos (solo se verifico en viewport de navegador).
 3. Abordar items del backlog: CRUD de planes/roles, modo oscuro, pruebas unitarias.
 4. Considerar promocion a `main` si la defensa academica es inminente.
@@ -221,3 +221,24 @@ Implementar el plan de recuperacion segura de FlacoFitness: preservar estado suc
 - Se termino acceso PIN con perfiles de sesion y panel cliente.
 - Se corrigio staff responsable para que gerencia no aparezca como instructora por defecto.
 - Se validaron compilacion y tests.
+
+## Entrada 2026-04-17 (Cierre premium UX + documentacion)
+
+### Fecha
+
+2026-04-17
+
+### Contexto
+
+Inicio de implementacion del cierre final: pulido UX transversal, hardening visual del shell SaaS y sincronizacion de documentacion obligatoria para defensa.
+
+### Prompt
+
+Start implementation.
+
+### Resultado
+
+- Se aplicaron mejoras inmediatas de UX: iconografia global consistente, estados invalidos de formularios mas legibles y ajustes responsive de tablas.
+- Se mantuvo continuidad de arquitectura (Spring MVC + Thymeleaf + JS ligero) sin introducir frameworks SPA.
+- Se actualizaron `project-overview`, `setup-status`, `backlog`, `roadmap`, `changelog-functional` y `decisions-log` al estado real del producto.
+- Se dejo trazabilidad del cierre con validacion tecnica de compilacion y pruebas en verde.

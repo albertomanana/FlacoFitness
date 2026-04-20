@@ -26,6 +26,28 @@
                         </div>
                     </div>
                 </section>
+                <section class="ff-surface-card ff-animate-in" th:if="${not #lists.isEmpty(gastosRelacionados)}">
+                    <div class="ff-card-header">
+                        <div>
+                            <h3 class="ff-card-title">Gastos de reposición</h3>
+                            <p class="ff-card-subtitle">Compras y costes asociados a este material.</p>
+                        </div>
+                    </div>
+                    <div class="ff-card-body">
+                        <div class="ff-action-list">
+                            <a class="ff-action-link" th:each="gasto : ${gastosRelacionados}" th:href="@{/gastos/{id}(id=${gasto.id})}">
+                                <div>
+                                    <strong th:text="${gasto.concepto}">Gasto</strong>
+                                    <span th:text="${gasto.fecha != null ? #temporals.format(gasto.fecha, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                </div>
+                                <span class="ff-kpi-highlight" th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span>
+                            </a>
+                        </div>
+                        <div class="mt-3">
+                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/gastos}">Ver todos los gastos</a>
+                        </div>
+                    </div>
+                </section>
                 <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
         </main>

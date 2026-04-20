@@ -21,9 +21,12 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final OperationalClockService operationalClockService;
 
-    public UsuarioService(UsuarioRepository usuarioRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository,
+                          OperationalClockService operationalClockService) {
         this.usuarioRepository = usuarioRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Usuario> listarTodos() {
@@ -47,7 +50,7 @@ public class UsuarioService {
     }
 
     public List<Usuario> listarRenovacionesProximas() {
-        return usuarioRepository.findRenovacionesProximas(LocalDate.now()).stream()
+        return usuarioRepository.findRenovacionesProximas(operationalClockService.today()).stream()
                 .limit(6)
                 .toList();
     }
@@ -69,7 +72,7 @@ public class UsuarioService {
     }
 
     public long contarRenovacionesProximas(int dias) {
-        LocalDate fechaDesde = LocalDate.now();
+        LocalDate fechaDesde = operationalClockService.today();
         LocalDate fechaHasta = fechaDesde.plusDays(Math.max(dias, 1));
         return usuarioRepository.countByActivoTrueAndFechaProximoPagoBetween(fechaDesde, fechaHasta);
     }
@@ -152,7 +155,7 @@ public class UsuarioService {
         }
 
         if (usuario.getFechaProximoPago() == null) {
-            usuario.setFechaProximoPago(LocalDate.now().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
+            usuario.setFechaProximoPago(operationalClockService.today().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
         }
     }
 
@@ -166,7 +169,7 @@ public class UsuarioService {
         boolean planCambio = !Objects.equals(planAnteriorId, planActualId);
 
         if (planCambio || usuario.getFechaProximoPago() == null) {
-            usuario.setFechaProximoPago(LocalDate.now().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
+            usuario.setFechaProximoPago(operationalClockService.today().plusDays(obtenerFrecuenciaCobro(usuario.getPlan())));
         }
     }
 

@@ -1,14 +1,5 @@
 package com.flacofitness.app.controller;
 
-import com.flacofitness.app.exception.BusinessValidationException;
-import com.flacofitness.app.exception.DuplicateResourceException;
-import com.flacofitness.app.model.entity.StaffPerfil;
-import com.flacofitness.app.model.entity.Usuario;
-import com.flacofitness.app.model.enums.RolStaff;
-import com.flacofitness.app.service.SesionClaseService;
-import com.flacofitness.app.service.StaffService;
-import com.flacofitness.app.service.UsuarioService;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,131 +10,140 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.flacofitness.app.exception.DuplicateResourceException;
+import com.flacofitness.app.model.entity.StaffPerfil;
+import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.RolStaff;
+import com.flacofitness.app.service.StaffService;
+import com.flacofitness.app.service.UsuarioService;
+
+import jakarta.validation.Valid;
+
 @Controller
 @RequestMapping("/staff")
 public class StaffController {
 
     private final StaffService staffService;
     private final UsuarioService usuarioService;
-    private final SesionClaseService sesionClaseService;
 
     public StaffController(StaffService staffService,
-                           UsuarioService usuarioService,
-                           SesionClaseService sesionClaseService) {
+                           UsuarioService usuarioService) {
         this.staffService = staffService;
         this.usuarioService = usuarioService;
-        this.sesionClaseService = sesionClaseService;
     }
 
     @GetMapping
-    public String listar(Model model) {
+    public String listarStaff(Model model) {
         model.addAttribute("staff", staffService.listarTodos());
+        model.addAttribute("staffList", staffService.listarTodos());
         return "staff/list";
     }
 
     @GetMapping("/nuevo")
-    public String nuevo(Model model) {
-        StaffPerfil staffPerfil = new StaffPerfil();
-        staffPerfil.setUsuario(new Usuario());
-        staffPerfil.setActivo(true);
+    public String mostrarFormularioNuevo(Model model) {
+        StaffPerfil staff = new StaffPerfil();
+        staff.setActivo(true);
+        staff.setPuedeImpartirClases(true);
+        staff.setRolStaff(RolStaff.ENTRENADOR);
+        staff.setUsuario(new Usuario());
         cargarCatalogos(model);
-        model.addAttribute("staffPerfil", staffPerfil);
+        model.addAttribute("staff", staff);
         model.addAttribute("modoEdicion", false);
         return "staff/form";
     }
 
     @PostMapping
-    public String guardar(@Valid @ModelAttribute("staffPerfil") StaffPerfil staffPerfil,
-                          BindingResult bindingResult,
-                          Model model,
-                          RedirectAttributes redirectAttributes) {
+    public String guardarStaff(@Valid @ModelAttribute("staff") StaffPerfil staff,
+                               BindingResult bindingResult,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
+        normalizarRelaciones(staff);
+
         if (bindingResult.hasErrors()) {
-            prepararRelaciones(staffPerfil);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", false);
             return "staff/form";
         }
 
         try {
-            staffService.guardar(staffPerfil);
-        } catch (DuplicateResourceException | BusinessValidationException ex) {
+            staffService.guardar(staff);
+        } catch (DuplicateResourceException ex) {
             bindingResult.reject("staffError", ex.getMessage());
-            prepararRelaciones(staffPerfil);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", false);
             return "staff/form";
         }
 
-        redirectAttributes.addFlashAttribute("mensajeExito", "Perfil de staff creado correctamente.");
+        redirectAttributes.addFlashAttribute("mensajeExito", "Staff creado correctamente.");
         return "redirect:/staff";
     }
 
     @GetMapping("/{id}")
-    public String detalle(@PathVariable Long id, Model model) {
-        model.addAttribute("staffPerfil", staffService.buscarPorId(id));
-        model.addAttribute("sesionesProximas", sesionClaseService.listarProximas());
+    public String verDetalle(@PathVariable Long id, Model model) {
+        model.addAttribute("staff", staffService.buscarPorId(id));
+        model.addAttribute("sesionesHoy", staffService.listarSesionesHoy(id));
+        model.addAttribute("miembrosAsignadosHoy", staffService.contarMiembrosAsignadosHoy(id));
+        model.addAttribute("clientesInactivos", staffService.listarClientesInactivosAsignados(id, 14));
         return "staff/detail";
     }
 
     @GetMapping("/{id}/editar")
-    public String editar(@PathVariable Long id, Model model) {
-        StaffPerfil staffPerfil = staffService.buscarPorId(id);
-        prepararRelaciones(staffPerfil);
+    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
+        model.addAttribute("staff", staffService.buscarPorId(id));
         cargarCatalogos(model);
-        model.addAttribute("staffPerfil", staffPerfil);
         model.addAttribute("modoEdicion", true);
         return "staff/form";
     }
 
     @PostMapping("/{id}")
-    public String actualizar(@PathVariable Long id,
-                             @Valid @ModelAttribute("staffPerfil") StaffPerfil staffPerfil,
-                             BindingResult bindingResult,
-                             Model model,
-                             RedirectAttributes redirectAttributes) {
+    public String actualizarStaff(@PathVariable Long id,
+                                  @Valid @ModelAttribute("staff") StaffPerfil staff,
+                                  BindingResult bindingResult,
+                                  Model model,
+                                  RedirectAttributes redirectAttributes) {
+        normalizarRelaciones(staff);
+
         if (bindingResult.hasErrors()) {
-            prepararRelaciones(staffPerfil);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", true);
             return "staff/form";
         }
 
         try {
-            staffService.actualizar(id, staffPerfil);
-        } catch (DuplicateResourceException | BusinessValidationException ex) {
+            staffService.actualizar(id, staff);
+        } catch (DuplicateResourceException ex) {
             bindingResult.reject("staffError", ex.getMessage());
-            prepararRelaciones(staffPerfil);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", true);
             return "staff/form";
         }
 
-        redirectAttributes.addFlashAttribute("mensajeExito", "Perfil de staff actualizado correctamente.");
+        redirectAttributes.addFlashAttribute("mensajeExito", "Staff actualizado correctamente.");
         return "redirect:/staff";
     }
 
     @PostMapping("/{id}/desactivar")
-    public String desactivar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivarStaff(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         staffService.desactivar(id);
-        redirectAttributes.addFlashAttribute("mensajeExito", "Perfil de staff desactivado.");
+        redirectAttributes.addFlashAttribute("mensajeExito", "Staff desactivado correctamente.");
         return "redirect:/staff";
     }
 
     @PostMapping("/{id}/activar")
-    public String activar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activarStaff(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         staffService.activar(id);
-        redirectAttributes.addFlashAttribute("mensajeExito", "Perfil de staff activado.");
+        redirectAttributes.addFlashAttribute("mensajeExito", "Staff activado correctamente.");
         return "redirect:/staff";
     }
 
     private void cargarCatalogos(Model model) {
-        model.addAttribute("usuarios", usuarioService.listarTodos());
+        model.addAttribute("usuariosActivos", usuarioService.listarActivos());
         model.addAttribute("rolesStaff", RolStaff.values());
     }
 
-    private void prepararRelaciones(StaffPerfil staffPerfil) {
-        if (staffPerfil.getUsuario() == null) {
-            staffPerfil.setUsuario(new Usuario());
+    private void normalizarRelaciones(StaffPerfil staff) {
+        if (staff.getUsuario() != null && staff.getUsuario().getId() == null) {
+            staff.setUsuario(null);
         }
     }
 }

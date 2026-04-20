@@ -12,6 +12,7 @@ function initializeQuickCheckInPanel() {
     const selectVisibleButton = panel.querySelector("[data-checkin-select-visible]");
     const clearButton = panel.querySelector("[data-checkin-clear]");
     const submitButton = panel.querySelector("[data-checkin-submit]");
+    const form = panel.querySelector("form");
     const counterTargets = document.querySelectorAll("[data-checkin-count]");
     const checkboxes = () => Array.from(panel.querySelectorAll("[data-checkin-user]"));
     const items = () => Array.from(panel.querySelectorAll("[data-checkin-item]"));
@@ -84,6 +85,18 @@ function initializeQuickCheckInPanel() {
                 checkbox.checked = false;
             });
             updateSummary();
+        });
+    }
+
+    if (form && submitButton) {
+        form.addEventListener("submit", () => {
+            if (submitButton.disabled) {
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.classList.add("disabled");
+            submitButton.textContent = "Registrando...";
         });
     }
 

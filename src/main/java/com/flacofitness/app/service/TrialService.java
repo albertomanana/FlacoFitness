@@ -1,5 +1,12 @@
 package com.flacofitness.app.service;
 
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Rol;
@@ -11,11 +18,6 @@ import com.flacofitness.app.repository.RolRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
 import com.flacofitness.app.repository.TrialRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,15 +29,18 @@ public class TrialService {
     private final StaffPerfilRepository staffPerfilRepository;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final OperationalClockService operationalClockService;
 
     public TrialService(TrialRepository trialRepository,
                         StaffPerfilRepository staffPerfilRepository,
                         UsuarioRepository usuarioRepository,
-                        RolRepository rolRepository) {
+                        RolRepository rolRepository,
+                        OperationalClockService operationalClockService) {
         this.trialRepository = trialRepository;
         this.staffPerfilRepository = staffPerfilRepository;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Trial> listarTodos() {
@@ -50,7 +55,7 @@ public class TrialService {
     }
 
     public List<Trial> listarProximos() {
-        return trialRepository.findTop6ByFechaPruebaGreaterThanEqualOrderByFechaPruebaAscIdAsc(LocalDate.now());
+        return trialRepository.findTop6ByFechaPruebaGreaterThanEqualOrderByFechaPruebaAscIdAsc(operationalClockService.today());
     }
 
     public Trial buscarPorId(Long id) {
@@ -63,7 +68,25 @@ public class TrialService {
     }
 
     public long contarHoy() {
-        return trialRepository.countByFechaPruebaAndEstado(LocalDate.now(), EstadoTrial.PENDIENTE);
+        return trialRepository.countByFechaPruebaAndEstado(operationalClockService.today(), EstadoTrial.PENDIENTE);
+    }
+
+    public long contarSemanaActual() {
+        LocalDate hoy = operationalClockService.today();
+        LocalDate inicioSemana = hoy.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        LocalDate finSemana = inicioSemana.plusDays(6);
+        return trialRepository.countByFechaPruebaBetween(inicioSemana, finSemana);
+    }
+
+    public long contarSinSeguimiento(int dias) {
+        LocalDate limite = operationalClockService.today().minusDays(Math.max(1, dias));
+        return trialRepository.countByEstadoAndFechaPruebaLessThanEqual(EstadoTrial.NO_ASISTIO, limite)
+                + trialRepository.countByEstadoAndFechaPruebaLessThanEqual(EstadoTrial.PENDIENTE, limite);
+    }
+
+    public List<Trial> listarSinSeguimiento(int dias) {
+        LocalDate limite = operationalClockService.today().minusDays(Math.max(1, dias));
+        return trialRepository.findByEstadoAndFechaPruebaLessThanEqualOrderByFechaPruebaAscIdAsc(EstadoTrial.PENDIENTE, limite);
     }
 
     @Transactional
@@ -92,6 +115,13 @@ public class TrialService {
     public Trial actualizarEstado(Long id, EstadoTrial estado) {
         Trial trial = buscarPorId(id);
         trial.setEstado(estado != null ? estado : EstadoTrial.PENDIENTE);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial marcarAsistencia(Long id, boolean asistio) {
+        Trial trial = buscarPorId(id);
+        trial.setEstado(asistio ? EstadoTrial.ASISTIO : EstadoTrial.NO_ASISTIO);
         return trialRepository.save(trial);
     }
 
@@ -125,7 +155,7 @@ public class TrialService {
 
     private void normalizar(Trial trial) {
         if (trial.getFechaPrueba() == null) {
-            trial.setFechaPrueba(LocalDate.now());
+            trial.setFechaPrueba(operationalClockService.today());
         }
         if (trial.getEstado() == null) {
             trial.setEstado(EstadoTrial.PENDIENTE);

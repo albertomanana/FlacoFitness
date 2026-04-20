@@ -1,7 +1,15 @@
 package com.flacofitness.app.model.entity;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.flacofitness.app.model.enums.CategoriaGasto;
 import com.flacofitness.app.model.enums.FrecuenciaGasto;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -19,12 +27,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "gastos")
@@ -52,7 +54,7 @@ public class Gasto {
 
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    @Column(nullable = false)
+    @Column(name = "fecha_gasto", nullable = false)
     private LocalDate fecha;
 
     @Column(nullable = false)

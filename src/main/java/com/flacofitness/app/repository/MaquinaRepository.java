@@ -1,12 +1,13 @@
 package com.flacofitness.app.repository;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import com.flacofitness.app.model.entity.Maquina;
 import com.flacofitness.app.model.enums.CategoriaMaquina;
 import com.flacofitness.app.model.enums.EstadoMaquina;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.time.LocalDate;
-import java.util.List;
 
 public interface MaquinaRepository extends JpaRepository<Maquina, Long> {
 
@@ -23,6 +24,10 @@ public interface MaquinaRepository extends JpaRepository<Maquina, Long> {
     long countByActivoTrueAndEstadoIn(List<EstadoMaquina> estados);
 
     long countByActivoTrueAndProximaRevisionLessThanEqual(LocalDate fecha);
+
+    List<Maquina> findByActivoTrueAndProximaRevisionLessThanEqualOrderByProximaRevisionAscNombreAsc(LocalDate fecha);
+
+    List<Maquina> findByActivoTrueAndEstadoInOrderByNombreAsc(List<EstadoMaquina> estados);
 
     boolean existsByNumeroSerie(String numeroSerie);
 

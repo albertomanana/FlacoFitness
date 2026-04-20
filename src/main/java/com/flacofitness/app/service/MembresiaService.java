@@ -1,5 +1,15 @@
 package com.flacofitness.app.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.MembresiaUsuario;
@@ -10,14 +20,6 @@ import com.flacofitness.app.model.enums.TipoMembresia;
 import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -32,13 +34,16 @@ public class MembresiaService {
     private final PlanRepository planRepository;
     private final MembresiaUsuarioRepository membresiaUsuarioRepository;
     private final UsuarioRepository usuarioRepository;
+    private final OperationalClockService operationalClockService;
 
     public MembresiaService(PlanRepository planRepository,
                             MembresiaUsuarioRepository membresiaUsuarioRepository,
-                            UsuarioRepository usuarioRepository) {
+                            UsuarioRepository usuarioRepository,
+                            OperationalClockService operationalClockService) {
         this.planRepository = planRepository;
         this.membresiaUsuarioRepository = membresiaUsuarioRepository;
         this.usuarioRepository = usuarioRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Plan> listarCatalogo() {
@@ -119,7 +124,61 @@ public class MembresiaService {
 
     public long contarVencidas() {
         return membresiaUsuarioRepository.countByEstado(EstadoMembresia.VENCIDA)
-                + membresiaUsuarioRepository.countByFechaFinBeforeAndEstadoIn(LocalDate.now(), ESTADOS_OPERATIVOS);
+                + membresiaUsuarioRepository.countByFechaFinBeforeAndEstadoIn(operationalClockService.today(), ESTADOS_OPERATIVOS);
+    }
+
+    public List<MembresiaUsuario> listarRenovacionesProximas(int dias) {
+        LocalDate hoy = operationalClockService.today();
+        LocalDate limite = hoy.plusDays(Math.max(1, dias));
+        return membresiaUsuarioRepository.findByFechaFinBetweenAndEstadoInOrderByFechaFinAscIdAsc(
+                hoy,
+                limite,
+                ESTADOS_OPERATIVOS);
+    }
+
+    @Transactional
+    public int procesarMembresiasVencidas() {
+        LocalDate hoy = operationalClockService.today();
+        List<MembresiaUsuario> vencibles = membresiaUsuarioRepository.findByFechaFinBeforeAndEstadoIn(hoy, ESTADOS_OPERATIVOS);
+        int actualizadas = 0;
+
+        for (MembresiaUsuario contrato : vencibles) {
+            if (contrato.getEstado() == EstadoMembresia.VENCIDA || contrato.getEstado() == EstadoMembresia.CANCELADA) {
+                continue;
+            }
+
+            contrato.setEstado(EstadoMembresia.VENCIDA);
+            membresiaUsuarioRepository.save(contrato);
+            actualizadas++;
+        }
+
+        return actualizadas;
+    }
+
+    public Optional<Plan> recomendarPlanPorUso(Long usuarioId, long asistenciasUltimos30Dias) {
+        Optional<MembresiaUsuario> contratoActivo = buscarContratoActivoPorUsuario(usuarioId);
+        List<Plan> activos = listarPlanesActivos();
+        if (activos.isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (asistenciasUltimos30Dias >= 18) {
+            return activos.stream()
+                    .max(Comparator.comparing(Plan::getPrecioMensual))
+                    .filter(plan -> contratoActivo
+                            .map(contrato -> !contrato.getPlan().getId().equals(plan.getId()))
+                            .orElse(true));
+        }
+
+        if (asistenciasUltimos30Dias <= 4) {
+            return activos.stream()
+                    .min(Comparator.comparing(Plan::getPrecioMensual))
+                    .filter(plan -> contratoActivo
+                            .map(contrato -> !contrato.getPlan().getId().equals(plan.getId()))
+                            .orElse(true));
+        }
+
+        return Optional.empty();
     }
 
     @Transactional
@@ -127,7 +186,7 @@ public class MembresiaService {
         MembresiaUsuario contrato = new MembresiaUsuario();
         contrato.setUsuario(obtenerUsuario(usuarioId));
         contrato.setPlan(obtenerPlanActivo(planId));
-        contrato.setFechaInicio(fechaInicio != null ? fechaInicio : LocalDate.now());
+        contrato.setFechaInicio(fechaInicio != null ? fechaInicio : operationalClockService.today());
         contrato.setEstado(estado != null ? estado : EstadoMembresia.ACTIVA);
         contrato.setOrigen(origen);
         return guardarContrato(contrato);
@@ -196,7 +255,7 @@ public class MembresiaService {
 
     private void normalizarContrato(MembresiaUsuario contrato) {
         if (contrato.getFechaInicio() == null) {
-            contrato.setFechaInicio(LocalDate.now());
+            contrato.setFechaInicio(operationalClockService.today());
         }
         if (contrato.getEstado() == null) {
             contrato.setEstado(EstadoMembresia.ACTIVA);

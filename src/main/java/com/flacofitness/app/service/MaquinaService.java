@@ -1,5 +1,13 @@
 package com.flacofitness.app.service;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.DuplicateResourceException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
@@ -7,21 +15,18 @@ import com.flacofitness.app.model.entity.Maquina;
 import com.flacofitness.app.model.enums.CategoriaMaquina;
 import com.flacofitness.app.model.enums.EstadoMaquina;
 import com.flacofitness.app.repository.MaquinaRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
 public class MaquinaService {
 
     private final MaquinaRepository maquinaRepository;
+    private final OperationalClockService operationalClockService;
 
-    public MaquinaService(MaquinaRepository maquinaRepository) {
+    public MaquinaService(MaquinaRepository maquinaRepository,
+                          OperationalClockService operationalClockService) {
         this.maquinaRepository = maquinaRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Maquina> listarFiltradas(EstadoMaquina estado, CategoriaMaquina categoria) {
@@ -54,7 +59,37 @@ public class MaquinaService {
     }
 
     public long contarRevisionProxima(int dias) {
-        return maquinaRepository.countByActivoTrueAndProximaRevisionLessThanEqual(LocalDate.now().plusDays(Math.max(1, dias)));
+        return maquinaRepository.countByActivoTrueAndProximaRevisionLessThanEqual(operationalClockService.today().plusDays(Math.max(1, dias)));
+    }
+
+    public List<Maquina> listarRevisionProxima(int dias) {
+        return maquinaRepository.findByActivoTrueAndProximaRevisionLessThanEqualOrderByProximaRevisionAscNombreAsc(
+                operationalClockService.today().plusDays(Math.max(1, dias)));
+    }
+
+    public List<Maquina> listarFueraDeServicio() {
+        return maquinaRepository.findByActivoTrueAndEstadoInOrderByNombreAsc(
+                List.of(EstadoMaquina.AVERIADA, EstadoMaquina.MANTENIMIENTO));
+    }
+
+    @Transactional
+    public int procesarMaquinasEnMantenimiento() {
+        LocalDate hoy = operationalClockService.today();
+        List<Maquina> candidatas = maquinaRepository.findByActivoTrueAndProximaRevisionLessThanEqualOrderByProximaRevisionAscNombreAsc(hoy);
+        int actualizadas = 0;
+        Set<EstadoMaquina> estadosNoOperativos = Set.of(EstadoMaquina.AVERIADA, EstadoMaquina.RETIRADA, EstadoMaquina.MANTENIMIENTO);
+
+        for (Maquina maquina : candidatas) {
+            if (estadosNoOperativos.contains(maquina.getEstado())) {
+                continue;
+            }
+
+            maquina.setEstado(EstadoMaquina.MANTENIMIENTO);
+            maquinaRepository.save(maquina);
+            actualizadas++;
+        }
+
+        return actualizadas;
     }
 
     @Transactional

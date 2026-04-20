@@ -22,9 +22,21 @@
                             <div class="col-md-6"><strong>Recurrente:</strong> <span th:text="${gasto.recurrente ? 'Si' : 'No'}">-</span></div>
                             <div class="col-md-6"><strong>Frecuencia:</strong> <span th:text="${gasto.frecuencia != null ? #strings.replace(gasto.frecuencia.name(), '_', ' ') : 'No aplica'}">-</span></div>
                             <div class="col-md-6"><strong>Proveedor:</strong> <span th:text="${#strings.defaultString(gasto.proveedor, '-')}">-</span></div>
-                            <div class="col-md-6"><strong>Staff:</strong> <span th:text="${gasto.staffResponsable != null ? gasto.staffResponsable.usuario.nombre : '-'}">-</span></div>
-                            <div class="col-md-6"><strong>Maquina:</strong> <span th:text="${gasto.maquina != null ? gasto.maquina.nombre : '-'}">-</span></div>
-                            <div class="col-md-6"><strong>Material:</strong> <span th:text="${gasto.material != null ? gasto.material.nombre : '-'}">-</span></div>
+                            <div class="col-md-6">
+                                <strong>Staff:</strong>
+                                <a th:if="${gasto.staffResponsable != null}" th:href="@{/staff/{id}(id=${gasto.staffResponsable.id})}" th:text="${gasto.staffResponsable.usuario != null ? gasto.staffResponsable.usuario.nombre : 'Staff'}">Staff</a>
+                                <span th:if="${gasto.staffResponsable == null}">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Maquina:</strong>
+                                <a th:if="${gasto.maquina != null}" th:href="@{/maquinas/{id}(id=${gasto.maquina.id})}" th:text="${gasto.maquina.nombre}">Maquina</a>
+                                <span th:if="${gasto.maquina == null}">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Material:</strong>
+                                <a th:if="${gasto.material != null}" th:href="@{/materiales/{id}(id=${gasto.material.id})}" th:text="${gasto.material.nombre}">Material</a>
+                                <span th:if="${gasto.material == null}">-</span>
+                            </div>
                             <div class="col-12"><strong>Observaciones:</strong><p class="mb-0" th:text="${#strings.defaultString(gasto.observaciones, 'Sin observaciones')}">Sin observaciones</p></div>
                         </div>
                     </div>

@@ -14,6 +14,30 @@
         <a class="ff-topbar-brand d-lg-none" th:href="@{/}" aria-label="Ir al dashboard">
             <img th:src="@{/img/logo-mark.svg}" alt="FlacoFitness">
         </a>
+        <div class="ff-operational-clock" th:if="${operationalClock != null}">
+            <div class="ff-operational-clock-display">
+                <span class="ff-operational-clock-status"
+                      th:classappend="${operationalClock.simulated} ? ' is-simulated' : ' is-system'"
+                      th:text="${operationalClock.statusLabel}">Sistema</span>
+                <strong th:text="${operationalClock.dateLabel}">Lunes, 20 abril 2026</strong>
+                <span th:text="${operationalClock.timeLabel}">12:00</span>
+            </div>
+            <form class="ff-operational-clock-form"
+                  th:if="${accessProfile != null and accessProfile.name() == 'ADMIN'}"
+                  th:action="@{/reloj-operativo}"
+                  method="post">
+                <input type="hidden" name="returnTo" th:value="${currentRequestUri}">
+                <button class="ff-clock-step" type="submit" name="accion" value="minusMonth" title="Simular mes anterior">-1 mes</button>
+                <input class="ff-clock-input"
+                       type="datetime-local"
+                       name="fechaHora"
+                       th:value="${operationalClock.inputValue}"
+                       aria-label="Fecha y hora operativa">
+                <button class="ff-clock-primary" type="submit" name="accion" value="set">Fijar</button>
+                <button class="ff-clock-step" type="submit" name="accion" value="plusMonth" title="Simular mes siguiente">+1 mes</button>
+                <button class="ff-clock-reset" type="submit" name="accion" value="reset" title="Volver a fecha real">Hoy</button>
+            </form>
+        </div>
         <div class="ff-topbar-info">
             <span class="ff-topbar-eyebrow">FlacoFitness</span>
             <h1 class="ff-topbar-title" th:text="${pageTitle}">Panel</h1>
@@ -22,6 +46,20 @@
     </div>
 
     <div class="ff-topbar-actions">
+        <button class="ff-topbar-btn ff-theme-toggle"
+                type="button"
+                data-theme-toggle
+                aria-label="Activar modo oscuro"
+                title="Cambiar tema">
+            <span class="ff-theme-toggle-icon" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a9 9 0 1 0 9 9"/>
+                    <path d="M19 3v4"/>
+                    <path d="M21 5h-4"/>
+                </svg>
+            </span>
+        </button>
+
         <div class="dropdown ff-notifications-dropdown">
             <button class="ff-topbar-btn dropdown-toggle"
                     type="button"

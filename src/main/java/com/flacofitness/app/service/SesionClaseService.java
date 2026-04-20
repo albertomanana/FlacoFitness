@@ -1,5 +1,16 @@
 package com.flacofitness.app.service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.dto.AsistenciaCheckInBatchResult;
@@ -20,16 +31,6 @@ import com.flacofitness.app.repository.RutinaRepository;
 import com.flacofitness.app.repository.SesionClaseRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -47,6 +48,7 @@ public class SesionClaseService {
     private final RutinaRepository rutinaRepository;
     private final UsuarioRepository usuarioRepository;
     private final AsistenciaRepository asistenciaRepository;
+    private final OperationalClockService operationalClockService;
 
     public SesionClaseService(SesionClaseRepository sesionClaseRepository,
                               ReservaSesionRepository reservaSesionRepository,
@@ -54,7 +56,8 @@ public class SesionClaseService {
                               StaffPerfilRepository staffPerfilRepository,
                               RutinaRepository rutinaRepository,
                               UsuarioRepository usuarioRepository,
-                              AsistenciaRepository asistenciaRepository) {
+                              AsistenciaRepository asistenciaRepository,
+                              OperationalClockService operationalClockService) {
         this.sesionClaseRepository = sesionClaseRepository;
         this.reservaSesionRepository = reservaSesionRepository;
         this.claseRepository = claseRepository;
@@ -62,6 +65,7 @@ public class SesionClaseService {
         this.rutinaRepository = rutinaRepository;
         this.usuarioRepository = usuarioRepository;
         this.asistenciaRepository = asistenciaRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<SesionClase> listarTodas() {
@@ -81,7 +85,7 @@ public class SesionClaseService {
 
     public List<SesionClase> listarProximas() {
         return sesionClaseRepository.findTop8ByFechaGreaterThanEqualAndEstadoOrderByFechaAscHoraInicioAscIdAsc(
-                LocalDate.now(), EstadoSesion.PROGRAMADA);
+                operationalClockService.today(), EstadoSesion.PROGRAMADA);
     }
 
     public SesionClase buscarPorId(Long id) {
@@ -98,11 +102,24 @@ public class SesionClaseService {
     }
 
     public long contarSesionesHoy() {
-        return sesionClaseRepository.countByFechaAndEstado(LocalDate.now(), EstadoSesion.PROGRAMADA);
+        return sesionClaseRepository.countByFechaAndEstado(operationalClockService.today(), EstadoSesion.PROGRAMADA);
     }
 
     public long contarProgramadas() {
-        return sesionClaseRepository.countProgramadasDesde(LocalDate.now(), EstadoSesion.PROGRAMADA);
+        return sesionClaseRepository.countProgramadasDesde(operationalClockService.today(), EstadoSesion.PROGRAMADA);
+    }
+
+    @Transactional
+    public int cerrarSesionesFinalizadas() {
+        LocalDate hoy = operationalClockService.today();
+        List<SesionClase> vencidas = sesionClaseRepository.findByFechaBeforeAndEstado(hoy, EstadoSesion.PROGRAMADA);
+        int cerradas = 0;
+        for (SesionClase sesion : vencidas) {
+            sesion.setEstado(EstadoSesion.FINALIZADA);
+            sesionClaseRepository.save(sesion);
+            cerradas++;
+        }
+        return cerradas;
     }
 
     public long contarCuposLlenosProximos() {
@@ -190,7 +207,7 @@ public class SesionClaseService {
 
         int creados = 0;
         int omitidos = 0;
-        LocalTime horaEntrada = LocalTime.now().withSecond(0).withNano(0);
+        LocalTime horaEntrada = operationalClockService.time().withSecond(0).withNano(0);
 
         for (Long usuarioId : idsUnicos) {
             Usuario usuario = obtenerUsuarioActivo(usuarioId);
@@ -254,10 +271,10 @@ public class SesionClaseService {
         sesionClase.setStaffResponsable(obtenerStaffOpcional(sesionClase.getStaffResponsable()));
         sesionClase.setRutina(obtenerRutinaOpcional(sesionClase.getRutina()));
         if (sesionClase.getFecha() == null) {
-            sesionClase.setFecha(LocalDate.now());
+            sesionClase.setFecha(operationalClockService.today());
         }
         if (sesionClase.getHoraInicio() == null) {
-            sesionClase.setHoraInicio(LocalTime.now().withSecond(0).withNano(0));
+            sesionClase.setHoraInicio(operationalClockService.time().withSecond(0).withNano(0));
         }
         if (sesionClase.getAforo() == null || sesionClase.getAforo() <= 0) {
             Integer capacidad = sesionClase.getClase().getCapacidadSugerida();

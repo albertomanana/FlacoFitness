@@ -1,6 +1,11 @@
 package com.flacofitness.app.model.entity;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.flacofitness.app.model.enums.EstadoReservaSesion;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,18 +19,14 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(
         name = "reservas_sesion",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"sesion_clase_id", "usuario_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"sesion_id", "usuario_id"})
 )
 @Getter
 @Setter
@@ -36,17 +37,14 @@ public class ReservaSesion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sesion_clase_id", nullable = false)
+    @JoinColumn(name = "sesion_id", nullable = false)
     private SesionClase sesionClase;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EstadoReservaSesion estado;
@@ -54,9 +52,6 @@ public class ReservaSesion {
     @CreationTimestamp
     @Column(name = "fecha_reserva", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaReserva;
-
-    @Column(columnDefinition = "TEXT")
-    private String observaciones;
 
     @PrePersist
     private void inicializarEstado() {

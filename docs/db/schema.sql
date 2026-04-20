@@ -36,6 +36,7 @@
 --             sesion_clase_id)
 -- pagos(id, fecha_pago, fecha_vencimiento, monto, metodo_pago, estado,
 --       referencia, usuario_id, plan_id, membresia_usuario_id)
+-- app_clock_settings(id, fecha_hora_operativa, simulado, actualizado_en)
 
 -- Comercial:
 -- trials(id, nombre, apellidos, telefono, email, origen, fecha_prueba,

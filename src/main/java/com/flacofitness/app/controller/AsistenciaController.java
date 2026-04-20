@@ -5,6 +5,7 @@ import com.flacofitness.app.model.entity.Asistencia;
 import com.flacofitness.app.model.entity.SesionClase;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -33,13 +34,16 @@ public class AsistenciaController {
     private final AsistenciaService asistenciaService;
     private final UsuarioService usuarioService;
     private final SesionClaseService sesionClaseService;
+    private final OperationalClockService operationalClockService;
 
     public AsistenciaController(AsistenciaService asistenciaService,
                                 UsuarioService usuarioService,
-                                SesionClaseService sesionClaseService) {
+                                SesionClaseService sesionClaseService,
+                                OperationalClockService operationalClockService) {
         this.asistenciaService = asistenciaService;
         this.usuarioService = usuarioService;
         this.sesionClaseService = sesionClaseService;
+        this.operationalClockService = operationalClockService;
     }
 
     @GetMapping
@@ -92,7 +96,8 @@ public class AsistenciaController {
         Asistencia asistencia = new Asistencia();
         asistencia.setUsuario(new Usuario());
         asistencia.setSesionClase(new SesionClase());
-        asistencia.setHoraEntrada(java.time.LocalTime.now().withSecond(0).withNano(0));
+        asistencia.setFecha(operationalClockService.today());
+        asistencia.setHoraEntrada(operationalClockService.time().withSecond(0).withNano(0));
         model.addAttribute("asistencia", asistencia);
         model.addAttribute("usuarios", usuarioService.listarActivos());
         model.addAttribute("sesiones", sesionClaseService.listarProximas());
@@ -190,7 +195,7 @@ public class AsistenciaController {
             return YearMonth.from(fecha);
         }
 
-        return YearMonth.now();
+        return operationalClockService.currentYearMonth();
     }
 
     private String construirTituloListado(LocalDate fecha, Usuario usuarioFiltro) {

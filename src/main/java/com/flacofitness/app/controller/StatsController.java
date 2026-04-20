@@ -1,25 +1,30 @@
 package com.flacofitness.app.controller;
 
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.flacofitness.app.model.dto.AsistenciasStatsResponse;
 import com.flacofitness.app.model.dto.DashboardStatsResponse;
 import com.flacofitness.app.model.dto.PagosStatsResponse;
 import com.flacofitness.app.model.dto.RutinasStatsResponse;
 import com.flacofitness.app.model.dto.UsuariosStatsResponse;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.GastoService;
+import com.flacofitness.app.service.MaquinaService;
+import com.flacofitness.app.service.MaterialService;
 import com.flacofitness.app.service.MembresiaService;
 import com.flacofitness.app.service.PagoService;
+import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.TrialService;
 import com.flacofitness.app.service.UsuarioService;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 @RestController
 @RequestMapping("/stats")
@@ -34,6 +39,9 @@ public class StatsController {
     private final TrialService trialService;
     private final SesionClaseService sesionClaseService;
     private final MembresiaService membresiaService;
+    private final GastoService gastoService;
+    private final MaquinaService maquinaService;
+    private final MaterialService materialService;
 
     public StatsController(UsuarioService usuarioService,
                            PlanService planService,
@@ -43,7 +51,10 @@ public class StatsController {
                            StaffService staffService,
                            TrialService trialService,
                            SesionClaseService sesionClaseService,
-                           MembresiaService membresiaService) {
+                           MembresiaService membresiaService,
+                           GastoService gastoService,
+                           MaquinaService maquinaService,
+                           MaterialService materialService) {
         this.usuarioService = usuarioService;
         this.planService = planService;
         this.pagoService = pagoService;
@@ -53,6 +64,9 @@ public class StatsController {
         this.trialService = trialService;
         this.sesionClaseService = sesionClaseService;
         this.membresiaService = membresiaService;
+        this.gastoService = gastoService;
+        this.maquinaService = maquinaService;
+        this.materialService = materialService;
     }
 
     @GetMapping("/usuarios")
@@ -100,11 +114,14 @@ public class StatsController {
                 usuarioService.contarRenovacionesProximas(7),
                 pagoService.calcularIngresosTotales(),
                 pagoService.calcularIngresosMesActual(),
+                gastoService.calcularGastoMesActual(),
+                pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()),
                 asistenciaService.contarHoy(),
                 rutinaService.contarActivas(),
                 rangoNormalizado,
                 asistenciaService.obtenerAsistenciasUltimosDias(rangoNormalizado),
                 pagoService.obtenerIngresosMensuales(),
+                gastoService.obtenerGastosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
                 usuarioService.obtenerAltasMensuales(),
                 // NUEVAS MÉTRICAS
@@ -116,9 +133,12 @@ public class StatsController {
                 staffService.contarActivos(),
                 trialService.contarPendientes(),
                 trialService.contarHoy(),
+                trialService.contarSemanaActual(),
                 sesionClaseService.contarSesionesHoy(),
                 membresiaService.contarActivas(),
-                membresiaService.contarVencidas()
+                membresiaService.contarVencidas(),
+                maquinaService.contarRevisionProxima(7),
+                materialService.contarBajoStock()
         );
     }
 

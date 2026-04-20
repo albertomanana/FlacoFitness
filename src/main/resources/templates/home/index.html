@@ -63,43 +63,60 @@
                         <p class="ff-stat-value" data-stat="trialsPendientes" data-stat-kind="integer" th:text="${trialsPendientes}">0</p>
                         <p class="ff-stat-note">Pipeline comercial</p>
                     </a>
+                    <a th:href="@{/trials}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Trials esta semana</p>
+                        <p class="ff-stat-value" data-stat="trialsSemana" data-stat-kind="integer" th:text="${trialsSemana}">0</p>
+                        <p class="ff-stat-note">Demanda comercial semanal</p>
+                    </a>
                     <a th:href="@{/sesiones}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Sesiones hoy</p>
                         <p class="ff-stat-value" data-stat="sesionesHoy" data-stat-kind="integer" th:text="${sesionesHoy}">0</p>
                         <p class="ff-stat-note">Agenda diaria</p>
                     </a>
-                    <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/asistencias}" th:if="${accessProfile.canSeeSection('asistencias')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios activos</p>
                         <p class="ff-stat-value" data-stat="usuariosAsistenciaActivos" data-stat-kind="integer" th:text="${usuariosAsistenciaActivos}">0</p>
                         <p class="ff-stat-note">Asistencia reciente</p>
                     </a>
-                    <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/asistencias}" th:if="${accessProfile.canSeeSection('asistencias')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios inactivos</p>
                         <p class="ff-stat-value" data-stat="usuariosAsistenciaInactivos" data-stat-kind="integer" th:text="${usuariosAsistenciaInactivos}">0</p>
                         <p class="ff-stat-note">Sin actividad (>14 días)</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/pagos}" th:if="${accessProfile.canSeeSection('pagos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Al día financiero</p>
                         <p class="ff-stat-value" data-stat="usuariosFinancierosAlDia" data-stat-kind="integer" th:text="${usuariosFinancierosAlDia}">0</p>
                         <p class="ff-stat-note">Estado OK</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/pagos}" th:if="${accessProfile.canSeeSection('pagos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Con deuda</p>
                         <p class="ff-stat-value" data-stat="usuariosFinancierosConDeuda" data-stat-kind="integer" th:text="${usuariosFinancierosConDeuda}">0</p>
                         <p class="ff-stat-note">Pagos pendientes</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/pagos}" th:if="${accessProfile.canSeeSection('pagos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Con vencidos</p>
                         <p class="ff-stat-value" data-stat="usuariosFinancierosConVencidos" data-stat-kind="integer" th:text="${usuariosFinancierosConVencidos}">0</p>
                         <p class="ff-stat-note">Acción requerida</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/pagos}" th:if="${accessProfile.canSeeSection('pagos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Ingresos del mes</p>
                         <p class="ff-stat-value" data-stat="ingresosMensuales" data-stat-kind="currency"
                            th:text="${#numbers.formatDecimal(ingresosMensuales, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
                         <p class="ff-stat-note">Mes actual</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/gastos}" th:if="${accessProfile.canSeeSection('gastos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Gastos del mes</p>
+                        <p class="ff-stat-value" data-stat="gastoMesActual" data-stat-kind="currency"
+                           th:text="${#numbers.formatDecimal(gastoMesActual, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
+                        <p class="ff-stat-note">Ejecucion mensual</p>
+                    </a>
+                    <a th:href="@{/gastos}" th:if="${accessProfile.canSeeSection('gastos') and accessProfile.canSeeSection('pagos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Beneficio estimado</p>
+                        <p class="ff-stat-value" data-stat="beneficioEstimado" data-stat-kind="currency"
+                           th:text="${#numbers.formatDecimal(beneficioEstimado, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
+                        <p class="ff-stat-note">Ingresos - gastos del mes</p>
+                    </a>
+                    <a th:href="@{/pagos}" th:if="${accessProfile.canSeeSection('pagos')}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Ingresos totales</p>
                         <p class="ff-stat-value" data-stat="ingresosTotales" data-stat-kind="currency"
                            th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
@@ -143,57 +160,64 @@
                     </div>
                 </section>
 
-                <section class="row g-3 ff-animate-in">
-                    <div class="col-sm-6 col-xl-3">
+                <section class="row g-3 ff-animate-in" th:if="${accessProfile.canSeeSection('gastos') or accessProfile.canSeeSection('maquinas') or accessProfile.canSeeSection('materiales')}">
+                    <div class="col-sm-6 col-xl-3" th:if="${accessProfile.canSeeSection('gastos')}">
                         <a th:href="@{/gastos}" class="ff-surface-card ff-stat-card text-decoration-none">
                             <p class="ff-stat-label">Gasto del mes</p>
-                            <p class="ff-stat-value"
-                               th:text="${gastoMesActual != null ? #numbers.formatDecimal(gastoMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-value" data-stat="gastoMesActual" data-stat-kind="currency"
+                                th:text="${gastoMesActual != null ? #numbers.formatDecimal(gastoMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Control operativo interno</p>
                         </a>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3" th:if="${accessProfile.canSeeSection('gastos')}">
                         <a th:href="@{/gastos}" class="ff-surface-card ff-stat-card text-decoration-none">
                             <p class="ff-stat-label">Gastos criticos</p>
                             <p class="ff-stat-value" th:text="${gastosCriticos}">0</p>
                             <p class="ff-stat-note">Vencidos pendientes</p>
                         </a>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3" th:if="${accessProfile.canSeeSection('maquinas')}">
                         <a th:href="@{/maquinas}" class="ff-surface-card ff-stat-card text-decoration-none">
                             <p class="ff-stat-label">Maquinas fuera de servicio</p>
                             <p class="ff-stat-value" th:text="${maquinasFueraServicio}">0</p>
                             <p class="ff-stat-note">Mantenimiento / averias</p>
                         </a>
                     </div>
-                    <div class="col-sm-6 col-xl-3">
+                    <div class="col-sm-6 col-xl-3" th:if="${accessProfile.canSeeSection('materiales')}">
                         <a th:href="@{/materiales}" class="ff-surface-card ff-stat-card text-decoration-none">
                             <p class="ff-stat-label">Material bajo stock</p>
-                            <p class="ff-stat-value" th:text="${materialesBajoStock}">0</p>
+                            <p class="ff-stat-value" data-stat="materialesBajoStock" data-stat-kind="integer" th:text="${materialesBajoStock}">0</p>
                             <p class="ff-stat-note">Reposicion recomendada</p>
+                        </a>
+                    </div>
+                    <div class="col-sm-6 col-xl-3" th:if="${accessProfile.canSeeSection('maquinas')}">
+                        <a th:href="@{/maquinas}" class="ff-surface-card ff-stat-card text-decoration-none">
+                            <p class="ff-stat-label">Maquinas en revision</p>
+                            <p class="ff-stat-value" data-stat="maquinasRevisionProxima" data-stat-kind="integer" th:text="${maquinasRevisionProxima}">0</p>
+                            <p class="ff-stat-note">Proximos 7 dias</p>
                         </a>
                     </div>
                 </section>
 
                 <section class="row g-4 ff-animate-in">
-                    <div class="col-xl-8">
+                    <div class="col-xl-8" th:if="${accessProfile.canSeeSection('pagos')}">
                         <article class="ff-surface-card ff-chart-card h-100">
                             <div class="ff-card-header">
                                 <div>
-                                    <p class="ff-section-eyebrow mb-0">Cobros</p>
-                                    <h3 class="ff-card-title mt-1">Ingresos por mes</h3>
-                                    <p class="ff-card-subtitle">Evolucion de la facturacion.</p>
+                                    <p class="ff-section-eyebrow mb-0">Finanzas</p>
+                                    <h3 class="ff-card-title mt-1">Ingresos vs gastos</h3>
+                                    <p class="ff-card-subtitle">Comparativa mensual para lectura de margen.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-chart-canvas-wrap ff-chart-canvas-wrap-wide">
-                                    <canvas id="ingresosChart" aria-label="Grafico de ingresos mensuales" role="img"></canvas>
+                                    <canvas id="ingresosGastosChart" aria-label="Grafico de ingresos y gastos mensuales" role="img"></canvas>
                                 </div>
-                                <p class="ff-chart-empty d-none" data-chart-empty="ingresos">No hay datos de ingresos suficientes para el grafico.</p>
+                                <p class="ff-chart-empty d-none" data-chart-empty="ingresosGastos">No hay datos financieros suficientes para el grafico.</p>
                             </div>
                         </article>
                     </div>
-                    <div class="col-xl-4">
+                    <div class="col-xl-4" th:if="${accessProfile.canSeeSection('membresias')}">
                         <article class="ff-surface-card ff-chart-card ff-chart-card-compact h-100">
                             <div class="ff-card-header">
                                 <div>
@@ -227,7 +251,7 @@
                             </div>
                         </article>
                     </div>
-                    <div class="col-xl-5">
+                    <div class="col-xl-5" th:if="${accessProfile.canSeeSection('usuarios')}">
                         <article class="ff-surface-card ff-chart-card ff-chart-card-compact h-100">
                             <div class="ff-card-header">
                                 <div>
@@ -382,7 +406,7 @@
                     </div>
                 </section>
 
-                <section class="ff-surface-card ff-animate-in">
+                <section class="ff-surface-card ff-animate-in" th:if="${accessProfile.canSeeSection('pagos')}">
                     <div class="ff-card-header">
                         <div class="ff-card-toolbar w-100">
                             <div>

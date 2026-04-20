@@ -9,13 +9,6 @@
         <div class="ff-content-stack">
             <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
-            <section class="ff-section-header">
-                <div>
-                    <span class="ff-section-eyebrow">Cliente</span>
-                    <h2 class="ff-section-title" th:text="${usuario.nombre + ' ' + #strings.defaultString(usuario.apellidos, '')}">Mi ficha</h2>
-                    <p class="ff-section-subtitle">Panel limitado para consultar membresia, rutinas, pagos y actividad.</p>
-                </div>
-            </section>
 
             <section class="row g-3">
                 <div class="col-sm-6 col-xl-3">

@@ -1,13 +1,14 @@
 package com.flacofitness.app.repository;
 
-import com.flacofitness.app.model.entity.Trial;
-import com.flacofitness.app.model.enums.EstadoTrial;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.flacofitness.app.model.entity.Trial;
+import com.flacofitness.app.model.enums.EstadoTrial;
 
 public interface TrialRepository extends JpaRepository<Trial, Long> {
 
@@ -32,7 +33,14 @@ public interface TrialRepository extends JpaRepository<Trial, Long> {
 
     long countByFechaPrueba(LocalDate fechaPrueba);
 
+    long countByFechaPruebaBetween(LocalDate desde, LocalDate hasta);
+
     long countByFechaPruebaAndEstado(LocalDate fechaPrueba, EstadoTrial estado);
+
+    long countByEstadoAndFechaPruebaLessThanEqual(EstadoTrial estado, LocalDate fechaPrueba);
+
+    @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "usuarioConvertido"})
+    List<Trial> findByEstadoAndFechaPruebaLessThanEqualOrderByFechaPruebaAscIdAsc(EstadoTrial estado, LocalDate fechaPrueba);
 
     @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario"})
     List<Trial> findTop6ByFechaPruebaGreaterThanEqualOrderByFechaPruebaAscIdAsc(LocalDate fecha);

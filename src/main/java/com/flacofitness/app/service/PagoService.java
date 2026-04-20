@@ -35,15 +35,18 @@ public class PagoService {
     private final UsuarioRepository usuarioRepository;
     private final PlanRepository planRepository;
     private final MembresiaUsuarioRepository membresiaUsuarioRepository;
+    private final OperationalClockService operationalClockService;
 
     public PagoService(PagoRepository pagoRepository,
                        UsuarioRepository usuarioRepository,
                        PlanRepository planRepository,
-                       MembresiaUsuarioRepository membresiaUsuarioRepository) {
+                       MembresiaUsuarioRepository membresiaUsuarioRepository,
+                       OperationalClockService operationalClockService) {
         this.pagoRepository = pagoRepository;
         this.usuarioRepository = usuarioRepository;
         this.planRepository = planRepository;
         this.membresiaUsuarioRepository = membresiaUsuarioRepository;
+        this.operationalClockService = operationalClockService;
     }
 
     public List<Pago> listarTodos() {
@@ -103,7 +106,7 @@ public class PagoService {
     }
 
     public BigDecimal calcularIngresosMesActual() {
-        LocalDate hoy = LocalDate.now();
+        LocalDate hoy = operationalClockService.today();
         return pagoRepository.sumMontoByEstadoAndPeriodo(EstadoPago.PAGADO, hoy.getYear(), hoy.getMonthValue());
     }
 
@@ -121,7 +124,7 @@ public class PagoService {
 
     @Transactional
     public int generarPagosMensuales() {
-        LocalDate fechaReferencia = LocalDate.now();
+        LocalDate fechaReferencia = operationalClockService.today();
         List<Usuario> usuariosConPagoPendiente = usuarioRepository.findUsuariosConPagoPendiente(fechaReferencia);
         int pagosGenerados = 0;
 
@@ -194,7 +197,7 @@ public class PagoService {
     public Pago marcarComoPagado(Long id) {
         Pago pagoExistente = buscarPorId(id);
         pagoExistente.setEstado(EstadoPago.PAGADO);
-        pagoExistente.setFechaPago(LocalDate.now());
+        pagoExistente.setFechaPago(operationalClockService.today());
         normalizarEstadoYFechas(pagoExistente);
         return pagoRepository.save(pagoExistente);
     }
@@ -221,7 +224,7 @@ public class PagoService {
 
         if (pago.getEstado() == EstadoPago.PAGADO) {
             if (pago.getFechaPago() == null) {
-                pago.setFechaPago(LocalDate.now());
+                pago.setFechaPago(operationalClockService.today());
             }
             return;
         }

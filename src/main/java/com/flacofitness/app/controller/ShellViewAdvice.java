@@ -1,9 +1,12 @@
 package com.flacofitness.app.controller;
 
 import com.flacofitness.app.model.dto.ShellNotificationItem;
+import com.flacofitness.app.model.dto.OperationalClockState;
 import com.flacofitness.app.security.AccessProfile;
 import com.flacofitness.app.security.AccessSessionService;
+import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.ShellNotificationService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -32,11 +35,14 @@ public class ShellViewAdvice {
 
     private final ShellNotificationService shellNotificationService;
     private final AccessSessionService accessSessionService;
+    private final OperationalClockService operationalClockService;
 
     public ShellViewAdvice(ShellNotificationService shellNotificationService,
-                           AccessSessionService accessSessionService) {
+                           AccessSessionService accessSessionService,
+                           OperationalClockService operationalClockService) {
         this.shellNotificationService = shellNotificationService;
         this.accessSessionService = accessSessionService;
+        this.operationalClockService = operationalClockService;
     }
 
     @ModelAttribute("shellNotifications")
@@ -71,5 +77,17 @@ public class ShellViewAdvice {
     @ModelAttribute("accessProfile")
     public AccessProfile accessProfile(HttpSession session) {
         return accessSessionService.getCurrentProfile(session);
+    }
+
+    @ModelAttribute("operationalClock")
+    public OperationalClockState operationalClock() {
+        return operationalClockService.state();
+    }
+
+    @ModelAttribute("currentRequestUri")
+    public String currentRequestUri(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        return query == null || query.isBlank() ? uri : uri + "?" + query;
     }
 }

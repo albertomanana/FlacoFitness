@@ -8,6 +8,7 @@ import com.flacofitness.app.model.entity.SesionClase;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.enums.EstadoSesion;
 import com.flacofitness.app.service.ClaseService;
+import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
@@ -38,17 +39,20 @@ public class SesionClaseController {
     private final StaffService staffService;
     private final RutinaService rutinaService;
     private final UsuarioService usuarioService;
+    private final OperationalClockService operationalClockService;
 
     public SesionClaseController(SesionClaseService sesionClaseService,
                                  ClaseService claseService,
                                  StaffService staffService,
                                  RutinaService rutinaService,
-                                 UsuarioService usuarioService) {
+                                 UsuarioService usuarioService,
+                                 OperationalClockService operationalClockService) {
         this.sesionClaseService = sesionClaseService;
         this.claseService = claseService;
         this.staffService = staffService;
         this.rutinaService = rutinaService;
         this.usuarioService = usuarioService;
+        this.operationalClockService = operationalClockService;
     }
 
     @GetMapping
@@ -71,8 +75,8 @@ public class SesionClaseController {
         sesionClase.setClase(new Clase());
         sesionClase.setStaffResponsable(new StaffPerfil());
         sesionClase.setRutina(new Rutina());
-        sesionClase.setFecha(LocalDate.now());
-        sesionClase.setHoraInicio(LocalTime.now().withSecond(0).withNano(0));
+        sesionClase.setFecha(operationalClockService.today());
+        sesionClase.setHoraInicio(operationalClockService.time().withSecond(0).withNano(0));
         sesionClase.setAforo(12);
         sesionClase.setEstado(EstadoSesion.PROGRAMADA);
         cargarCatalogos(model);

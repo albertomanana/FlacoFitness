@@ -12,11 +12,14 @@ public record DashboardStatsResponse(
         long renovacionesProximas,
         BigDecimal ingresosTotales,
         BigDecimal ingresosMensuales,
+        BigDecimal gastoMesActual,
+        BigDecimal beneficioEstimado,
         long asistenciasHoy,
         long rutinasActivas,
         int rangoDias,
         List<AsistenciaDiariaStatsItem> asistenciasRecientes,
         List<IngresoMensualStatsItem> ingresosMensualesSerie,
+        List<IngresoMensualStatsItem> gastosMensualesSerie,
         List<PlanDistribucionStatsItem> usuariosPorPlan,
         List<UsuarioAltaMensualStatsItem> altasRecientes,
         // NUEVAS MÉTRICAS PARA ANÁLISIS
@@ -28,8 +31,11 @@ public record DashboardStatsResponse(
         long staffActivos,
         long trialsPendientes,
         long trialsHoy,
+        long trialsSemana,
         long sesionesHoy,
         long membresiasActivas,
-        long membresiasVencidas
+        long membresiasVencidas,
+        long maquinasRevisionProxima,
+        long materialesBajoStock
 ) {
 }

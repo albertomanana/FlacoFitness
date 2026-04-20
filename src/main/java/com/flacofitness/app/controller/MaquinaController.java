@@ -1,12 +1,5 @@
 package com.flacofitness.app.controller;
 
-import com.flacofitness.app.exception.BusinessValidationException;
-import com.flacofitness.app.model.entity.Maquina;
-import com.flacofitness.app.model.enums.CategoriaMaquina;
-import com.flacofitness.app.model.enums.EstadoMaquina;
-import com.flacofitness.app.service.MaquinaPhotoStorageService;
-import com.flacofitness.app.service.MaquinaService;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,17 +12,30 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.flacofitness.app.exception.BusinessValidationException;
+import com.flacofitness.app.model.entity.Maquina;
+import com.flacofitness.app.model.enums.CategoriaMaquina;
+import com.flacofitness.app.model.enums.EstadoMaquina;
+import com.flacofitness.app.service.GastoService;
+import com.flacofitness.app.service.MaquinaPhotoStorageService;
+import com.flacofitness.app.service.MaquinaService;
+
+import jakarta.validation.Valid;
+
 @Controller
 @RequestMapping("/maquinas")
 public class MaquinaController {
 
     private final MaquinaService maquinaService;
     private final MaquinaPhotoStorageService maquinaPhotoStorageService;
+    private final GastoService gastoService;
 
     public MaquinaController(MaquinaService maquinaService,
-                             MaquinaPhotoStorageService maquinaPhotoStorageService) {
+                             MaquinaPhotoStorageService maquinaPhotoStorageService,
+                             GastoService gastoService) {
         this.maquinaService = maquinaService;
         this.maquinaPhotoStorageService = maquinaPhotoStorageService;
+        this.gastoService = gastoService;
     }
 
     @GetMapping
@@ -83,6 +89,7 @@ public class MaquinaController {
     @GetMapping("/{id}")
     public String detalle(@PathVariable Long id, Model model) {
         model.addAttribute("maquina", maquinaService.buscarPorId(id));
+        model.addAttribute("gastosRelacionados", gastoService.listarPorMaquina(id).stream().limit(6).toList());
         return "maquinas/detail";
     }
 

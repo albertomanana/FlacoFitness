@@ -1,6 +1,11 @@
 package com.flacofitness.app.model.entity;
 
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
 import com.flacofitness.app.model.enums.EstadoTrial;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,16 +18,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.format.annotation.DateTimeFormat;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "trials")
@@ -42,14 +43,12 @@ public class Trial {
     @Column(length = 150)
     private String apellidos;
 
-    @Column(length = 20)
-    private String telefono;
-
+    @Email
     @Column(length = 150)
     private String email;
 
-    @Column(length = 100)
-    private String origen;
+    @Column(length = 30)
+    private String telefono;
 
     @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -60,6 +59,9 @@ public class Trial {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EstadoTrial estado;
+
+    @Column(length = 120)
+    private String origen;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_responsable_id")
@@ -72,12 +74,8 @@ public class Trial {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
-    @CreationTimestamp
-    @Column(name = "fecha_registro", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
-    private LocalDateTime fechaRegistro;
-
     @PrePersist
-    private void inicializarEstado() {
+    private void inicializarValores() {
         if (fechaPrueba == null) {
             fechaPrueba = LocalDate.now();
         }

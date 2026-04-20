@@ -1,9 +1,13 @@
 (() => {
     const SPLASH_SESSION_KEY = "flacofitness:splash-seen:v1";
+    const THEME_STORAGE_KEY = "flacofitness:theme:v1";
+    const LIGHT_THEME = "light";
+    const DARK_THEME = "dark";
     const PAGE_TRANSITION_DELAY = 140;
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     document.documentElement.classList.add("ff-motion-enabled");
+    initializeThemeState();
 
     const utils = {
         formatInteger(value) {
@@ -57,10 +61,12 @@
     document.addEventListener("DOMContentLoaded", () => {
         initializeSplashScreen();
         initializePageTransitions();
+        initializeGlobalLoadingOverlay();
         updateCurrentYear();
         initializeClickableRows();
         initializeRevealBlocks();
         initializePaymentFormAssistant();
+        initializeThemeToggle();
     });
 
     window.addEventListener("pageshow", () => {
@@ -157,8 +163,108 @@
             }
 
             event.preventDefault();
+            activateGlobalLoading();
             navigateWithTransition(link.href);
         });
+    }
+
+    function initializeGlobalLoadingOverlay() {
+        const overlay = document.querySelector("[data-app-loading-overlay]");
+        if (!overlay) {
+            return;
+        }
+
+        document.addEventListener("submit", (event) => {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement)) {
+                return;
+            }
+
+            if (form.hasAttribute("data-no-loading")) {
+                return;
+            }
+
+            window.setTimeout(() => {
+                activateGlobalLoading();
+            }, 0);
+        });
+
+        window.addEventListener("pageshow", () => {
+            deactivateGlobalLoading();
+        });
+    }
+
+    function activateGlobalLoading() {
+        document.body.classList.add("ff-global-loading");
+    }
+
+    function deactivateGlobalLoading() {
+        document.body.classList.remove("ff-global-loading");
+    }
+
+    function initializeThemeState() {
+        const storedTheme = readStoredTheme();
+        applyTheme(storedTheme || LIGHT_THEME, false);
+    }
+
+    function initializeThemeToggle() {
+        const toggle = document.querySelector("[data-theme-toggle]");
+        if (!toggle) {
+            return;
+        }
+
+        syncThemeToggle(toggle, getCurrentTheme());
+        toggle.addEventListener("click", () => {
+            const nextTheme = getCurrentTheme() === DARK_THEME ? LIGHT_THEME : DARK_THEME;
+            applyTheme(nextTheme, true);
+            syncThemeToggle(toggle, nextTheme);
+        });
+
+        window.addEventListener("ff:themechange", (event) => {
+            syncThemeToggle(toggle, event.detail?.theme || getCurrentTheme());
+        });
+    }
+
+    function syncThemeToggle(toggle, theme) {
+        const isDark = theme === DARK_THEME;
+        toggle.setAttribute("aria-label", isDark ? "Activar modo claro" : "Activar modo oscuro");
+        toggle.setAttribute("title", isDark ? "Cambiar a claro" : "Cambiar a oscuro");
+        toggle.classList.toggle("is-dark", isDark);
+    }
+
+    function applyTheme(theme, persist) {
+        const nextTheme = theme === DARK_THEME ? DARK_THEME : LIGHT_THEME;
+        document.documentElement.setAttribute("data-theme", nextTheme);
+        document.body.classList.toggle("ff-theme-dark", nextTheme === DARK_THEME);
+
+        if (persist) {
+            storeTheme(nextTheme);
+        }
+
+        window.dispatchEvent(new CustomEvent("ff:themechange", {
+            detail: { theme: nextTheme }
+        }));
+    }
+
+    function getCurrentTheme() {
+        return document.documentElement.getAttribute("data-theme") === DARK_THEME ? DARK_THEME : LIGHT_THEME;
+    }
+
+    function readStoredTheme() {
+        try {
+            const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
+            return stored === DARK_THEME ? DARK_THEME : LIGHT_THEME;
+        } catch (error) {
+            return LIGHT_THEME;
+        }
+    }
+
+    function storeTheme(theme) {
+        try {
+            window.localStorage.setItem(THEME_STORAGE_KEY, theme);
+        } catch (error) {
+            // Ignore storage failures gracefully.
+        }
     }
 
     function shouldTransitionLink(event, link) {

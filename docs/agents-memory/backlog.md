@@ -2,15 +2,11 @@
 
 ## Prioridad alta
 
-- Validar visualmente en navegador el flujo completo recuperado: `/`, `/acceso`, `/cliente`, `/usuarios`, `/rutinas`, `/pagos`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/gastos`, `/maquinas` y `/materiales`.
-- Probar acceso por perfiles reales:
-  - `ADMIN`: ve y opera todo.
-  - `STAFF_ENTRENADOR`: opera rutinas, clases, sesiones y asistencias.
-  - `STAFF_RECEPCION`: opera usuarios, trials, pagos, asistencias y reservas.
-  - `STAFF_GERENTE`: ve gestion, finanzas e inventario sin aparecer como instructor por defecto.
-  - `CLIENTE`: solo panel propio y enlaces permitidos.
-- Revisar el stash `backup before recovery core saas plan a` y rescatar manualmente cualquier detalle util que no exista en la rama recuperada.
-- Validar contra MySQL real con `spring.sql.init.mode=never` para confirmar que no se reinsertan datos demo.
+- Ejecutar QA funcional profundo por modulo sobre MySQL real: `/`, `/acceso`, `/cliente`, `/usuarios`, `/rutinas`, `/pagos`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/gastos`, `/maquinas` y `/materiales`.
+- Validar en navegador el reloj operativo: fijar fecha, avanzar/retroceder meses, resetear a fecha real y comprobar dashboard/listados contra MySQL.
+- Verificar smoke por perfiles reales (`ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE`, `CLIENTE`) incluyendo accesos denegados y redirecciones.
+- Cerrar deuda de consistencia visual en iconos/acciones secundarias de formularios legacy no migrados al shell premium.
+- Revisar el stash `backup before recovery core saas plan a` y confirmar oficialmente si se archiva o descarta.
 
 ## Prioridad media
 
@@ -20,6 +16,7 @@
 - Completar filtros especificos en sesiones, trials, gastos, maquinas y materiales.
 - Documentar un flujo de defensa: trial -> usuario -> membresia -> pago -> sesion -> asistencia.
 - Revisar si `spring.profiles.active` debe quedar por defecto en `local` o moverse a variable de entorno para despliegue real.
+- Persistir historial de notificaciones importantes en backend para auditar alertas vistas/no vistas por usuario.
 
 ## Prioridad baja
 

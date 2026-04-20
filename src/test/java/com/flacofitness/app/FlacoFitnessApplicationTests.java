@@ -5,6 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.flacofitness.app.repository.AsistenciaRepository;
+import com.flacofitness.app.repository.AppClockSettingRepository;
 import com.flacofitness.app.repository.ClaseRepository;
 import com.flacofitness.app.repository.GastoRepository;
 import com.flacofitness.app.repository.MaquinaRepository;
@@ -43,6 +44,9 @@ class FlacoFitnessApplicationTests {
 
     @MockBean
     private AsistenciaRepository asistenciaRepository;
+
+    @MockBean
+    private AppClockSettingRepository appClockSettingRepository;
 
     @MockBean
     private PagoRepository pagoRepository;

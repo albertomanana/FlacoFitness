@@ -7,6 +7,7 @@ import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.model.enums.EstadoMembresia;
 import com.flacofitness.app.model.enums.TipoMembresia;
 import com.flacofitness.app.service.MembresiaService;
+import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
@@ -26,11 +27,14 @@ public class MembresiaController {
 
     private final MembresiaService membresiaService;
     private final UsuarioService usuarioService;
+    private final OperationalClockService operationalClockService;
 
     public MembresiaController(MembresiaService membresiaService,
-                               UsuarioService usuarioService) {
+                               UsuarioService usuarioService,
+                               OperationalClockService operationalClockService) {
         this.membresiaService = membresiaService;
         this.usuarioService = usuarioService;
+        this.operationalClockService = operationalClockService;
     }
 
     @GetMapping("/membresias")
@@ -120,7 +124,7 @@ public class MembresiaController {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
         MembresiaUsuario contrato = new MembresiaUsuario();
         contrato.setUsuario(usuario);
-        contrato.setFechaInicio(LocalDate.now());
+        contrato.setFechaInicio(operationalClockService.today());
         contrato.setEstado(EstadoMembresia.ACTIVA);
 
         model.addAttribute("usuario", usuario);

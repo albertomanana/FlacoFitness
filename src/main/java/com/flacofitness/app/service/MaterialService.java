@@ -1,17 +1,18 @@
 package com.flacofitness.app.service;
 
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Material;
 import com.flacofitness.app.model.enums.CategoriaMaterial;
 import com.flacofitness.app.model.enums.EstadoMaterial;
 import com.flacofitness.app.repository.MaterialRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -54,6 +55,27 @@ public class MaterialService {
 
     public List<Material> listarBajoStock() {
         return materialRepository.findBajoStock();
+    }
+
+    public List<Material> listarNecesitanReposicion() {
+        return materialRepository.findBajoStock();
+    }
+
+    @Transactional
+    public int procesarStockBajo() {
+        List<Material> activos = materialRepository.findByActivoTrueOrderByNombreAsc();
+        int actualizados = 0;
+
+        for (Material material : activos) {
+            EstadoMaterial estadoAnterior = material.getEstado();
+            normalizar(material);
+            if (estadoAnterior != material.getEstado()) {
+                materialRepository.save(material);
+                actualizados++;
+            }
+        }
+
+        return actualizados;
     }
 
     @Transactional

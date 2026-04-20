@@ -31,6 +31,7 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - Validan consistencia de relaciones.
 - Evitan duplicidades funcionales.
 - Orquestan casos de uso como alta de membresia, conversion de trial, reservas de sesion, pagos y check-in.
+- Usan `OperationalClockService` como fuente temporal de negocio cuando una regla depende de "hoy" o "ahora".
 
 ### Repositorios
 
@@ -88,6 +89,7 @@ Esta capa es intencionadamente simple y defendible. Spring Security queda como e
 - `ReservaSesion` conecta usuarios con sesiones.
 - `Asistencia` conserva check-in libre y puede asociarse opcionalmente a una sesion.
 - `StaffPerfil` se liga a `Usuario` para no duplicar identidad.
+- `AppClockSetting` guarda el reloj operativo para simular fechas sin cambiar el sistema ni borrar datos.
 
 ## Convencion de paquetes
 
@@ -110,6 +112,7 @@ com.flacofitness.app
 
 - No introducir SPA ni frameworks frontend pesados.
 - No ejecutar seeds demo contra MySQL real.
+- No introducir bases en memoria ni fallbacks de persistencia: MySQL/phpMyAdmin es la unica fuente de verdad.
 - Mantener controladores finos y servicios con reglas de negocio.
 - Mantener compatibilidad con datos legacy cuando una relacion nueva sea opcional.
 - Documentar decisiones relevantes en `docs/agents-memory/decisions-log.md`.
