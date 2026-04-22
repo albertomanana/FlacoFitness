@@ -18,7 +18,7 @@ Fecha de referencia: 2026-04-22
 | Reloj operativo | Simplificado | Se elimino la simulacion manual y la persistencia en `app_clock_settings`. `OperationalClockService` usa solo fecha/hora real del sistema y mantiene una unica referencia temporal para pagos, asistencias, sesiones, gastos, maquinaria, trials y membresias. |
 | Tests | En verde | `FlacoFitnessApplicationTests`, `ViewControllerTest`, `AccessProfileTest`, `PagoServiceTest` y `GastoServiceTest` pasan tras simplificar reloj operativo y ajustar pruebas de servicios. |
 | QA financiera pendiente | Parcial | Queda pendiente validacion visual en navegador/MySQL real de PDFs y pantallas financieras, pero la compilacion y tests automatizados ya estan en verde. |
-| Git | En recuperacion | Rama actual: `recovery/restore-core-saas-plan-a`. Hay un stash de respaldo previo a la restauracion y el working tree no esta limpio. |
+| Git | Limpio | Rama actual: `recovery/restore-core-saas-plan-a`. Tree limpio. Stash pre-recovery eliminado (era estado con root/sin-pass, superado). Ultimo commit: bloques 2-4 (filtros, deuda tecnica, panel cliente). |
 
 ## Comandos de validacion ejecutados
 
