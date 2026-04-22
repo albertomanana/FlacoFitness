@@ -27,7 +27,15 @@ public interface TrialRepository extends JpaRepository<Trial, Long> {
     List<Trial> findAllByEstadoOrderByFechaPruebaDescIdDesc(EstadoTrial estado);
 
     @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "usuarioConvertido"})
+    List<Trial> findAllByFechaPruebaBetweenOrderByFechaPruebaDescIdDesc(LocalDate desde, LocalDate hasta);
+
+    @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "usuarioConvertido"})
+    List<Trial> findAllByEstadoAndFechaPruebaBetweenOrderByFechaPruebaDescIdDesc(EstadoTrial estado, LocalDate desde, LocalDate hasta);
+
+    @EntityGraph(attributePaths = {"staffResponsable", "staffResponsable.usuario", "usuarioConvertido"})
     List<Trial> findByEstadoOrderByFechaPruebaAscIdAsc(EstadoTrial estado);
+
+    List<Trial> findByEmailAndEstadoNot(String email, EstadoTrial estado);
 
     long countByEstado(EstadoTrial estado);
 

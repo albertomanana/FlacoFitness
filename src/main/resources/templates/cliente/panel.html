@@ -86,6 +86,49 @@
                 </div>
             </section>
 
+            <section class="row g-4">
+                <div class="col-lg-6">
+                    <article class="ff-surface-card h-100">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Reservas activas</h3>
+                            <p class="ff-card-subtitle">Sesiones con plaza confirmada.</p>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="vstack gap-2" th:if="${not #lists.isEmpty(reservasActivas)}">
+                                <div class="ff-linked-row" th:each="reserva : ${reservasActivas}">
+                                    <span>
+                                        <strong th:text="${reserva.sesionClase != null and reserva.sesionClase.clase != null ? reserva.sesionClase.clase.nombre : 'Sesion'}">Clase</strong>
+                                        <small th:text="${reserva.sesionClase != null ? #temporals.format(reserva.sesionClase.fecha, 'dd/MM/yyyy') + ' ' + (reserva.sesionClase.horaInicio != null ? #temporals.format(reserva.sesionClase.horaInicio, 'HH:mm') : '') : '-'}">Fecha</small>
+                                    </span>
+                                    <span class="badge rounded-pill text-bg-success">Confirmada</span>
+                                </div>
+                            </div>
+                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(reservasActivas)}">No tienes reservas activas.</p>
+                        </div>
+                    </article>
+                </div>
+                <div class="col-lg-6">
+                    <article class="ff-surface-card h-100">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Historial de asistencias</h3>
+                            <p class="ff-card-subtitle">Ultimas visitas al gimnasio.</p>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="vstack gap-2" th:if="${not #lists.isEmpty(historialAsistencias)}">
+                                <div class="ff-linked-row" th:each="asistencia : ${historialAsistencias}">
+                                    <span>
+                                        <strong th:text="${#temporals.format(asistencia.fecha, 'dd/MM/yyyy')}">Fecha</strong>
+                                        <small th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : 'Sin hora'}">Hora</small>
+                                    </span>
+                                    <span class="badge rounded-pill text-bg-secondary" th:text="${asistencia.sesionClase != null and asistencia.sesionClase.clase != null ? asistencia.sesionClase.clase.nombre : 'Libre'}">Tipo</span>
+                                </div>
+                            </div>
+                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(historialAsistencias)}">Sin asistencias registradas.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
             <div th:replace="~{fragments/footer :: footer}"></div>
         </div>
     </main>

@@ -1,5 +1,6 @@
 package com.flacofitness.app.repository;
 
+import com.flacofitness.app.model.dto.IngresoPorMesView;
 import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.enums.EstadoPago;
 import org.springframework.data.jpa.repository.EntityGraph;

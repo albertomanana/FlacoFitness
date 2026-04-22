@@ -5,7 +5,10 @@ import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.dto.PlanDistribucionStatsItem;
 import com.flacofitness.app.model.dto.UsuarioAltaMensualStatsItem;
 import com.flacofitness.app.model.entity.Plan;
+import com.flacofitness.app.model.entity.Trial;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoTrial;
+import com.flacofitness.app.repository.TrialRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +24,14 @@ import java.util.Optional;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final TrialRepository trialRepository;
     private final OperationalClockService operationalClockService;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
+                          TrialRepository trialRepository,
                           OperationalClockService operationalClockService) {
         this.usuarioRepository = usuarioRepository;
+        this.trialRepository = trialRepository;
         this.operationalClockService = operationalClockService;
     }
 
@@ -86,7 +92,9 @@ public class UsuarioService {
     public Usuario guardar(Usuario usuario) {
         validarEmailDuplicado(usuario.getEmail(), null);
         inicializarFechaProximoPago(usuario);
-        return usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+        cerrarTrialsPendientesPorEmail(guardado);
+        return guardado;
     }
 
     @Transactional
@@ -175,5 +183,17 @@ public class UsuarioService {
 
     private long obtenerFrecuenciaCobro(Plan plan) {
         return Math.max(plan.getDuracionDias(), 1);
+    }
+
+    private void cerrarTrialsPendientesPorEmail(Usuario usuario) {
+        if (usuario.getEmail() == null || usuario.getEmail().isBlank()) {
+            return;
+        }
+        List<Trial> pendientes = trialRepository.findByEmailAndEstadoNot(usuario.getEmail(), EstadoTrial.CONVERTIDO);
+        for (Trial trial : pendientes) {
+            trial.setEstado(EstadoTrial.CONVERTIDO);
+            trial.setUsuarioConvertido(usuario);
+            trialRepository.save(trial);
+        }
     }
 }

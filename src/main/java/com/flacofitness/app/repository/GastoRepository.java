@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.flacofitness.app.model.dto.GastoPorCategoriaView;
+import com.flacofitness.app.model.dto.GastoPorMesView;
 import com.flacofitness.app.model.entity.Gasto;
 import com.flacofitness.app.model.enums.CategoriaGasto;
 import com.flacofitness.app.model.enums.EstadoGasto;

@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(./mvnw.cmd test *)"
+      "Bash(./mvnw.cmd test *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git stash *)",
+      "Bash(./mvnw.cmd compile *)"
     ]
   }
 }

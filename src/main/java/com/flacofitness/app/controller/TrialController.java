@@ -38,8 +38,13 @@ public class TrialController {
     }
 
     @GetMapping
-    public String listar(@RequestParam(name = "estado", required = false) EstadoTrial estado, Model model) {
-        model.addAttribute("trials", trialService.listarFiltrados(estado));
+    public String listar(@RequestParam(required = false) LocalDate desde,
+                         @RequestParam(required = false) LocalDate hasta,
+                         @RequestParam(name = "estado", required = false) EstadoTrial estado,
+                         Model model) {
+        model.addAttribute("trials", trialService.listarFiltrados(desde, hasta, estado));
+        model.addAttribute("desdeFiltro", desde);
+        model.addAttribute("hastaFiltro", hasta);
         model.addAttribute("estadoFiltro", estado);
         model.addAttribute("estadosTrial", EstadoTrial.values());
         model.addAttribute("trialsPendientes", trialService.contarPendientes());

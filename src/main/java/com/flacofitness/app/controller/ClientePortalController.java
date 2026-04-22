@@ -1,7 +1,10 @@
 package com.flacofitness.app.controller;
 
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.entity.ReservaSesion;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoReservaSesion;
+import com.flacofitness.app.repository.ReservaSesionRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import com.flacofitness.app.service.AsistenciaService;
 import com.flacofitness.app.service.PagoService;
@@ -23,23 +26,34 @@ public class ClientePortalController {
     private final UsuarioControlCenterService usuarioControlCenterService;
     private final PagoService pagoService;
     private final AsistenciaService asistenciaService;
+    private final ReservaSesionRepository reservaSesionRepository;
 
     public ClientePortalController(UsuarioRepository usuarioRepository,
-                                  UsuarioControlCenterService usuarioControlCenterService,
-                                  PagoService pagoService,
-                                  AsistenciaService asistenciaService) {
+                                   UsuarioControlCenterService usuarioControlCenterService,
+                                   PagoService pagoService,
+                                   AsistenciaService asistenciaService,
+                                   ReservaSesionRepository reservaSesionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioControlCenterService = usuarioControlCenterService;
         this.pagoService = pagoService;
         this.asistenciaService = asistenciaService;
+        this.reservaSesionRepository = reservaSesionRepository;
     }
 
     @GetMapping
     public String panel(Model model) {
         Usuario usuario = obtenerUsuarioDemo();
+        List<ReservaSesion> reservasActivas = reservaSesionRepository
+                .findByUsuarioIdOrderByFechaReservaDescIdDesc(usuario.getId())
+                .stream()
+                .filter(r -> r.getEstado() == EstadoReservaSesion.RESERVADA)
+                .limit(10)
+                .toList();
         model.addAttribute("usuario", usuario);
         model.addAttribute("controlCenter", usuarioControlCenterService.construirVista(usuario));
         model.addAttribute("deudaTotalUsuario", pagoService.calcularDeudaTotalPorUsuario(usuario.getId()));
+        model.addAttribute("historialAsistencias", asistenciaService.listarRecientesPorUsuario(usuario.getId()));
+        model.addAttribute("reservasActivas", reservasActivas);
         return "cliente/panel";
     }
 

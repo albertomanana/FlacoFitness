@@ -1,4 +1,4 @@
-package com.flacofitness.app.repository;
+package com.flacofitness.app.model.dto;
 
 public interface AsistenciaPorMesView {
 

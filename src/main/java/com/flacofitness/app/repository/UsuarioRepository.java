@@ -1,5 +1,7 @@
 package com.flacofitness.app.repository;
 
+import com.flacofitness.app.model.dto.UsuarioAltaPorMesView;
+import com.flacofitness.app.model.dto.UsuarioPorPlanView;
 import com.flacofitness.app.model.entity.Usuario;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;

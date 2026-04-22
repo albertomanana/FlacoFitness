@@ -47,11 +47,17 @@ public class TrialService {
         return trialRepository.findAllByOrderByFechaPruebaDescIdDesc();
     }
 
-    public List<Trial> listarFiltrados(EstadoTrial estado) {
-        if (estado == null) {
-            return listarTodos();
+    public List<Trial> listarFiltrados(LocalDate desde, LocalDate hasta, EstadoTrial estado) {
+        if (desde != null && hasta != null) {
+            if (estado != null) {
+                return trialRepository.findAllByEstadoAndFechaPruebaBetweenOrderByFechaPruebaDescIdDesc(estado, desde, hasta);
+            }
+            return trialRepository.findAllByFechaPruebaBetweenOrderByFechaPruebaDescIdDesc(desde, hasta);
         }
-        return trialRepository.findAllByEstadoOrderByFechaPruebaDescIdDesc(estado);
+        if (estado != null) {
+            return trialRepository.findAllByEstadoOrderByFechaPruebaDescIdDesc(estado);
+        }
+        return listarTodos();
     }
 
     public List<Trial> listarProximos() {

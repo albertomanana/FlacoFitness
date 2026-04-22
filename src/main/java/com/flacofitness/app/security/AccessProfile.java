@@ -141,7 +141,7 @@ public enum AccessProfile {
                 || path.startsWith("/trials")
                 || path.startsWith("/pagos")
                 || path.startsWith("/gastos")
-            || path.startsWith("/nominas")
+                || path.startsWith("/nominas")
                 || path.startsWith("/maquinas")
                 || path.startsWith("/materiales");
     }

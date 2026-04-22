@@ -1,8 +1,8 @@
-package com.flacofitness.app.repository;
-
-import java.math.BigDecimal;
+package com.flacofitness.app.model.dto;
 
 import com.flacofitness.app.model.enums.CategoriaGasto;
+
+import java.math.BigDecimal;
 
 public interface GastoPorCategoriaView {
 

@@ -1,5 +1,7 @@
 package com.flacofitness.app.repository;
 
+import com.flacofitness.app.model.dto.AsistenciaPorDiaView;
+import com.flacofitness.app.model.dto.AsistenciaPorMesView;
 import com.flacofitness.app.model.dto.UsuarioAsistenciaCountDto;
 import com.flacofitness.app.model.entity.Asistencia;
 import org.springframework.data.jpa.repository.EntityGraph;
