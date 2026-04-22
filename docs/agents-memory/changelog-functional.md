@@ -95,7 +95,7 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 - Se estabilizo la fuente de datos por perfil: el sembrado SQL queda deshabilitado por defecto en MySQL para evitar inconsistencias y contaminacion de datos demo.
 - Se mejoro el diagnostico de arranque para que la ejecucion con MySQL/MariaDB sea explicable en defensa.
-- Se refactorizo la UX de usuarios: se elimina el boton de “ojo” en listados y la fila completa es clicable para abrir el detalle sin romper acciones de editar/desactivar (incluye accesibilidad por teclado).
+- Se refactorizo la UX de usuarios: se elimina el boton de "ojo" en listados y la fila completa es clicable para abrir el detalle sin romper acciones de editar/desactivar (incluye accesibilidad por teclado).
 - En el detalle de usuario, la foto queda como solo consulta: el cambio de imagen se realiza exclusivamente desde la vista de edicion.
 - Se corrigio una regresion critica del dashboard: la home fallaba al renderizar por truncar referencias de pago cortas con `substring(0, 8)`, lo que impedia que la pagina llegara a pintar los graficos.
 - Se reforzo la fuente de verdad del dashboard serializando el estado inicial a JSON explicito desde el controlador, evitando depender de la serializacion implicita del template.
@@ -210,3 +210,54 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se cambio la animacion de `.ff-main` en `static/css/styles.css` para que el contenido sea visible por defecto y la entrada sea decorativa, no bloqueante.
 - Se validaron visualmente `usuarios` y `pagos` con Chrome headless tras el fix.
 - Se dejo preparado un handoff documental completo para continuidad con Claude Code dentro de `docs/agents-memory/`.
+
+### 2026-04-22 (Auditoria y correccion bloque financiero)
+
+- Se ejecuto auditoria completa del bloque financiero: GastoService, PagoService, NominaService, GastoRecurrenteService, FinancialAutomationService, RecurrenceService, ShellNotificationService, StatsController, todos los controladores financieros y todos los templates del area.
+- Se corrigio bug critico en `gastos/detail.html`: la vista accedia a `gasto.frecuencia` que no existe en la entidad `Gasto` (solo existe en `GastoRecurrente`). El campo correcto es `gasto.gastoRecurrente.frecuencia` con null-guards adecuados. El bug causaba `EL1008E PropertyAccessException` en Spring EL, rompiendo la vista de detalle de cualquier gasto.
+- Se mejoró `gastos/detail.html` para mostrar el `estado` completo del gasto con badge semantico (PAGADO/VENCIDO/otros) y se anadio el campo `tipoGasto` que faltaba.
+- Se corrigio `SaaSSchedulerService`: el cron diario ahora usa `${app.pagos.scheduler.cron:0 0 0 * * *}` desde properties en lugar de estar hardcodeado, y se anadio respeto de `${app.pagos.scheduler.enabled:true}` que existia en `application.properties` pero no se usaba.
+- Se actualizo la documentacion viva (`module-status.md`, `backlog.md`, `setup-status.md`, `decisions-log.md`, `changelog-functional.md`, `claude-code-handoff.md`) para reflejar el estado real del bloque financiero tras la auditoria.
+
+### 2026-04-22 (Plan `.claude` aterrizado a producto)
+
+- Se creo `CLAUDE.md` en la raiz del repositorio para que Claude Code tenga reglas vigentes del proyecto, orden de lectura y restricciones no negociables.
+- Se creo `docs/agents-memory/claude-plan-status.md` para traducir el archivo `.claude/claude_md_and_top_prompts_flacofitness_finance_gold.md` a un estado de ejecucion real dentro del repo.
+- Se abrieron en UI los filtros financieros completos del modulo de gastos, reutilizando la capacidad ya implementada en `GastoService` y `GastoRepository`.
+- `/gastos` ahora permite filtrar por estado, tipo, staff, maquina, material, proveedor y recurrencia, ademas de fecha y categoria.
+- Se anadieron KPIs operativos de gasto fijo, gasto variable y vencimientos proximos en la vista de gastos.
+- Se anadio exportacion PDF individual para detalle de gasto y se redujo ruido de botones redundantes en listados financieros basados en fila clicable.
+- Se corrigio una regresion real en el nuevo PDF individual de gasto: OpenHTMLtoPDF estaba fallando por `meta` no autocerrado en XHTML; se normalizaron los `meta charset` de los templates PDF y el endpoint ya responde correctamente.
+
+### 2026-04-22 (Dashboard premium + nominas premium)
+
+- Se simplifico el dashboard principal para dejar un set corto de KPIs de negocio:
+  - usuarios activos
+  - pagos pendientes
+  - ingresos del mes
+  - gastos del mes
+  - beneficio estimado
+  - renovaciones proximas
+  - trials pendientes
+  - maquinas fuera de servicio
+  - stock bajo
+- Se elimino la duplicidad visual de KPIs y se retiro la grafica secundaria de altas para reforzar jerarquia.
+- Se mantuvieron solo tres graficos principales en la home:
+  - ingresos vs gastos
+  - usuarios por plan
+  - asistencias recientes
+- Se implemento un rail premium de alertas accionables dentro del dashboard reutilizando `shellNotifications`, sin crear backend ni librerias nuevas.
+- Se amplio `DashboardStatsResponse` con `maquinasFueraServicio` para mantener el KPI sincronizado con `/stats/dashboard`.
+- Se rehizo la vista de detalle de nomina como expediente salarial:
+  - hero con neto destacado
+  - cards de base, bonus, deducciones y neto
+  - trazabilidad con staff y gasto vinculado
+  - bloque de desglose economico
+- Se profesionalizaron los PDFs de nominas:
+  - detalle individual con cabecera, estado y desglose
+  - listado con columna de estado
+- Se valido con sesion real:
+  - `/` responde 200 y contiene rail de alertas, `Ingresos vs gastos` y `Asistencias recientes`
+  - `/nominas` responde 200
+  - `/nominas/{id}` responde 200 con un registro real de validacion
+  - `/nominas/{id}/pdf` responde 200 `application/pdf`

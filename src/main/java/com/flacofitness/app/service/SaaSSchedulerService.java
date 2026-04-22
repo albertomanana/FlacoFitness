@@ -2,6 +2,7 @@ package com.flacofitness.app.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -9,6 +10,9 @@ import org.springframework.stereotype.Service;
 public class SaaSSchedulerService {
 
     private static final Logger log = LoggerFactory.getLogger(SaaSSchedulerService.class);
+
+    @Value("${app.pagos.scheduler.enabled:true}")
+    private boolean schedulerEnabled;
 
     private final MembresiaService membresiaService;
     private final MaquinaService maquinaService;
@@ -31,23 +35,26 @@ public class SaaSSchedulerService {
         this.financialAutomationService = financialAutomationService;
     }
 
-    // Se ejecuta cada día a la medianoche
-    @Scheduled(cron = "0 0 0 * * *")
+    @Scheduled(cron = "${app.pagos.scheduler.cron:0 0 0 * * *}")
     public void ejecutarTareasDiariasSaaS() {
+        if (!schedulerEnabled) {
+            log.debug("SaaS scheduler desactivado por configuracion");
+            return;
+        }
         log.info("Iniciando tareas programadas SaaS diarias - {}", operationalClockService.today());
 
         try {
             int membresiasVencidas = membresiaService.procesarMembresiasVencidas();
-            log.info("SaaS - Membresías vencidas actualizadas: {}", membresiasVencidas);
+            log.info("SaaS - Membresias vencidas actualizadas: {}", membresiasVencidas);
         } catch (Exception e) {
-            log.error("Error al procesar membresías vencidas", e);
+            log.error("Error al procesar membresias vencidas", e);
         }
 
         try {
             int maquinasMantenimiento = maquinaService.procesarMaquinasEnMantenimiento();
-            log.info("SaaS - Máquinas que requieren mantenimiento: {}", maquinasMantenimiento);
+            log.info("SaaS - Maquinas que requieren mantenimiento: {}", maquinasMantenimiento);
         } catch (Exception e) {
-            log.error("Error al procesar máquinas en mantenimiento", e);
+            log.error("Error al procesar maquinas en mantenimiento", e);
         }
 
         try {
@@ -67,13 +74,13 @@ public class SaaSSchedulerService {
         log.info("Finalizadas tareas programadas SaaS diarias");
     }
 
-    // Se ejecuta cada 12 horas
     @Scheduled(cron = "0 0 */12 * * *")
     public void verificarStockMateriales() {
+        if (!schedulerEnabled) {
+            return;
+        }
         log.info("Verificando stock de materiales...");
         try {
-            // Actualmente notificaría o enviaría un aviso.
-            // Se asume que en una versión posterior esto podría enviar un email.
             int materialesBajoStock = materialService.procesarStockBajo();
             log.info("SaaS - Materiales bajo stock detectados: {}", materialesBajoStock);
         } catch (Exception e) {

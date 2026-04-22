@@ -75,7 +75,6 @@ function hydrateDashboard(stats, utils, options = {}) {
     renderPlanChart(stats.usuariosPorPlan || []);
     renderIngresosGastosChart(stats.ingresosMensualesSerie || [], stats.gastosMensualesSerie || [], utils);
     renderAsistenciasChart(stats.asistenciasRecientes || []);
-    renderAltasChart(stats.altasRecientes || []);
 }
 
 function readInitialDashboardStats() {
@@ -142,6 +141,7 @@ function updateDashboardStats(stats, utils, options = {}) {
     animateDashboardStat("sesionesHoy", stats.sesionesHoy, "integer", utils, animate);
     animateDashboardStat("membresiasActivas", stats.membresiasActivas, "integer", utils, animate);
     animateDashboardStat("membresiasVencidas", stats.membresiasVencidas, "integer", utils, animate);
+    animateDashboardStat("maquinasFueraServicio", stats.maquinasFueraServicio, "integer", utils, animate);
     animateDashboardStat("materialesBajoStock", stats.materialesBajoStock, "integer", utils, animate);
     animateDashboardStat("maquinasRevisionProxima", stats.maquinasRevisionProxima, "integer", utils, animate);
 }
@@ -389,42 +389,6 @@ function renderAsistenciasChart(asistenciasRecientes) {
             data: asistenciasRecientes.map((item) => Number(item.total || 0)),
             borderColor: "rgba(37, 99, 235, 0.92)",
             backgroundColor: "rgba(37, 99, 235, 0.16)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 3,
-            pointHoverRadius: 5
-        }]
-    }, {
-        plugins: {
-            legend: { display: false }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    precision: 0
-                }
-            }
-        }
-    });
-}
-
-function renderAltasChart(altasRecientes) {
-    if (!Array.isArray(altasRecientes) || altasRecientes.length === 0) {
-        toggleChartEmptyState("altas", true);
-        return;
-    }
-
-    const utils = createDashboardUtils();
-
-    toggleChartEmptyState("altas", false);
-    createChart("altasChart", "line", {
-        labels: altasRecientes.map((item) => utils.formatPeriod(item.periodo)),
-        datasets: [{
-            label: "Altas",
-            data: altasRecientes.map((item) => Number(item.total || 0)),
-            borderColor: "rgba(249, 115, 22, 1)",
-            backgroundColor: "rgba(249, 115, 22, 0.14)",
             fill: true,
             tension: 0.35,
             pointRadius: 3,

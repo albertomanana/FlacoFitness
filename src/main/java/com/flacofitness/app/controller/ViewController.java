@@ -149,6 +149,7 @@ public class ViewController {
                 sesionClaseService.contarSesionesHoy(),
                 membresiaService.contarActivas(),
                 membresiaService.contarVencidas(),
+                maquinaService.contarFueraDeServicio(),
                 maquinaService.contarRevisionProxima(7),
                 materialService.contarBajoStock()
         );

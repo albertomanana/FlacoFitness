@@ -19,7 +19,18 @@
                         <p class="ff-section-subtitle">Control de egresos con trazabilidad a staff, maquinas y material.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        <a class="btn btn-outline-secondary" th:href="@{/gastos/export/pdf(desde=${desdeFiltro}, hasta=${hastaFiltro}, categoria=${categoriaFiltro})}">Exportar PDF</a>
+                        <a class="btn btn-outline-secondary"
+                           th:href="@{/gastos/export/pdf(
+                                desde=${desdeFiltro},
+                                hasta=${hastaFiltro},
+                                categoria=${categoriaFiltro},
+                                estado=${estadoFiltro},
+                                tipo=${tipoFiltro},
+                                staffId=${staffFiltro},
+                                maquinaId=${maquinaFiltro},
+                                materialId=${materialFiltro},
+                                recurrente=${recurrenteFiltro},
+                                proveedor=${proveedorFiltro})}">Exportar PDF</a>
                         <a class="btn btn-outline-secondary" th:href="@{/gastos/recurrentes}">Recurrentes</a>
                         <a class="btn btn-outline-secondary" th:href="@{/nominas}">N&oacute;minas</a>
                         <a class="btn btn-success" th:href="@{/gastos/nuevo}">Nuevo gasto</a>
@@ -50,9 +61,30 @@
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Vencimientos proximo 7d</p>
+                            <p class="ff-stat-value" th:text="${vencimientosProximos}">0</p>
+                            <p class="ff-stat-note">Pendientes, programados o vencidos</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Gasto fijo del mes</p>
+                            <p class="ff-stat-value" th:text="${gastoFijoMesActual != null ? #numbers.formatDecimal(gastoFijoMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Carga estructural</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Gasto variable del mes</p>
+                            <p class="ff-stat-value" th:text="${gastoVariableMesActual != null ? #numbers.formatDecimal(gastoVariableMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Operativa flexible</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
                             <p class="ff-stat-label">Alertas</p>
                             <p class="ff-stat-value" th:text="${gastosCriticos + recurrentesProximos}">0</p>
-                            <p class="ff-stat-note">Criticos + recurrentes proximos</p>
+                            <p class="ff-stat-note">Criticos y recurrentes proximos</p>
                         </article>
                     </div>
                 </section>
@@ -60,8 +92,8 @@
                 <section class="ff-surface-card ff-animate-in">
                     <div class="ff-card-header">
                         <div>
-                            <h3 class="ff-card-title">Filtros</h3>
-                            <p class="ff-card-subtitle">Fecha y categoria para analisis financiero.</p>
+                            <h3 class="ff-card-title">Filtros financieros</h3>
+                            <p class="ff-card-subtitle">Cruza estado, origen operativo y proveedor sin salir del listado.</p>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
@@ -74,14 +106,62 @@
                                 <label class="form-label" for="hasta">Hasta</label>
                                 <input id="hasta" name="hasta" type="date" class="form-control" th:value="${hastaFiltro}">
                             </div>
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-3">
                                 <label class="form-label" for="categoria">Categoria</label>
                                 <select id="categoria" name="categoria" class="form-select">
                                     <option value="">Todas</option>
                                     <option th:each="cat : ${categoriasGasto}" th:value="${cat}" th:selected="${categoriaFiltro != null and categoriaFiltro == cat}" th:text="${#strings.replace(cat.name(), '_', ' ')}">Categoria</option>
                                 </select>
                             </div>
-                            <div class="col-12 col-md-2 d-flex align-items-end gap-2">
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="estado">Estado</label>
+                                <select id="estado" name="estado" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option th:each="item : ${estadosGasto}" th:value="${item}" th:selected="${estadoFiltro != null and estadoFiltro == item}" th:text="${#strings.replace(item.name(), '_', ' ')}">Estado</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="tipo">Tipo</label>
+                                <select id="tipo" name="tipo" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option th:each="item : ${tiposGasto}" th:value="${item}" th:selected="${tipoFiltro != null and tipoFiltro == item}" th:text="${#strings.replace(item.name(), '_', ' ')}">Tipo</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="recurrente">Recurrencia</label>
+                                <select id="recurrente" name="recurrente" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option value="true" th:selected="${recurrenteFiltro != null and recurrenteFiltro}">Recurrentes</option>
+                                    <option value="false" th:selected="${recurrenteFiltro != null and !recurrenteFiltro}">Puntuales</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="staffId">Staff</label>
+                                <select id="staffId" name="staffId" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option th:each="staff : ${staffActivos}" th:value="${staff.id}" th:selected="${staffFiltro != null and staffFiltro == staff.id}"
+                                            th:text="${staff.usuario != null ? staff.usuario.nombre + (staff.usuario.apellidos != null and !staff.usuario.apellidos.isBlank() ? ' ' + staff.usuario.apellidos : '') : 'Staff #' + staff.id}">Staff</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="maquinaId">Maquina</label>
+                                <select id="maquinaId" name="maquinaId" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option th:each="maquina : ${maquinasActivas}" th:value="${maquina.id}" th:selected="${maquinaFiltro != null and maquinaFiltro == maquina.id}" th:text="${maquina.nombre}">Maquina</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="materialId">Material</label>
+                                <select id="materialId" name="materialId" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option th:each="material : ${materialesActivos}" th:value="${material.id}" th:selected="${materialFiltro != null and materialFiltro == material.id}" th:text="${material.nombre}">Material</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label" for="proveedor">Proveedor</label>
+                                <input id="proveedor" name="proveedor" type="text" class="form-control" th:value="${proveedorFiltro}" placeholder="Proveedor o referencia operativa">
+                            </div>
+                            <div class="col-12 col-md-3 d-flex align-items-end gap-2">
                                 <button type="submit" class="btn btn-success">Aplicar</button>
                                 <a class="btn btn-outline-secondary" th:href="@{/gastos}">Limpiar</a>
                             </div>
@@ -125,8 +205,9 @@
                                     <th>Fecha</th>
                                     <th>Concepto</th>
                                     <th>Categoria</th>
+                                    <th>Tipo</th>
                                     <th>Importe</th>
-                                    <th>Pago</th>
+                                    <th>Estado</th>
                                     <th>Relacion</th>
                                     <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                 </tr>
@@ -142,19 +223,21 @@
                                         </div>
                                     </td>
                                     <td th:text="${gasto.categoria != null ? #strings.replace(gasto.categoria.name(), '_', ' ') : '-'}">Categoria</td>
+                                    <td th:text="${gasto.tipoGasto != null ? #strings.replace(gasto.tipoGasto.name(), '_', ' ') : '-'}">Tipo</td>
                                     <td th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
                                     <td>
-                                        <span class="ff-status-badge" th:classappend="${gasto.pagado} ? ' ff-status-paid' : ' ff-status-overdue'" th:text="${gasto.pagado} ? 'Pagado' : 'Pendiente'">Pendiente</span>
+                                        <span class="ff-status-badge"
+                                              th:classappend="${gasto.estado != null and gasto.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${gasto.estado != null and gasto.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : (${gasto.estado != null and gasto.estado.name() == 'PROGRAMADO'} ? ' ff-status-warning' : ' ff-status-pending'))"
+                                              th:text="${gasto.estado != null ? #strings.replace(gasto.estado.name(), '_', ' ') : '-'}">Pendiente</span>
                                     </td>
                                     <td>
-                                        <span class="ff-table-secondary" th:if="${gasto.staffResponsable != null}" th:text="${'Staff: ' + gasto.staffResponsable.usuario.nombre}">Staff</span>
-                                        <span class="ff-table-secondary" th:if="${gasto.maquina != null}" th:text="${'Maquina: ' + gasto.maquina.nombre}">Maquina</span>
-                                        <span class="ff-table-secondary" th:if="${gasto.material != null}" th:text="${'Material: ' + gasto.material.nombre}">Material</span>
+                                        <a class="ff-table-secondary d-block text-decoration-none" th:if="${gasto.staffResponsable != null}" th:href="@{/staff/{id}(id=${gasto.staffResponsable.id})}" th:text="${'Staff: ' + gasto.staffResponsable.usuario.nombre}">Staff</a>
+                                        <a class="ff-table-secondary d-block text-decoration-none" th:if="${gasto.maquina != null}" th:href="@{/maquinas/{id}(id=${gasto.maquina.id})}" th:text="${'Maquina: ' + gasto.maquina.nombre}">Maquina</a>
+                                        <a class="ff-table-secondary d-block text-decoration-none" th:if="${gasto.material != null}" th:href="@{/materiales/{id}(id=${gasto.material.id})}" th:text="${'Material: ' + gasto.material.nombre}">Material</a>
                                         <span class="ff-table-secondary" th:if="${gasto.staffResponsable == null and gasto.maquina == null and gasto.material == null}">General</span>
                                     </td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                            <a class="btn btn-outline-success btn-sm" th:href="@{/gastos/{id}(id=${gasto.id})}">Detalle</a>
                                             <a class="btn btn-outline-secondary btn-sm" th:href="@{/gastos/{id}/editar(id=${gasto.id})}">Editar</a>
                                             <form th:if="${!gasto.pagado}" th:action="@{/gastos/{id}/pagado(id=${gasto.id})}" method="post" class="m-0">
                                                 <button type="submit" class="btn btn-outline-primary btn-sm">Marcar pagado</button>
@@ -164,7 +247,7 @@
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(gastos)}">
-                                <tr><td colspan="7" class="text-center ff-empty-state">No hay gastos registrados para el filtro actual.</td></tr>
+                                <tr><td colspan="8" class="text-center ff-empty-state">No hay gastos registrados para el filtro actual.</td></tr>
                                 </tbody>
                             </table>
                         </div>

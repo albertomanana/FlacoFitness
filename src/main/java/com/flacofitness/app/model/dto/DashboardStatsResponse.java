@@ -35,6 +35,7 @@ public record DashboardStatsResponse(
         long sesionesHoy,
         long membresiasActivas,
         long membresiasVencidas,
+        long maquinasFueraServicio,
         long maquinasRevisionProxima,
         long materialesBajoStock
 ) {

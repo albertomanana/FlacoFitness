@@ -36,9 +36,10 @@ Dejar una base estable, profesional y defendible para seguir iterando sin romper
 - Usuarios, rutinas, pagos y asistencias: implementados y conectados.
 - Staff, membresias, trials, clases, sesiones y reservas: implementados.
 - Gastos, recurrentes y nominas: implementados a nivel de dominio, servicios, vistas y exportacion PDF.
-- Dashboard: operativo con metricas, graficos y notificaciones.
+- Dashboard: operativo con metricas, graficos, notificaciones y un rail premium de alertas accionables.
 - Acceso por PIN con perfiles: operativo.
 - Shell premium: operativo, con splash y transiciones ya protegidas con fail-safe para no dejar modulos en blanco.
+- Nominas: detalle y PDF ya presentan una lectura mas profesional y menos CRUD.
 
 ## Base de datos
 
@@ -70,12 +71,13 @@ Si otro agente o desarrollador entra al proyecto, debe leer en este orden:
 
 1. `docs/agents-memory/claude-code-handoff.md`
 2. `docs/agents-memory/agent-working-rules.md`
-3. `docs/agents-memory/architecture.md`
-4. `docs/agents-memory/domain-model.md`
-5. `docs/agents-memory/setup-status.md`
-6. `docs/agents-memory/module-status.md`
-7. `docs/agents-memory/decisions-log.md`
-8. `docs/agents-memory/backlog.md`
+3. `docs/agents-memory/claude-plan-status.md`
+4. `docs/agents-memory/architecture.md`
+5. `docs/agents-memory/domain-model.md`
+6. `docs/agents-memory/setup-status.md`
+7. `docs/agents-memory/module-status.md`
+8. `docs/agents-memory/decisions-log.md`
+9. `docs/agents-memory/backlog.md`
 
 ## Nota de continuidad
 

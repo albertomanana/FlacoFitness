@@ -117,7 +117,6 @@
                                     <td><span class="ff-status-badge" th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : ' ff-status-warning'" th:text="${nomina.estado}">EMITIDA</span></td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                            <a class="btn btn-outline-success btn-sm" th:href="@{/nominas/{id}(id=${nomina.id})}">Detalle</a>
                                             <a class="btn btn-outline-secondary btn-sm" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
                                         </div>
                                     </td>

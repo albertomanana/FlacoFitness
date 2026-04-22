@@ -1,66 +1,258 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title th:text="${titulo}">Nomina</title>
     <style>
-        body { font-family: Arial, sans-serif; color: #102033; margin: 0; padding: 24px; background: #f5f7fb; }
-        .sheet { background: #ffffff; border: 1px solid #dbe4ee; border-radius: 18px; padding: 24px; }
-        .header { border-bottom: 2px solid #e7edf5; padding-bottom: 16px; margin-bottom: 18px; }
-        .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; color: #4b647f; margin: 0 0 6px; }
-        h1 { margin: 0; font-size: 28px; }
-        .subtitle { margin: 6px 0 0; color: #607387; }
-        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
-        .card { border: 1px solid #dfe8f2; border-radius: 14px; padding: 14px 16px; background: #fbfdff; }
-        .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6b7f92; margin: 0 0 4px; }
-        .value { font-size: 18px; font-weight: 700; margin: 0; }
-        .full { grid-column: 1 / -1; }
+        body {
+            font-family: Arial, sans-serif;
+            color: #102033;
+            margin: 0;
+            padding: 28px;
+            background: #eef3f8;
+        }
+
+        .sheet {
+            background: #ffffff;
+            border: 1px solid #dbe4ee;
+            border-radius: 24px;
+            padding: 28px;
+            box-shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+        }
+
+        .header {
+            display: table;
+            width: 100%;
+            border-bottom: 2px solid #e7edf5;
+            padding-bottom: 18px;
+            margin-bottom: 22px;
+        }
+
+        .header-main,
+        .header-side {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .header-side {
+            text-align: right;
+            width: 220px;
+        }
+
+        .eyebrow {
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            font-size: 11px;
+            color: #4b647f;
+            margin: 0 0 8px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 30px;
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            margin: 8px 0 0;
+            color: #607387;
+            font-size: 14px;
+        }
+
+        .status {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            background: #fff4d9;
+            color: #9a6700;
+        }
+
+        .status.paid {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .net {
+            display: block;
+            margin-top: 14px;
+            font-size: 30px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .net-label {
+            display: block;
+            margin-top: 4px;
+            color: #607387;
+            font-size: 12px;
+        }
+
+        .summary {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin: 0 0 22px;
+            border-spacing: 12px 0;
+        }
+
+        .summary-card {
+            display: table-cell;
+            border: 1px solid #dfe8f2;
+            border-radius: 16px;
+            padding: 16px 18px;
+            background: #fbfdff;
+        }
+
+        .summary-card.highlight {
+            background: linear-gradient(135deg, #0f172a 0%, #16304f 100%);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #6b7f92;
+            margin: 0 0 6px;
+        }
+
+        .highlight .label {
+            color: rgba(255, 255, 255, 0.72);
+        }
+
+        .value {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .detail-grid {
+            display: table;
+            width: 100%;
+            border-spacing: 12px 0;
+        }
+
+        .detail-card {
+            display: table-cell;
+            width: 50%;
+            border: 1px solid #dfe8f2;
+            border-radius: 16px;
+            padding: 18px;
+            background: #ffffff;
+            vertical-align: top;
+        }
+
+        .detail-title {
+            margin: 0 0 14px;
+            font-size: 16px;
+        }
+
+        .detail-row {
+            padding: 10px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .detail-row:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .detail-row span {
+            display: block;
+            color: #607387;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: 4px;
+        }
+
+        .detail-row strong {
+            font-size: 15px;
+        }
+
+        .breakdown-total {
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 2px solid #dbe4ee;
+        }
     </style>
 </head>
 <body>
 <div class="sheet">
     <div class="header">
-        <p class="eyebrow">FlacoFitness / Finanzas</p>
-        <h1 th:text="${titulo}">Nomina interna</h1>
-        <p class="subtitle" th:text="${subtitulo}">Detalle salarial individual.</p>
+        <div class="header-main">
+            <p class="eyebrow">FlacoFitness / Finanzas internas</p>
+            <h1 th:text="${titulo}">Nomina interna</h1>
+            <p class="subtitle" th:text="${subtitulo}">Detalle salarial individual.</p>
+        </div>
+        <div class="header-side">
+            <span class="status"
+                  th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' paid' : ''"
+                  th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">EMITIDA</span>
+            <span class="net" th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span>
+            <span class="net-label">Neto final emitido</span>
+        </div>
     </div>
 
-    <div class="grid">
-        <div class="card">
+    <div class="summary">
+        <div class="summary-card">
             <p class="label">Staff</p>
-            <p class="value" th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre : '-'}">-</p>
+            <p class="value" th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre + (nomina.staffPerfil.usuario.apellidos != null and !nomina.staffPerfil.usuario.apellidos.isBlank() ? ' ' + nomina.staffPerfil.usuario.apellidos : '') : '-'}">-</p>
         </div>
-        <div class="card">
+        <div class="summary-card">
             <p class="label">Periodo</p>
-            <p class="value" th:text="${nomina.periodo}">-</p>
+            <p class="value" th:text="${nomina.periodo != null ? nomina.periodo : '-'}">-</p>
         </div>
-        <div class="card">
+        <div class="summary-card">
             <p class="label">Referencia</p>
-            <p class="value" th:text="${nomina.referencia}">-</p>
+            <p class="value" th:text="${nomina.referencia != null and !nomina.referencia.isBlank() ? nomina.referencia : '-'}">-</p>
         </div>
-        <div class="card">
-            <p class="label">Estado</p>
-            <p class="value" th:text="${nomina.estado}">-</p>
+        <div class="summary-card highlight">
+            <p class="label">Fecha de emision</p>
+            <p class="value" th:text="${nomina.fechaEmision != null ? #temporals.format(nomina.fechaEmision, 'dd/MM/yyyy') : '-'}">-</p>
         </div>
-        <div class="card">
-            <p class="label">Base</p>
-            <p class="value" th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-card">
+            <h2 class="detail-title">Ficha documental</h2>
+            <div class="detail-row">
+                <span>Gasto vinculado</span>
+                <strong th:text="${nomina.gasto != null ? nomina.gasto.concepto : 'Sin gasto vinculado'}">-</strong>
+            </div>
+            <div class="detail-row">
+                <span>Estado</span>
+                <strong th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">-</strong>
+            </div>
+            <div class="detail-row">
+                <span>Observacion</span>
+                <strong>Documento interno experimental para demo y control operativo.</strong>
+            </div>
         </div>
-        <div class="card">
-            <p class="label">Bonus</p>
-            <p class="value" th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
-        </div>
-        <div class="card">
-            <p class="label">Deducciones</p>
-            <p class="value" th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
-        </div>
-        <div class="card">
-            <p class="label">Neto</p>
-            <p class="value" th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
-        </div>
-        <div class="card full">
-            <p class="label">Gasto vinculado</p>
-            <p class="value" th:text="${nomina.gasto != null ? nomina.gasto.concepto : 'Sin vinculo'}">-</p>
+
+        <div class="detail-card">
+            <h2 class="detail-title">Desglose economico</h2>
+            <div class="detail-row">
+                <span>Salario base</span>
+                <strong th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+            </div>
+            <div class="detail-row">
+                <span>Bonus</span>
+                <strong th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+            </div>
+            <div class="detail-row">
+                <span>Deducciones</span>
+                <strong th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+            </div>
+            <div class="breakdown-total">
+                <span class="label">Salario neto</span>
+                <p class="value" th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+            </div>
         </div>
     </div>
 </div>

@@ -312,3 +312,75 @@ Implementar el plan de cierre: `OperationalClockService` como fuente unica tempo
 - Se quitaron defaults de fecha real en entidades de negocio donde los servicios ya asignan fecha operativa.
 - Se actualizaron pruebas de pagos y se anadio `GastoServiceTest`.
 - Se validaron `compile` y `test` con Maven Wrapper.
+
+## Entrada 2026-04-22 (Ejecucion del plan `.claude`)
+
+### Fecha
+
+2026-04-22
+
+### Contexto
+
+El usuario pidio ejecutar el archivo `.claude/claude_md_and_top_prompts_flacofitness_finance_gold.md` y dejar el contexto actualizado hasta el punto alcanzado.
+
+### Prompt
+
+Ejecutar el plan `.md` dentro de `.claude` y actualizar la carpeta de contexto hasta donde se llegue.
+
+### Resultado
+
+- Se interpreto el archivo de `.claude` como guia maestra y no como checklist literal.
+- Se materializo esa guia en `CLAUDE.md` dentro de la raiz del repo.
+- Se creo `docs/agents-memory/claude-plan-status.md` para registrar que bloques del plan `.claude` ya estan absorbidos y cuales siguen pendientes.
+- Se ejecuto una primera tanda funcional alineada con ese plan:
+  - filtros financieros completos en `/gastos`
+  - nuevos KPIs financieros en el listado
+  - exportacion PDF individual por gasto
+  - menos botones redundantes en listados financieros con fila clicable
+- Se actualizo la documentacion viva para que Claude Code pueda continuar desde este punto sin rehacer la auditoria previa.
+
+## Entrada 2026-04-22 (Roadmap maestro absorbido)
+
+### Fecha
+
+2026-04-22
+
+### Contexto
+
+Ejecucion real del roadmap maestro para absorber el archivo `.claude` dentro del producto, aterrizando primero finanzas premium y dashboard premium sin reescrituras grandes.
+
+### Prompt
+
+Implementar el plan "Roadmap Maestro Para Absorber El `.claude` Y Cerrar FlacoFitness", en este orden:
+
+1. finanzas premium y coherencia operativa
+2. dashboard premium y carrusel/rail de alertas
+3. navegacion, UX y dark mode
+4. limpieza tecnica y QA total
+5. revision final tipo CTO/Product
+
+Con reglas explicitas:
+- sin H2
+- sin SPA
+- sin rediseñar el dominio salvo bloqueo real
+- usando el arbol actual como baseline
+- validando compile/tests
+- actualizando `docs/agents-memory`
+
+### Resultado
+
+- Se completo una iteracion fuerte sobre los bloques 1 y 2 del roadmap:
+  - dashboard principal simplificado
+  - rail premium de alertas accionables reutilizando `shellNotifications`
+  - KPI de `maquinasFueraServicio` conectado a `/stats/dashboard`
+  - eliminacion de la grafica secundaria de altas
+  - mantenimiento de solo tres charts principales
+- Se cerro una mejora visible y defendible en nominas:
+  - detalle premium tipo expediente salarial
+  - PDF individual profesional
+  - PDF de listado con mejor lectura
+- Se valido con:
+  - `.\mvnw.cmd clean -DskipTests compile`
+  - `.\mvnw.cmd test`
+  - smoke HTTP real de `/`, `/nominas` y `/nominas/{id}/pdf`
+- Se actualizo el contexto vivo para que Claude continúe desde este punto.

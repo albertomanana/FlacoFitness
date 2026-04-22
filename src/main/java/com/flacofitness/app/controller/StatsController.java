@@ -142,6 +142,7 @@ public class StatsController {
                 sesionClaseService.contarSesionesHoy(),
                 membresiaService.contarActivas(),
                 membresiaService.contarVencidas(),
+                maquinaService.contarFueraDeServicio(),
                 maquinaService.contarRevisionProxima(7),
                 materialService.contarBajoStock()
         );

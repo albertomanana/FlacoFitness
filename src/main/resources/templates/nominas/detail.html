@@ -13,31 +13,152 @@
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Finanzas</span>
-                        <h2 class="ff-section-title" th:text="${nomina.periodo}">Detalle</h2>
+                        <h2 class="ff-section-title">Expediente salarial</h2>
+                        <p class="ff-section-subtitle">Una lectura mas profesional para referencia, cierre y exportacion documental.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         <a class="btn btn-outline-secondary" th:href="@{/nominas}">Volver</a>
                         <a class="btn btn-outline-secondary" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
-                        <form th:if="${nomina.estado != null and nomina.estado.name() != 'PAGADA'}" th:action="@{/nominas/{id}/pagada(id=${nomina.id})}" method="post" class="m-0">
+                        <form th:if="${nomina.estado != null and nomina.estado.name() != 'PAGADA'}"
+                              th:action="@{/nominas/{id}/pagada(id=${nomina.id})}"
+                              method="post"
+                              class="m-0">
                             <button type="submit" class="btn btn-success">Marcar pagada</button>
                         </form>
                     </div>
                 </section>
 
-                <section class="ff-surface-card ff-animate-in">
+                <section class="ff-surface-card ff-payroll-hero ff-animate-in">
                     <div class="ff-card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6"><strong>Staff:</strong> <span th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre : '-'}">-</span></div>
-                            <div class="col-md-6"><strong>Referencia:</strong> <span th:text="${nomina.referencia}">-</span></div>
-                            <div class="col-md-6"><strong>Periodo:</strong> <span th:text="${nomina.periodo}">-</span></div>
-                            <div class="col-md-6"><strong>Estado:</strong> <span th:text="${nomina.estado}">-</span></div>
-                            <div class="col-md-6"><strong>Salario base:</strong> <span th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
-                            <div class="col-md-6"><strong>Bonus:</strong> <span th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
-                            <div class="col-md-6"><strong>Deducciones:</strong> <span th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
-                            <div class="col-md-6"><strong>Salario neto:</strong> <span th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
-                            <div class="col-md-6"><strong>Fecha emision:</strong> <span th:text="${#temporals.format(nomina.fechaEmision, 'dd/MM/yyyy')}">-</span></div>
-                            <div class="col-md-6"><strong>Gasto vinculado:</strong> <a th:if="${nomina.gasto != null}" th:href="@{/gastos/{id}(id=${nomina.gasto.id})}" th:text="${nomina.gasto.concepto}">Gasto</a><span th:if="${nomina.gasto == null}">-</span></div>
+                        <div class="ff-payroll-hero-layout">
+                            <div>
+                                <span class="ff-payroll-overline">FlacoFitness / N&oacute;mina interna</span>
+                                <h3 class="ff-payroll-title" th:text="${nomina.periodo}">2026-01</h3>
+                                <p class="ff-payroll-subtitle"
+                                   th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre + (nomina.staffPerfil.usuario.apellidos != null and !nomina.staffPerfil.usuario.apellidos.isBlank() ? ' ' + nomina.staffPerfil.usuario.apellidos : '') : 'Sin staff asociado'}">Staff</p>
+                            </div>
+                            <div class="ff-payroll-hero-aside">
+                                <span class="ff-status-badge"
+                                      th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : ' ff-status-warning'"
+                                      th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">EMITIDA</span>
+                                <strong class="ff-payroll-net"
+                                        th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+                                <span class="ff-table-secondary">Neto liquidado</span>
+                            </div>
                         </div>
+                    </div>
+                </section>
+
+                <section class="ff-payroll-metric-grid ff-animate-in">
+                    <article class="ff-surface-card ff-payroll-metric">
+                        <div class="ff-card-body">
+                            <p class="ff-stat-label">Salario base</p>
+                            <p class="ff-stat-value" th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Base contractual experimental</p>
+                        </div>
+                    </article>
+                    <article class="ff-surface-card ff-payroll-metric">
+                        <div class="ff-card-body">
+                            <p class="ff-stat-label">Bonus</p>
+                            <p class="ff-stat-value" th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Variable reconocida</p>
+                        </div>
+                    </article>
+                    <article class="ff-surface-card ff-payroll-metric">
+                        <div class="ff-card-body">
+                            <p class="ff-stat-label">Deducciones</p>
+                            <p class="ff-stat-value" th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Ajustes internos aplicados</p>
+                        </div>
+                    </article>
+                    <article class="ff-surface-card ff-payroll-metric ff-payroll-metric-highlight">
+                        <div class="ff-card-body">
+                            <p class="ff-stat-label">Salario neto</p>
+                            <p class="ff-stat-value" th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Importe final emitido</p>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="row g-4 ff-animate-in">
+                    <div class="col-xl-7">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Trazabilidad</p>
+                                    <h3 class="ff-card-title mt-1">Ficha documental</h3>
+                                    <p class="ff-card-subtitle">Referencia, emision y enlace operativo con el gasto correspondiente.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-payroll-detail-grid">
+                                    <div class="ff-payroll-detail-item">
+                                        <span class="ff-payroll-detail-label">Referencia</span>
+                                        <strong th:text="${nomina.referencia != null and !nomina.referencia.isBlank() ? nomina.referencia : '-'}">-</strong>
+                                    </div>
+                                    <div class="ff-payroll-detail-item">
+                                        <span class="ff-payroll-detail-label">Periodo</span>
+                                        <strong th:text="${nomina.periodo != null ? nomina.periodo : '-'}">-</strong>
+                                    </div>
+                                    <div class="ff-payroll-detail-item">
+                                        <span class="ff-payroll-detail-label">Fecha de emision</span>
+                                        <strong th:text="${nomina.fechaEmision != null ? #temporals.format(nomina.fechaEmision, 'dd/MM/yyyy') : '-'}">-</strong>
+                                    </div>
+                                    <div class="ff-payroll-detail-item">
+                                        <span class="ff-payroll-detail-label">Estado</span>
+                                        <strong th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">-</strong>
+                                    </div>
+                                    <div class="ff-payroll-detail-item ff-payroll-detail-item-wide">
+                                        <span class="ff-payroll-detail-label">Staff asociado</span>
+                                        <a class="ff-table-primary text-decoration-none"
+                                           th:if="${nomina.staffPerfil != null}"
+                                           th:href="@{/staff/{id}(id=${nomina.staffPerfil.id})}"
+                                           th:text="${nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre + (nomina.staffPerfil.usuario.apellidos != null and !nomina.staffPerfil.usuario.apellidos.isBlank() ? ' ' + nomina.staffPerfil.usuario.apellidos : '') : 'Perfil staff'}">Staff</a>
+                                        <strong th:if="${nomina.staffPerfil == null}">Sin staff asociado</strong>
+                                    </div>
+                                    <div class="ff-payroll-detail-item ff-payroll-detail-item-wide">
+                                        <span class="ff-payroll-detail-label">Gasto vinculado</span>
+                                        <a class="ff-table-primary text-decoration-none"
+                                           th:if="${nomina.gasto != null}"
+                                           th:href="@{/gastos/{id}(id=${nomina.gasto.id})}"
+                                           th:text="${nomina.gasto.concepto}">Gasto</a>
+                                        <strong th:if="${nomina.gasto == null}">Sin gasto vinculado</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-xl-5">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Resumen economico</p>
+                                    <h3 class="ff-card-title mt-1">Desglose salarial</h3>
+                                    <p class="ff-card-subtitle">Lectura rapida del calculo usado para emitir el neto.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-payroll-breakdown">
+                                    <div class="ff-payroll-breakdown-row">
+                                        <span>Base</span>
+                                        <strong th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+                                    </div>
+                                    <div class="ff-payroll-breakdown-row">
+                                        <span>Bonus</span>
+                                        <strong th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+                                    </div>
+                                    <div class="ff-payroll-breakdown-row ff-payroll-breakdown-row-negative">
+                                        <span>Deducciones</span>
+                                        <strong th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+                                    </div>
+                                    <div class="ff-payroll-breakdown-total">
+                                        <span>Neto final</span>
+                                        <strong th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
                     </div>
                 </section>
 

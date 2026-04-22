@@ -66,6 +66,7 @@
         updateCurrentYear();
         initializeClickableRows();
         initializeRevealBlocks();
+        initializeScrollableRails();
         initializePaymentFormAssistant();
         initializeThemeToggle();
     });
@@ -487,5 +488,35 @@
         dueDateInput.addEventListener("change", updateSummary);
         statusSelect.addEventListener("change", updateSummary);
         updateSummary();
+    }
+
+    function initializeScrollableRails() {
+        document.querySelectorAll("[data-scroll-rail]").forEach((rail) => {
+            const railId = rail.getAttribute("id");
+            if (!railId) {
+                return;
+            }
+
+            const prevButtons = document.querySelectorAll(`[data-scroll-rail-prev][data-scroll-rail-target="${railId}"]`);
+            const nextButtons = document.querySelectorAll(`[data-scroll-rail-next][data-scroll-rail-target="${railId}"]`);
+
+            const scrollByCard = (direction) => {
+                const card = rail.querySelector(":scope > *");
+                const gap = Number.parseFloat(window.getComputedStyle(rail).columnGap || window.getComputedStyle(rail).gap || "0");
+                const offset = card ? card.getBoundingClientRect().width + gap : rail.clientWidth * 0.8;
+                rail.scrollBy({
+                    left: offset * direction,
+                    behavior: motionQuery.matches ? "auto" : "smooth"
+                });
+            };
+
+            prevButtons.forEach((button) => {
+                button.addEventListener("click", () => scrollByCard(-1));
+            });
+
+            nextButtons.forEach((button) => {
+                button.addEventListener("click", () => scrollByCard(1));
+            });
+        });
     }
 })();

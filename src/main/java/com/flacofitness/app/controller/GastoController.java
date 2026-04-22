@@ -3,6 +3,8 @@ package com.flacofitness.app.controller;
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.model.entity.Gasto;
 import com.flacofitness.app.model.enums.CategoriaGasto;
+import com.flacofitness.app.model.enums.EstadoGasto;
+import com.flacofitness.app.model.enums.TipoGasto;
 import com.flacofitness.app.service.FinancePdfService;
 import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaquinaService;
@@ -61,18 +63,50 @@ public class GastoController {
                          @RequestParam(name = "hasta", required = false)
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
                          @RequestParam(name = "categoria", required = false) CategoriaGasto categoria,
+                         @RequestParam(name = "estado", required = false) EstadoGasto estado,
+                         @RequestParam(name = "tipo", required = false) TipoGasto tipoGasto,
+                         @RequestParam(name = "staffId", required = false) Long staffId,
+                         @RequestParam(name = "maquinaId", required = false) Long maquinaId,
+                         @RequestParam(name = "materialId", required = false) Long materialId,
+                         @RequestParam(name = "recurrente", required = false) Boolean recurrente,
+                         @RequestParam(name = "proveedor", required = false) String proveedor,
                          Model model) {
-        model.addAttribute("gastos", gastoService.listarFiltrados(desde, hasta, categoria));
+        model.addAttribute("gastos", gastoService.listarFiltrados(
+                desde,
+                hasta,
+                categoria,
+                estado,
+                tipoGasto,
+                staffId,
+                maquinaId,
+                materialId,
+                recurrente,
+                normalizarFiltroTexto(proveedor)));
         model.addAttribute("categoriasGasto", CategoriaGasto.values());
+        model.addAttribute("estadosGasto", EstadoGasto.values());
+        model.addAttribute("tiposGasto", TipoGasto.values());
+        model.addAttribute("staffActivos", staffService.listarActivos());
+        model.addAttribute("maquinasActivas", maquinaService.listarFiltradas(null, null));
+        model.addAttribute("materialesActivos", materialService.listarFiltrados(null, null));
         model.addAttribute("desdeFiltro", desde);
         model.addAttribute("hastaFiltro", hasta);
         model.addAttribute("categoriaFiltro", categoria);
+        model.addAttribute("estadoFiltro", estado);
+        model.addAttribute("tipoFiltro", tipoGasto);
+        model.addAttribute("staffFiltro", staffId);
+        model.addAttribute("maquinaFiltro", maquinaId);
+        model.addAttribute("materialFiltro", materialId);
+        model.addAttribute("recurrenteFiltro", recurrente);
+        model.addAttribute("proveedorFiltro", proveedor);
         model.addAttribute("gastosTotales", gastoService.contarActivos());
         model.addAttribute("gastosCriticos", gastoService.contarCriticos());
         model.addAttribute("recurrentesProximos", gastoService.contarRecurrentesProximos(7));
+        model.addAttribute("vencimientosProximos", gastoService.contarVencimientosProximos(7));
         BigDecimal gastoMes = gastoService.calcularGastoMesActual();
         BigDecimal ingresoMes = pagoService.calcularIngresosMesActual();
         model.addAttribute("gastoMesActual", gastoMes);
+        model.addAttribute("gastoFijoMesActual", gastoService.calcularGastoFijoMesActual());
+        model.addAttribute("gastoVariableMesActual", gastoService.calcularGastoVariableMesActual());
         model.addAttribute("ingresoMesActual", ingresoMes);
         model.addAttribute("balanceMesActual", ingresoMes.subtract(gastoMes));
         return "gastos/list";
@@ -183,11 +217,28 @@ public class GastoController {
                                              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
                                              @RequestParam(name = "hasta", required = false)
                                              @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
-                                             @RequestParam(name = "categoria", required = false) CategoriaGasto categoria) {
-        var gastos = gastoService.listarFiltrados(desde, hasta, categoria);
+                                             @RequestParam(name = "categoria", required = false) CategoriaGasto categoria,
+                                             @RequestParam(name = "estado", required = false) EstadoGasto estado,
+                                             @RequestParam(name = "tipo", required = false) TipoGasto tipoGasto,
+                                             @RequestParam(name = "staffId", required = false) Long staffId,
+                                             @RequestParam(name = "maquinaId", required = false) Long maquinaId,
+                                             @RequestParam(name = "materialId", required = false) Long materialId,
+                                             @RequestParam(name = "recurrente", required = false) Boolean recurrente,
+                                             @RequestParam(name = "proveedor", required = false) String proveedor) {
+        var gastos = gastoService.listarFiltrados(
+                desde,
+                hasta,
+                categoria,
+                estado,
+                tipoGasto,
+                staffId,
+                maquinaId,
+                materialId,
+                recurrente,
+                normalizarFiltroTexto(proveedor));
         Map<String, Object> model = new HashMap<>();
         model.put("titulo", "Gastos operativos");
-        model.put("subtitulo", "Listado filtrado de egresos y relaciones operativas.");
+        model.put("subtitulo", "Listado filtrado de egresos, estados y relaciones operativas.");
         model.put("gastos", gastos);
         model.put("gastosTotales", gastoService.contarActivos());
         model.put("gastoMesActual", gastoService.calcularGastoMesActual());
@@ -196,6 +247,20 @@ public class GastoController {
         byte[] pdf = financePdfService.render("reportes/gastos-listado", model);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=gastos-operativos.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    @GetMapping(value = "/{id}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportarDetallePdf(@PathVariable Long id) {
+        Gasto gasto = gastoService.buscarPorId(id);
+        Map<String, Object> model = new HashMap<>();
+        model.put("titulo", "Detalle de gasto");
+        model.put("subtitulo", "Ficha financiera individual para auditoria, revision y demo.");
+        model.put("gasto", gasto);
+        byte[] pdf = financePdfService.render("reportes/gasto-detalle", model);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=gasto-" + gasto.getId() + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
@@ -217,5 +282,13 @@ public class GastoController {
         if (gasto.getMaterial() == null) {
             gasto.setMaterial(new com.flacofitness.app.model.entity.Material());
         }
+    }
+
+    private String normalizarFiltroTexto(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalizado = value.trim();
+        return normalizado.isEmpty() ? null : normalizado;
     }
 }

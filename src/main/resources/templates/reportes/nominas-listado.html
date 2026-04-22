@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title th:text="${titulo}">Nominas</title>
     <style>
         body { font-family: Arial, sans-serif; color: #102033; margin: 0; padding: 24px; background: #f5f7fb; }
@@ -45,6 +45,7 @@
         <tr>
             <th>Periodo</th>
             <th>Staff</th>
+            <th>Estado</th>
             <th class="right">Base</th>
             <th class="right">Bonus</th>
             <th class="right">Deducciones</th>
@@ -58,6 +59,7 @@
                 <div class="muted" th:text="${nomina.referencia}">REF</div>
             </td>
             <td th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre : '-'}">Staff</td>
+            <td th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">Estado</td>
             <td class="right" th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</td>
             <td class="right" th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</td>
             <td class="right" th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</td>

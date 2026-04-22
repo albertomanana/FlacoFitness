@@ -213,12 +213,25 @@ No duplicar esta logica en:
 - Se anadio `PROGRAMADO` a pagos.
 - Se alinearon pagos y gastos con una sola capa temporal.
 
-### 2026-04-22
+### 2026-04-22 (bloques 1-4 — shell, reloj, filtros, panel cliente)
 
 - Se retiro la simulacion manual del reloj y se dejo tiempo real de sistema.
 - Se corrigio el bug de "modulos en blanco": el problema estaba en la shell visual, no en backend ni en Thymeleaf.
 - Se anadio fail-safe en `app.js` y `styles.css` para que la splash o una transicion fallida no oculten `.ff-main`.
 - Se validaron visualmente `usuarios` y `pagos` con Chrome headless despues del fix.
+- `AccessProfile.canAccessAsManager` corregido (indentacion erronea en `/nominas`).
+- `UsuarioService.guardar()` cierra automaticamente trials pendientes con el mismo email.
+- Panel Cliente ampliado: seccion "Reservas activas" e "Historial de asistencias".
+- Filtros por fecha (desde/hasta) anadidos en `/trials`.
+- Proyecciones JPA movidas de `repository/` a `model/dto/`.
+- `PagoSchedulerService` deprecated eliminado.
+
+### 2026-04-22 (auditoria bloque financiero completo)
+
+- **Bug critico corregido:** `gastos/detail.html` accedia a `gasto.frecuencia` que no existe en `Gasto`; causaba `EL1008E PropertyAccessException` (500) en cualquier `/gastos/{id}`. Corregido a `gasto.gastoRecurrente.frecuencia` con null-guards correctos. Se anadio ademas `tipoGasto`, `fechaVencimiento` y badge de estado con colores semanticos.
+- **`SaaSSchedulerService` corregido:** el scheduler ignoraba `app.pagos.scheduler.enabled` y `app.pagos.scheduler.cron` de `application.properties`. Se inyectaron via `@Value` y el cron ahora usa SpEL `${app.pagos.scheduler.cron:0 0 0 * * *}`.
+- Auditoria completa sin bugs adicionales: `GastoService`, `PagoService`, `NominaService`, `GastoRecurrenteService`, `FinancialAutomationService`, `RecurrenceService`, `ShellNotificationService`, `StatsController`, `AccessProfile`, templates de nominas/ y gastos/recurrentes/.
+- N+1 en `PagoService.contarUsuarios*` documentado en backlog (academico, no critico).
 
 ## 12. Problemas ya conocidos y resueltos
 
@@ -226,13 +239,17 @@ No duplicar esta logica en:
 - Doble disparo de automatizacion financiera: resuelto.
 - H2 y configuraciones paralelas: eliminadas.
 - Error por `CURDATE()` en reparacion financiera: resuelto.
+- `gasto.frecuencia` en `gastos/detail.html` causando 500: resuelto (2026-04-22).
+- `SaaSSchedulerService` ignorando properties configurables: resuelto (2026-04-22).
 
 ## 13. Riesgos actuales que Claude debe vigilar
 
-- El arbol de trabajo no esta limpio.
-- El bloque financiero tiene bastante superficie y no conviene refactorizarlo de golpe.
+- El arbol de trabajo no esta limpio (cambios sin commit en rama `recovery/restore-core-saas-plan-a`).
+- QA visual profunda pendiente en: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales`, `/cliente`.
 - Parte del proyecto fue recuperado desde una rama avanzada; no mezclar sin revisar con trabajo legacy.
 - Hay docs antiguas que ya fueron corregidas, pero cualquier nueva contradiccion debe corregirse enseguida.
+- N+1 en `PagoService.contarUsuariosAlDia/ConDeuda/ConPagosVencidos`: carga todos los usuarios y hace 2 queries por usuario; aceptable en academico, no en produccion real.
+- `ViewControllerTest` no cubre `/gastos/{id}` (fue exactamente donde vivia el bug de `gasto.frecuencia`). Anadir test de render para ese endpoint.
 
 ## 14. Flujo recomendado para continuar
 
@@ -256,8 +273,10 @@ No duplicar esta logica en:
 
 Orden recomendado:
 
-1. QA visual profunda modulo por modulo.
-2. Cierre de inconsistencias menores del shell y acciones secundarias.
-3. Consolidacion financiera visual y PDF.
-4. Mas pruebas MVC por perfiles.
-5. Si el producto sigue creciendo, preparar una rama de estabilizacion y un commit base limpio.
+1. Ejecutar `.\mvnw.cmd clean -DskipTests compile` y `.\mvnw.cmd test` para confirmar que los cambios de `gastos/detail.html` y `SaaSSchedulerService` compilan y los 16 tests siguen en verde.
+2. QA visual profunda modulo por modulo: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales`, `/cliente`.
+3. Verificar smoke por perfiles reales (ADMIN, STAFF_ENTRENADOR, STAFF_RECEPCION, STAFF_GERENTE, CLIENTE): accesos denegados, redirecciones y sidebar contextual.
+4. Anadir `ViewControllerTest` para `/gastos/{id}` para prevenir regresiones del tipo `EL1008E`.
+5. Cierre de inconsistencias menores del shell y acciones secundarias.
+6. Optimizar N+1 en `PagoService.contarUsuarios*` con JPQL de agregacion si el proyecto va a produccion.
+7. Hacer commit limpio de los cambios actuales o crear rama de estabilizacion.
