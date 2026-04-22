@@ -73,12 +73,6 @@ public class SesionClase {
 
     @PrePersist
     private void inicializarValores() {
-        if (fecha == null) {
-            fecha = LocalDate.now();
-        }
-        if (horaInicio == null) {
-            horaInicio = LocalTime.now().withSecond(0).withNano(0);
-        }
         if (aforo == null || aforo <= 0) {
             aforo = clase != null && clase.getCapacidadSugerida() != null && clase.getCapacidadSugerida() > 0
                     ? clase.getCapacidadSugerida()

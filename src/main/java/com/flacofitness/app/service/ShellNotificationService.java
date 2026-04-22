@@ -18,6 +18,7 @@ public class ShellNotificationService {
     private final TrialService trialService;
     private final SesionClaseService sesionClaseService;
     private final GastoService gastoService;
+    private final NominaService nominaService;
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
     private final OperationalClockService operationalClockService;
@@ -29,6 +30,7 @@ public class ShellNotificationService {
                                     TrialService trialService,
                                     SesionClaseService sesionClaseService,
                                     GastoService gastoService,
+                                    NominaService nominaService,
                                     MaquinaService maquinaService,
                                     MaterialService materialService,
                                     OperationalClockService operationalClockService) {
@@ -39,6 +41,7 @@ public class ShellNotificationService {
         this.trialService = trialService;
         this.sesionClaseService = sesionClaseService;
         this.gastoService = gastoService;
+        this.nominaService = nominaService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
         this.operationalClockService = operationalClockService;
@@ -175,6 +178,17 @@ public class ShellNotificationService {
                     "Abrir gastos",
                     "/gastos",
                     "warning"
+            ));
+        }
+
+        long nominasPendientes = nominaService.contarPendientes();
+        if (nominasPendientes > 0) {
+            notifications.add(new ShellNotificationItem(
+                "Nominas pendientes",
+                nominasPendientes + " nomina(s) siguen emitidas sin cierre.",
+                "Abrir nominas",
+                "/nominas",
+                "warning"
             ));
         }
 

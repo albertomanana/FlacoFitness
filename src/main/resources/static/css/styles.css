@@ -193,22 +193,32 @@ h1, h2, h3, h4, h5, h6 {
 
 a { text-decoration: none; }
 
-/* Premium page motion */
-.ff-motion-enabled body:not(.ff-page-ready) .ff-main {
-    opacity: 0;
-    transform: translateY(12px) scale(0.995);
+/* Premium page motion
+   Keep the shell visible by default so a client-side error never leaves modules blank. */
+.ff-motion-enabled body .ff-main {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 .ff-motion-enabled body.ff-page-ready .ff-main {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    transition: opacity var(--transition-page), transform var(--transition-page);
+    animation: ffMainEnter var(--transition-page) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .ff-motion-enabled body.ff-page-exiting .ff-main {
     opacity: 0;
     transform: translateY(8px) scale(0.996);
     transition: opacity 140ms ease, transform 140ms ease;
+}
+
+@keyframes ffMainEnter {
+    from {
+        opacity: 0.7;
+        transform: translateY(10px) scale(0.997);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .ff-app-splash {
@@ -763,7 +773,8 @@ body.ff-global-loading .ff-app-loading-overlay {
 }
 
 .ff-operational-clock {
-    display: none;
+    position: relative;
+    display: inline-flex;
     align-items: center;
     gap: 0.65rem;
     padding: 0.4rem 0.55rem;
@@ -775,16 +786,42 @@ body.ff-global-loading .ff-app-loading-overlay {
     min-width: 0;
 }
 
-@media (min-width: 1200px) {
-    .ff-operational-clock { display: inline-flex; }
-}
-
 .ff-operational-clock-display {
     display: grid;
     grid-template-columns: auto auto;
     align-items: center;
     gap: 0.1rem 0.4rem;
     min-width: 11rem;
+}
+
+.ff-clock-editor {
+    position: relative;
+}
+
+.ff-clock-editor summary {
+    display: inline-flex;
+    align-items: center;
+    height: 2rem;
+    padding: 0 0.65rem;
+    border: 1px solid var(--ff-border);
+    border-radius: var(--radius-md);
+    background: rgba(241, 245, 249, 0.9);
+    color: var(--ff-text);
+    font-size: 0.72rem;
+    font-weight: 900;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+.ff-clock-editor summary::-webkit-details-marker {
+    display: none;
+}
+
+.ff-clock-editor summary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--ff-shadow-sm);
 }
 
 .ff-operational-clock-display strong {
@@ -825,9 +862,20 @@ body.ff-global-loading .ff-app-loading-overlay {
 }
 
 .ff-operational-clock-form {
+    position: absolute;
+    top: calc(100% + 0.65rem);
+    left: 0;
+    z-index: 1100;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: 0.35rem;
+    width: min(38rem, calc(100vw - 2rem));
+    padding: 0.75rem;
+    border: 1px solid var(--ff-border);
+    border-radius: var(--radius-xl);
+    background: var(--ff-surface);
+    box-shadow: var(--ff-shadow-lg);
 }
 
 .ff-clock-input {
@@ -888,7 +936,8 @@ body.ff-global-loading .ff-app-loading-overlay {
 
 :root[data-theme="dark"] .ff-clock-input,
 :root[data-theme="dark"] .ff-clock-step,
-:root[data-theme="dark"] .ff-clock-reset {
+:root[data-theme="dark"] .ff-clock-reset,
+:root[data-theme="dark"] .ff-clock-editor summary {
     background: rgba(15, 23, 42, 0.92);
     border-color: rgba(148, 163, 184, 0.22);
 }
@@ -1369,6 +1418,7 @@ body.ff-global-loading .ff-app-loading-overlay {
     padding: var(--space-4) var(--space-4);
     position: relative;
     overflow: hidden;
+    isolation: isolate;
     cursor: default;
 }
 
@@ -1388,7 +1438,13 @@ body.ff-global-loading .ff-app-loading-overlay {
     border-radius: 0 var(--radius-lg) 0 80px;
     background: var(--ff-primary-glow);
     opacity: 0;
+    z-index: 0;
     transition: opacity var(--transition-base);
+}
+
+.ff-stat-card > * {
+    position: relative;
+    z-index: 1;
 }
 
 .ff-stat-card:hover::before { opacity: 1; }

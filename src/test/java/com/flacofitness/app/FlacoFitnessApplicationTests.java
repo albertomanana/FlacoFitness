@@ -5,12 +5,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.flacofitness.app.repository.AsistenciaRepository;
-import com.flacofitness.app.repository.AppClockSettingRepository;
 import com.flacofitness.app.repository.ClaseRepository;
 import com.flacofitness.app.repository.GastoRepository;
+import com.flacofitness.app.repository.GastoRecurrenteRepository;
 import com.flacofitness.app.repository.MaquinaRepository;
 import com.flacofitness.app.repository.MaterialRepository;
 import com.flacofitness.app.repository.MembresiaUsuarioRepository;
+import com.flacofitness.app.repository.NominaRepository;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.ReservaSesionRepository;
@@ -46,9 +47,6 @@ class FlacoFitnessApplicationTests {
     private AsistenciaRepository asistenciaRepository;
 
     @MockBean
-    private AppClockSettingRepository appClockSettingRepository;
-
-    @MockBean
     private PagoRepository pagoRepository;
 
     @MockBean
@@ -69,14 +67,20 @@ class FlacoFitnessApplicationTests {
     @MockBean
     private ReservaSesionRepository reservaSesionRepository;
 
-        @MockBean
-        private GastoRepository gastoRepository;
+    @MockBean
+    private GastoRepository gastoRepository;
 
-        @MockBean
-        private MaquinaRepository maquinaRepository;
+    @MockBean
+    private GastoRecurrenteRepository gastoRecurrenteRepository;
 
-        @MockBean
-        private MaterialRepository materialRepository;
+    @MockBean
+    private NominaRepository nominaRepository;
+
+    @MockBean
+    private MaquinaRepository maquinaRepository;
+
+    @MockBean
+    private MaterialRepository materialRepository;
 
     @Test
     void contextLoads() {

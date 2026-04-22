@@ -24,6 +24,9 @@ public interface StaffPerfilRepository extends JpaRepository<StaffPerfil, Long> 
     List<StaffPerfil> findByActivoTrueAndPuedeImpartirClasesTrue();
 
     @EntityGraph(attributePaths = {"usuario", "usuario.rol", "usuario.plan"})
+    List<StaffPerfil> findByActivoTrueAndNominaAutomaticaTrue();
+
+    @EntityGraph(attributePaths = {"usuario", "usuario.rol", "usuario.plan"})
     Optional<StaffPerfil> findByUsuarioId(Long usuarioId);
 
     boolean existsByUsuarioId(Long usuarioId);

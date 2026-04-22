@@ -218,6 +218,29 @@ Implementar el plan de recuperacion segura de FlacoFitness: preservar estado suc
 - Se preservo el estado previo en stash `backup before recovery core saas plan a`.
 - Se recupero el modelo SaaS avanzado.
 - Se corrigio Maven para evitar ruta absoluta a JDK y fallo de Lombok con JDK moderno.
+
+## Entrada 2026-04-22 (Handoff para Claude Code)
+
+### Fecha
+
+2026-04-22
+
+### Contexto
+
+Preparar la carpeta `docs/agents-memory/` para que Claude Code pueda continuar el desarrollo sin depender del historial conversacional externo.
+
+### Prompt
+
+Se pidio dejar la carpeta de contexto "super actualizada" para pasar a trabajar con Claude Code, incluyendo reglas, instrucciones, versiones, estado real del proyecto, validaciones, arquitectura, modulos, riesgos, flujo de trabajo y cualquier detalle operativo importante.
+
+### Resultado
+
+- Se actualizo `project-overview.md` como entrada corta y actual del proyecto.
+- Se creo `claude-code-handoff.md` como documento principal de relevo.
+- Se creo `agent-working-rules.md` con reglas no negociables del proyecto.
+- Se creo `module-status.md` con estado modulo a modulo.
+- Se actualizaron `setup-status.md`, `backlog.md`, `changelog-functional.md` y `decisions-log.md`.
+- Se dejo documentado el fix del bug de modulos en blanco causado por la shell visual.
 - Se termino acceso PIN con perfiles de sesion y panel cliente.
 - Se corrigio staff responsable para que gerencia no aparezca como instructora por defecto.
 - Se validaron compilacion y tests.
@@ -242,3 +265,50 @@ Start implementation.
 - Se mantuvo continuidad de arquitectura (Spring MVC + Thymeleaf + JS ligero) sin introducir frameworks SPA.
 - Se actualizaron `project-overview`, `setup-status`, `backlog`, `roadmap`, `changelog-functional` y `decisions-log` al estado real del producto.
 - Se dejo trazabilidad del cierre con validacion tecnica de compilacion y pruebas en verde.
+
+## Entrada 2026-04-20 (Correccion reloj operativo)
+
+### Fecha
+
+2026-04-20
+
+### Contexto
+
+El usuario reporto que el hardcode del reloj operativo no funcionaba y pidio sincronizar la carpeta de contexto del agente.
+
+### Prompt
+
+Corregir el error del hardcode del reloj y actualizar `docs/agents-memory/` con contexto actualizado.
+
+### Resultado
+
+- Se corrigio el controller para parsear explicitamente `datetime-local`.
+- Se desacoplo el guardado del reloj de las automatizaciones financieras para que la fecha se persista aunque pagos/gastos fallen.
+- Se reemplazo el formulario siempre desplegado por un panel `Ajustar` visible en topbar.
+- Se anadio prueba MVC del flujo `ADMIN -> POST /reloj-operativo`.
+- Se valido el flujo HTTP real con login PIN, guardado en MySQL y reset a fecha real.
+- Se actualizaron `setup-status`, `changelog-functional`, `decisions-log`, `domain-model`, `architecture`, `project-overview`, `backlog` y este historial.
+
+## Entrada 2026-04-21 (Automatizacion temporal unica de pagos y gastos)
+
+### Fecha
+
+2026-04-21
+
+### Contexto
+
+El usuario pidio cerrar definitivamente pagos y gastos recurrentes para que dependan siempre de la fecha simulada y no de la fecha real del servidor.
+
+### Prompt
+
+Implementar el plan de cierre: `OperationalClockService` como fuente unica temporal, `FinancialAutomationService` como motor central, recurrencias comunes, pagos/gastos vencidos, idempotencia y documentacion viva.
+
+### Resultado
+
+- Se creo `FinancialAutomationService` para centralizar actualizacion de vencidos y generacion de pagos, gastos recurrentes y nominas.
+- Se creo `RecurrenceService` para calcular siguientes ciclos de cuotas y gastos desde un punto comun.
+- Se elimino el doble disparo financiero entre reloj y schedulers.
+- Se corrigio `FinancialSchemaRepairRunner` para no usar `CURDATE()`.
+- Se quitaron defaults de fecha real en entidades de negocio donde los servicios ya asignan fecha operativa.
+- Se actualizaron pruebas de pagos y se anadio `GastoServiceTest`.
+- Se validaron `compile` y `test` con Maven Wrapper.

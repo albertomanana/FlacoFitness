@@ -65,7 +65,7 @@ public enum AccessProfile {
                     "inicio", "usuarios", "membresias", "trials", "pagos", "asistencias", "sesiones"
             ).contains(section);
             case STAFF_GERENTE -> Set.of(
-                    "inicio", "usuarios", "staff", "membresias", "trials", "pagos", "gastos",
+                    "inicio", "usuarios", "staff", "membresias", "trials", "pagos", "gastos", "recurrentes", "nominas",
                     "maquinas", "materiales", "clases", "sesiones", "rutinas", "asistencias"
             ).contains(section);
             case CLIENTE -> "cliente".equals(section);
@@ -141,6 +141,7 @@ public enum AccessProfile {
                 || path.startsWith("/trials")
                 || path.startsWith("/pagos")
                 || path.startsWith("/gastos")
+            || path.startsWith("/nominas")
                 || path.startsWith("/maquinas")
                 || path.startsWith("/materiales");
     }

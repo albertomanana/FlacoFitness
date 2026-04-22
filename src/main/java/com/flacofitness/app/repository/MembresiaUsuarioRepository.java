@@ -33,6 +33,9 @@ public interface MembresiaUsuarioRepository extends JpaRepository<MembresiaUsuar
     @EntityGraph(attributePaths = {"usuario", "plan"})
     List<MembresiaUsuario> findByEstadoOrderByFechaFinAscIdAsc(EstadoMembresia estado);
 
+    @EntityGraph(attributePaths = {"usuario", "plan"})
+    List<MembresiaUsuario> findByEstadoInOrderByFechaInicioDescIdDesc(Collection<EstadoMembresia> estados);
+
     long countByEstado(EstadoMembresia estado);
 
     long countByEstadoIn(Collection<EstadoMembresia> estados);

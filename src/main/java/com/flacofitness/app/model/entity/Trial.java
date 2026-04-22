@@ -76,9 +76,6 @@ public class Trial {
 
     @PrePersist
     private void inicializarValores() {
-        if (fechaPrueba == null) {
-            fechaPrueba = LocalDate.now();
-        }
         if (estado == null) {
             estado = EstadoTrial.PENDIENTE;
         }

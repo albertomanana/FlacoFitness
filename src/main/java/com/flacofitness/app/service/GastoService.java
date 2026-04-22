@@ -12,12 +12,17 @@ import org.springframework.util.StringUtils;
 
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.GastoCategoriaStatsItem;
 import com.flacofitness.app.model.dto.IngresoMensualStatsItem;
 import com.flacofitness.app.model.entity.Gasto;
+import com.flacofitness.app.model.entity.GastoRecurrente;
 import com.flacofitness.app.model.entity.Maquina;
 import com.flacofitness.app.model.entity.Material;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.enums.CategoriaGasto;
+import com.flacofitness.app.model.enums.EstadoGasto;
+import com.flacofitness.app.model.enums.TipoGasto;
+import com.flacofitness.app.repository.GastoRecurrenteRepository;
 import com.flacofitness.app.repository.GastoRepository;
 import com.flacofitness.app.repository.MaquinaRepository;
 import com.flacofitness.app.repository.MaterialRepository;
@@ -27,26 +32,52 @@ import com.flacofitness.app.repository.StaffPerfilRepository;
 @Transactional(readOnly = true)
 public class GastoService {
 
+    private static final List<EstadoGasto> ESTADOS_ABIERTOS = List.of(
+            EstadoGasto.PROGRAMADO,
+            EstadoGasto.PENDIENTE,
+            EstadoGasto.VENCIDO
+    );
+
     private final GastoRepository gastoRepository;
+    private final GastoRecurrenteRepository gastoRecurrenteRepository;
     private final StaffPerfilRepository staffPerfilRepository;
     private final MaquinaRepository maquinaRepository;
     private final MaterialRepository materialRepository;
     private final OperationalClockService operationalClockService;
+    private final RecurrenceService recurrenceService;
 
     public GastoService(GastoRepository gastoRepository,
+                        GastoRecurrenteRepository gastoRecurrenteRepository,
                         StaffPerfilRepository staffPerfilRepository,
                         MaquinaRepository maquinaRepository,
                         MaterialRepository materialRepository,
-                        OperationalClockService operationalClockService) {
+                        OperationalClockService operationalClockService,
+                        RecurrenceService recurrenceService) {
         this.gastoRepository = gastoRepository;
+        this.gastoRecurrenteRepository = gastoRecurrenteRepository;
         this.staffPerfilRepository = staffPerfilRepository;
         this.maquinaRepository = maquinaRepository;
         this.materialRepository = materialRepository;
         this.operationalClockService = operationalClockService;
+        this.recurrenceService = recurrenceService;
+    }
+
+    public List<Gasto> listarFiltrados(LocalDate desde,
+                                       LocalDate hasta,
+                                       CategoriaGasto categoria,
+                                       EstadoGasto estado,
+                                       TipoGasto tipoGasto,
+                                       Long staffId,
+                                       Long maquinaId,
+                                       Long materialId,
+                                       Boolean recurrente,
+                                       String proveedor) {
+        return gastoRepository.buscarFiltrados(desde, hasta, categoria, estado, tipoGasto,
+                staffId, maquinaId, materialId, recurrente, proveedor);
     }
 
     public List<Gasto> listarFiltrados(LocalDate desde, LocalDate hasta, CategoriaGasto categoria) {
-        return gastoRepository.buscarFiltrados(desde, hasta, categoria);
+        return listarFiltrados(desde, hasta, categoria, null, null, null, null, null, null, null);
     }
 
     public Gasto buscarPorId(Long id) {
@@ -59,17 +90,42 @@ public class GastoService {
     }
 
     public long contarCriticos() {
-        return gastoRepository.countByActivoTrueAndPagadoFalseAndFechaLessThanEqual(operationalClockService.today());
+        return gastoRepository.countCriticos(List.of(EstadoGasto.PENDIENTE, EstadoGasto.PROGRAMADO, EstadoGasto.VENCIDO),
+                operationalClockService.today());
     }
 
     public long contarRecurrentesProximos(int dias) {
         LocalDate hoy = operationalClockService.today();
-        return gastoRepository.countByActivoTrueAndRecurrenteTrueAndPagadoFalseAndFechaBetween(hoy, hoy.plusDays(Math.max(1, dias)));
+        return gastoRecurrenteRepository.countByActivoTrueAndFechaProximoCargoBetween(hoy, hoy.plusDays(Math.max(1, dias)));
+    }
+
+    public long contarVencimientosProximos(int dias) {
+        LocalDate hoy = operationalClockService.today();
+        return gastoRepository.countVencimientosEntre(ESTADOS_ABIERTOS, hoy, hoy.plusDays(Math.max(1, dias)));
     }
 
     public BigDecimal calcularGastoMesActual() {
         LocalDate hoy = operationalClockService.today();
-        return gastoRepository.sumImporteByPeriodo(hoy.getYear(), hoy.getMonthValue());
+        BigDecimal total = gastoRepository.sumImporteByPeriodo(hoy.getYear(), hoy.getMonthValue());
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public BigDecimal calcularGastoFijoMesActual() {
+        LocalDate hoy = operationalClockService.today();
+        BigDecimal total = gastoRepository.sumImporteByPeriodoAndTipo(hoy.getYear(), hoy.getMonthValue(), TipoGasto.FIJO);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public BigDecimal calcularGastoVariableMesActual() {
+        LocalDate hoy = operationalClockService.today();
+        BigDecimal total = gastoRepository.sumImporteByPeriodoAndTipo(hoy.getYear(), hoy.getMonthValue(), TipoGasto.VARIABLE);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public BigDecimal calcularGastoNominasMesActual() {
+        LocalDate hoy = operationalClockService.today();
+        BigDecimal total = gastoRepository.sumImporteByPeriodoAndCategoria(hoy.getYear(), hoy.getMonthValue(), CategoriaGasto.NOMINA);
+        return total != null ? total : BigDecimal.ZERO;
     }
 
     public List<IngresoMensualStatsItem> obtenerGastosMensuales() {
@@ -80,11 +136,16 @@ public class GastoService {
                 .toList();
     }
 
+    public List<GastoCategoriaStatsItem> obtenerGastosPorCategoriaMesActual() {
+        LocalDate hoy = operationalClockService.today();
+        return gastoRepository.sumImporteGroupedByCategoria(hoy.getYear(), hoy.getMonthValue()).stream()
+                .map(item -> new GastoCategoriaStatsItem(item.getCategoria().name(), item.getTotal()))
+                .toList();
+    }
+
     public List<Gasto> listarProximos(int dias) {
         LocalDate hoy = operationalClockService.today();
-        return gastoRepository.findByActivoTrueAndPagadoFalseAndFechaBetweenOrderByFechaAscIdAsc(
-                hoy,
-                hoy.plusDays(Math.max(1, dias)));
+        return gastoRepository.findProximosVencimientos(ESTADOS_ABIERTOS, hoy, hoy.plusDays(Math.max(1, dias)));
     }
 
     public List<Gasto> listarPorStaff(Long staffId) {
@@ -100,43 +161,31 @@ public class GastoService {
     }
 
     @Transactional
+    public int actualizarGastosVencidos() {
+        return gastoRepository.marcarVencidos(
+                List.of(EstadoGasto.PROGRAMADO, EstadoGasto.PENDIENTE),
+                EstadoGasto.VENCIDO,
+                operationalClockService.today());
+    }
+
+    @Transactional
     public int procesarGastosRecurrentes() {
         LocalDate hoy = operationalClockService.today();
-        List<Gasto> base = gastoRepository.findByActivoTrueAndRecurrenteTrueAndFechaLessThanEqualOrderByFechaAscIdAsc(hoy);
+        List<GastoRecurrente> plantillas = gastoRecurrenteRepository
+                .findByActivoTrueAndFechaProximoCargoLessThanEqualOrderByFechaProximoCargoAscIdAsc(hoy);
         int generados = 0;
 
-        for (Gasto gasto : base) {
-            if (gasto.getFrecuencia() == null) {
-                continue;
+        for (GastoRecurrente plantilla : plantillas) {
+            LocalDate cursor = plantilla.getFechaProximoCargo();
+            while (cursor != null && !cursor.isAfter(hoy)) {
+                if (!gastoRepository.existsByGastoRecurrenteIdAndFechaVencimiento(plantilla.getId(), cursor)) {
+                    gastoRepository.save(construirDesdePlantilla(plantilla, cursor));
+                    generados++;
+                }
+                cursor = recurrenceService.nextByFrequency(cursor, plantilla.getFrecuencia());
             }
-
-            LocalDate proximaFecha = calcularSiguienteFecha(gasto.getFecha(), gasto.getFrecuencia());
-            if (proximaFecha == null) {
-                continue;
-            }
-
-            if (gastoRepository.existsByConceptoAndCategoriaAndFechaAndActivoTrue(
-                    gasto.getConcepto(), gasto.getCategoria(), proximaFecha)) {
-                continue;
-            }
-
-            Gasto clon = new Gasto();
-            clon.setConcepto(gasto.getConcepto());
-            clon.setCategoria(gasto.getCategoria());
-            clon.setImporte(gasto.getImporte());
-            clon.setFecha(proximaFecha);
-            clon.setRecurrente(true);
-            clon.setFrecuencia(gasto.getFrecuencia());
-            clon.setPagado(false);
-            clon.setProveedor(gasto.getProveedor());
-            clon.setObservaciones(gasto.getObservaciones());
-            clon.setStaffResponsable(gasto.getStaffResponsable());
-            clon.setMaquina(gasto.getMaquina());
-            clon.setMaterial(gasto.getMaterial());
-            clon.setActivo(true);
-            normalizarYValidar(clon);
-            gastoRepository.save(clon);
-            generados++;
+            plantilla.setFechaProximoCargo(cursor);
+            gastoRecurrenteRepository.save(plantilla);
         }
 
         return generados;
@@ -153,11 +202,11 @@ public class GastoService {
         Gasto gasto = buscarPorId(id);
         gasto.setConcepto(gastoActualizado.getConcepto());
         gasto.setCategoria(gastoActualizado.getCategoria());
+        gasto.setTipoGasto(gastoActualizado.getTipoGasto());
         gasto.setImporte(gastoActualizado.getImporte());
         gasto.setFecha(gastoActualizado.getFecha());
-        gasto.setRecurrente(gastoActualizado.getRecurrente());
-        gasto.setFrecuencia(gastoActualizado.getFrecuencia());
-        gasto.setPagado(gastoActualizado.getPagado());
+        gasto.setFechaVencimiento(gastoActualizado.getFechaVencimiento());
+        gasto.setEstado(gastoActualizado.getEstado());
         gasto.setProveedor(gastoActualizado.getProveedor());
         gasto.setObservaciones(gastoActualizado.getObservaciones());
         gasto.setStaffResponsable(gastoActualizado.getStaffResponsable());
@@ -166,6 +215,13 @@ public class GastoService {
         gasto.setActivo(gastoActualizado.getActivo());
         normalizarYValidar(gasto);
         return gastoRepository.save(gasto);
+    }
+
+    @Transactional
+    public void marcarPagado(Long id) {
+        Gasto gasto = buscarPorId(id);
+        gasto.setEstado(EstadoGasto.PAGADO);
+        gastoRepository.save(gasto);
     }
 
     @Transactional
@@ -182,6 +238,49 @@ public class GastoService {
         gastoRepository.save(gasto);
     }
 
+    Gasto construirGastoNomina(StaffPerfil staffPerfil,
+                              String concepto,
+                              BigDecimal importe,
+                              LocalDate fecha,
+                              String referencia) {
+        Gasto gasto = new Gasto();
+        gasto.setConcepto(concepto);
+        gasto.setCategoria(CategoriaGasto.NOMINA);
+        gasto.setTipoGasto(TipoGasto.FIJO);
+        gasto.setImporte(importe);
+        gasto.setFecha(fecha);
+        gasto.setFechaVencimiento(fecha);
+        gasto.setEstado(EstadoGasto.PENDIENTE);
+        gasto.setProveedor("Nomina interna");
+        gasto.setObservaciones("Gasto generado desde nomina experimental " + referencia + ".");
+        gasto.setStaffResponsable(staffPerfil);
+        gasto.setActivo(true);
+        normalizarYValidar(gasto);
+        return gastoRepository.save(gasto);
+    }
+
+    private Gasto construirDesdePlantilla(GastoRecurrente plantilla, LocalDate fechaVencimiento) {
+        Gasto gasto = new Gasto();
+        gasto.setConcepto(plantilla.getConcepto());
+        gasto.setCategoria(plantilla.getCategoria());
+        gasto.setTipoGasto(plantilla.getTipoGasto());
+        gasto.setImporte(plantilla.getImporte());
+        gasto.setFecha(fechaVencimiento);
+        gasto.setFechaVencimiento(fechaVencimiento);
+        gasto.setEstado(fechaVencimiento.isAfter(operationalClockService.today())
+                ? EstadoGasto.PROGRAMADO
+                : EstadoGasto.PENDIENTE);
+        gasto.setProveedor(plantilla.getProveedor());
+        gasto.setObservaciones(plantilla.getObservaciones());
+        gasto.setStaffResponsable(plantilla.getStaffResponsable());
+        gasto.setMaquina(plantilla.getMaquina());
+        gasto.setMaterial(plantilla.getMaterial());
+        gasto.setGastoRecurrente(plantilla);
+        gasto.setActivo(true);
+        normalizarYValidar(gasto);
+        return gasto;
+    }
+
     private void normalizarYValidar(Gasto gasto) {
         if (!StringUtils.hasText(gasto.getConcepto())) {
             throw new BusinessValidationException("Debes indicar el concepto del gasto");
@@ -192,19 +291,24 @@ public class GastoService {
         if (gasto.getFecha() == null) {
             throw new BusinessValidationException("Debes indicar la fecha del gasto");
         }
+        if (gasto.getFechaVencimiento() == null) {
+            gasto.setFechaVencimiento(gasto.getFecha());
+        }
         if (gasto.getCategoria() == null || gasto.getCategoria() == CategoriaGasto.OTROS) {
             gasto.setCategoria(clasificarCategoria(gasto));
         }
-        if (gasto.getRecurrente() == null) {
-            gasto.setRecurrente(false);
+        if (gasto.getTipoGasto() == null) {
+            gasto.setTipoGasto(inferirTipo(gasto));
         }
-        if (!Boolean.TRUE.equals(gasto.getRecurrente())) {
-            gasto.setFrecuencia(null);
-        } else if (gasto.getFrecuencia() == null) {
-            throw new BusinessValidationException("Debes indicar la frecuencia cuando el gasto es recurrente");
+        if (gasto.getEstado() == null) {
+            gasto.setEstado(gasto.getFechaVencimiento().isAfter(operationalClockService.today())
+                    ? EstadoGasto.PROGRAMADO
+                    : EstadoGasto.PENDIENTE);
         }
-        if (gasto.getPagado() == null) {
-            gasto.setPagado(false);
+        if (gasto.getEstado() != EstadoGasto.PAGADO
+                && gasto.getEstado() != EstadoGasto.CANCELADO
+                && gasto.getFechaVencimiento().isBefore(operationalClockService.today())) {
+            gasto.setEstado(EstadoGasto.VENCIDO);
         }
         if (gasto.getActivo() == null) {
             gasto.setActivo(true);
@@ -220,10 +324,10 @@ public class GastoService {
             return CategoriaGasto.NOMINA;
         }
         if (gasto.getMaterial() != null && gasto.getMaterial().getId() != null) {
-            return CategoriaGasto.COMPRA_MATERIAL;
+            return CategoriaGasto.MATERIAL;
         }
         if (gasto.getMaquina() != null && gasto.getMaquina().getId() != null) {
-            return CategoriaGasto.MANTENIMIENTO;
+            return CategoriaGasto.MAQUINA;
         }
 
         String concepto = gasto.getConcepto() == null ? "" : gasto.getConcepto().toLowerCase(Locale.ROOT);
@@ -233,24 +337,32 @@ public class GastoService {
         if (concepto.contains("nomina") || concepto.contains("salario") || concepto.contains("sueldo")) {
             return CategoriaGasto.NOMINA;
         }
-        if (concepto.contains("luz") || concepto.contains("agua") || concepto.contains("internet")) {
-            return CategoriaGasto.SUMINISTROS;
+        if (concepto.contains("luz")) {
+            return CategoriaGasto.LUZ;
+        }
+        if (concepto.contains("agua")) {
+            return CategoriaGasto.AGUA;
+        }
+        if (concepto.contains("internet") || concepto.contains("fibra")) {
+            return CategoriaGasto.INTERNET;
+        }
+        if (concepto.contains("limpieza")) {
+            return CategoriaGasto.LIMPIEZA;
+        }
+        if (concepto.contains("software") || concepto.contains("suscripcion")) {
+            return CategoriaGasto.SOFTWARE;
+        }
+        if (concepto.contains("marketing") || concepto.contains("redes")) {
+            return CategoriaGasto.MARKETING;
         }
 
         return CategoriaGasto.OTROS;
     }
 
-    private LocalDate calcularSiguienteFecha(LocalDate fechaBase, com.flacofitness.app.model.enums.FrecuenciaGasto frecuencia) {
-        if (fechaBase == null || frecuencia == null) {
-            return null;
-        }
-
-        return switch (frecuencia) {
-            case SEMANAL -> fechaBase.plusWeeks(1);
-            case QUINCENAL -> fechaBase.plusDays(15);
-            case MENSUAL -> fechaBase.plusMonths(1);
-            case TRIMESTRAL -> fechaBase.plusMonths(3);
-            case ANUAL -> fechaBase.plusYears(1);
+    private TipoGasto inferirTipo(Gasto gasto) {
+        return switch (gasto.getCategoria()) {
+            case ALQUILER, LUZ, AGUA, INTERNET, NOMINA, SOFTWARE, LIMPIEZA -> TipoGasto.FIJO;
+            default -> TipoGasto.VARIABLE;
         };
     }
 

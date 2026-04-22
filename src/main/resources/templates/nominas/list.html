@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('N&oacute;minas')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('nominas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('N&oacute;minas', 'Seguimiento interno de salarios experimentales.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title">N&oacute;minas</h2>
+                        <p class="ff-section-subtitle">Controla emisiones, cierres y exportaci&oacute;n documental.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <form th:action="@{/nominas/generar-automaticas}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-outline-warning">Generar autom&aacute;ticas</button>
+                        </form>
+                        <a class="btn btn-outline-secondary" th:href="@{/nominas/export/pdf(staffId=${staffFiltro})}">Exportar PDF</a>
+                        <a class="btn btn-success" th:href="@{/nominas/nueva}">Nueva n&oacute;mina</a>
+                    </div>
+                </section>
+
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Pendientes</p>
+                            <p class="ff-stat-value" th:text="${nominasPendientes}">0</p>
+                            <p class="ff-stat-note">Emitidas sin cierre</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Total neto</p>
+                            <p class="ff-stat-value" th:text="${totalNeto != null ? #numbers.formatDecimal(totalNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
+                            <p class="ff-stat-note">Acumulado del filtro</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Staff filtrado</p>
+                            <p class="ff-stat-value" th:text="${staffFiltro != null ? 1 : staffActivos.size()}">0</p>
+                            <p class="ff-stat-note">Vista operativa</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header">
+                        <div>
+                            <h3 class="ff-card-title">Filtros</h3>
+                            <p class="ff-card-subtitle">Filtra por staff para auditar cierres.</p>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <form class="row g-3" th:action="@{/nominas}" method="get">
+                            <div class="col-12 col-md-8">
+                                <label class="form-label" for="staffId">Staff</label>
+                                <select id="staffId" name="staffId" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option th:each="staff : ${staffActivos}" th:value="${staff.id}" th:selected="${staffFiltro != null and staffFiltro == staff.id}" th:text="${staff.usuario.nombre + (staff.usuario.apellidos != null and !staff.usuario.apellidos.isBlank() ? ' ' + staff.usuario.apellidos : '')}">Staff</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                                <button type="submit" class="btn btn-success">Aplicar</button>
+                                <a class="btn btn-outline-secondary" th:href="@{/nominas}">Limpiar</a>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header">
+                        <div class="ff-card-toolbar w-100">
+                            <div>
+                                <h3 class="ff-card-title">Listado de n&oacute;minas</h3>
+                                <p class="ff-card-subtitle">Periodo, importe y estado financiero.</p>
+                            </div>
+                            <span class="ff-card-toolbar-note">DataTable activo.</span>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar periodo, staff o referencia...">
+                                <thead>
+                                <tr>
+                                    <th>Periodo</th>
+                                    <th>Staff</th>
+                                    <th>Base</th>
+                                    <th>Bonus</th>
+                                    <th>Deducciones</th>
+                                    <th>Neto</th>
+                                    <th>Estado</th>
+                                    <th class="text-end" data-orderable="false" data-searchable="false">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody th:if="${not #lists.isEmpty(nominas)}">
+                                <tr th:each="nomina : ${nominas}" class="ff-clickable-row" tabindex="0"
+                                    th:attr="data-row-href=@{/nominas/{id}(id=${nomina.id})}">
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <a class="ff-row-link ff-table-primary" th:href="@{/nominas/{id}(id=${nomina.id})}" th:text="${nomina.periodo}">2026-01</a>
+                                            <span class="ff-table-secondary" th:text="${nomina.referencia}">REF</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre : '-'}">Staff</td>
+                                    <td th:text="${nomina.salarioBase != null ? #numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+                                    <td th:text="${nomina.bonus != null ? #numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+                                    <td th:text="${nomina.deducciones != null ? #numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+                                    <td th:text="${nomina.salarioNeto != null ? #numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+                                    <td><span class="ff-status-badge" th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : ' ff-status-warning'" th:text="${nomina.estado}">EMITIDA</span></td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a class="btn btn-outline-success btn-sm" th:href="@{/nominas/{id}(id=${nomina.id})}">Detalle</a>
+                                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(nominas)}">
+                                <tr><td colspan="8" class="text-center ff-empty-state">No hay n&oacute;minas para el filtro seleccionado.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

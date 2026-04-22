@@ -3,6 +3,7 @@ package com.flacofitness.app.controller;
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.model.entity.Gasto;
 import com.flacofitness.app.model.enums.CategoriaGasto;
+import com.flacofitness.app.service.FinancePdfService;
 import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaquinaService;
 import com.flacofitness.app.service.MaterialService;
@@ -10,6 +11,9 @@ import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.StaffService;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -33,17 +39,20 @@ public class GastoController {
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
     private final PagoService pagoService;
+    private final FinancePdfService financePdfService;
 
     public GastoController(GastoService gastoService,
                            StaffService staffService,
                            MaquinaService maquinaService,
                            MaterialService materialService,
-                           PagoService pagoService) {
+                           PagoService pagoService,
+                           FinancePdfService financePdfService) {
         this.gastoService = gastoService;
         this.staffService = staffService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
         this.pagoService = pagoService;
+        this.financePdfService = financePdfService;
     }
 
     @GetMapping
@@ -111,6 +120,13 @@ public class GastoController {
         return "gastos/detail";
     }
 
+    @PostMapping("/{id}/pagado")
+    public String marcarPagado(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        gastoService.marcarPagado(id);
+        redirectAttributes.addFlashAttribute("mensajeExito", "Gasto marcado como pagado.");
+        return "redirect:/gastos/" + id;
+    }
+
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model) {
         Gasto gasto = gastoService.buscarPorId(id);
@@ -160,6 +176,28 @@ public class GastoController {
         gastoService.activar(id);
         redirectAttributes.addFlashAttribute("mensajeExito", "Gasto activado.");
         return "redirect:/gastos";
+    }
+
+    @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> exportarPdf(@RequestParam(name = "desde", required = false)
+                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+                                             @RequestParam(name = "hasta", required = false)
+                                             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+                                             @RequestParam(name = "categoria", required = false) CategoriaGasto categoria) {
+        var gastos = gastoService.listarFiltrados(desde, hasta, categoria);
+        Map<String, Object> model = new HashMap<>();
+        model.put("titulo", "Gastos operativos");
+        model.put("subtitulo", "Listado filtrado de egresos y relaciones operativas.");
+        model.put("gastos", gastos);
+        model.put("gastosTotales", gastoService.contarActivos());
+        model.put("gastoMesActual", gastoService.calcularGastoMesActual());
+        model.put("ingresoMesActual", pagoService.calcularIngresosMesActual());
+        model.put("balanceMesActual", pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()));
+        byte[] pdf = financePdfService.render("reportes/gastos-listado", model);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=gastos-operativos.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     private void cargarCatalogos(Model model) {

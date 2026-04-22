@@ -13,22 +13,22 @@ public class SaaSSchedulerService {
     private final MembresiaService membresiaService;
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
-    private final GastoService gastoService;
     private final SesionClaseService sesionClaseService;
     private final OperationalClockService operationalClockService;
+    private final FinancialAutomationService financialAutomationService;
 
     public SaaSSchedulerService(MembresiaService membresiaService,
                                 MaquinaService maquinaService,
                                 MaterialService materialService,
-                                GastoService gastoService,
                                 SesionClaseService sesionClaseService,
-                                OperationalClockService operationalClockService) {
+                                OperationalClockService operationalClockService,
+                                FinancialAutomationService financialAutomationService) {
         this.membresiaService = membresiaService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
-        this.gastoService = gastoService;
         this.sesionClaseService = sesionClaseService;
         this.operationalClockService = operationalClockService;
+        this.financialAutomationService = financialAutomationService;
     }
 
     // Se ejecuta cada día a la medianoche
@@ -51,10 +51,10 @@ public class SaaSSchedulerService {
         }
 
         try {
-            int gastosGenerados = gastoService.procesarGastosRecurrentes();
-            log.info("SaaS - Gastos recurrentes generados: {}", gastosGenerados);
+            var financialResult = financialAutomationService.run("DAILY_SCHEDULER");
+            log.info("SaaS - Resultado financiero diario: {}", financialResult.toHumanSummary());
         } catch (Exception e) {
-            log.error("Error al procesar gastos recurrentes", e);
+            log.error("Error al ejecutar automatizacion financiera diaria", e);
         }
 
         try {

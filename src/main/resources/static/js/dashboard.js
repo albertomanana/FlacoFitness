@@ -275,7 +275,9 @@ function renderIngresosGastosChart(ingresosMensuales, gastosMensuales, utils) {
 
     const ingresosByPeriod = new Map(ingresos.map((item) => [item.periodo, Number(item.total || 0)]));
     const gastosByPeriod = new Map(gastos.map((item) => [item.periodo, Number(item.total || 0)]));
-    const orderedPeriods = Array.from(new Set([...ingresosByPeriod.keys(), ...gastosByPeriod.keys()])).sort();
+    const orderedPeriods = buildContinuousPeriods(
+        Array.from(new Set([...ingresosByPeriod.keys(), ...gastosByPeriod.keys()])).sort()
+    );
 
     toggleChartEmptyState("ingresosGastos", false);
     createChart("ingresosGastosChart", "bar", {
@@ -322,6 +324,55 @@ function renderIngresosGastosChart(ingresosMensuales, gastosMensuales, utils) {
             }
         }
     });
+}
+
+function buildContinuousPeriods(periods) {
+    if (!Array.isArray(periods) || periods.length === 0) {
+        return [];
+    }
+
+    const sorted = periods
+        .map(parsePeriod)
+        .filter((item) => item !== null)
+        .sort((a, b) => (a.year - b.year) || (a.month - b.month));
+
+    if (sorted.length === 0) {
+        return periods;
+    }
+
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const result = [];
+
+    let year = first.year;
+    let month = first.month;
+
+    while (year < last.year || (year === last.year && month <= last.month)) {
+        result.push(`${year}-${String(month).padStart(2, "0")}`);
+        month += 1;
+        if (month > 12) {
+            month = 1;
+            year += 1;
+        }
+    }
+
+    return result;
+}
+
+function parsePeriod(period) {
+    if (!period || !period.includes("-")) {
+        return null;
+    }
+
+    const [yearRaw, monthRaw] = period.split("-");
+    const year = Number(yearRaw);
+    const month = Number(monthRaw);
+
+    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+        return null;
+    }
+
+    return { year, month };
 }
 
 function renderAsistenciasChart(asistenciasRecientes) {

@@ -4,55 +4,79 @@
 
 FlacoFitness
 
-## Objetivo general
+## Que es hoy
 
-FlacoFitness es una aplicacion web academica de gestion para gimnasio con enfoque de panel SaaS administrativo. El objetivo actual es consolidar una experiencia conectada y automatizada, defendible en contexto academico y potencialmente vendible para un gimnasio local, cubriendo captacion, clientes, staff, membresias, pagos, rutinas, clases, sesiones, asistencias, gastos e inventario.
+FlacoFitness es una aplicacion web academica de gestion para gimnasio con enfoque SaaS administrativo. El proyecto ya no es solo un conjunto de CRUDs: tiene shell visual coherente, acceso por PIN, dashboard, modulos conectados y automatizacion financiera interna.
 
-## Stack tecnologico
+## Objetivo actual
 
-- Java 17 como version objetivo del proyecto.
-- Spring Boot 3.3.x.
-- Spring Data JPA.
-- Thymeleaf.
-- Bootstrap 5.
-- JavaScript ligero.
-- Chart.js y DataTables.
-- MySQL/phpMyAdmin como unica base de datos valida.
-- Maven Wrapper.
+Dejar una base estable, profesional y defendible para seguir iterando sin romper:
 
-## Alcance actual
+- monolito MVC con Spring Boot + Thymeleaf
+- una unica base de datos MySQL real
+- experiencia administrativa tipo SaaS
+- reglas de negocio explicables en defensa academica
 
-- Monolito MVC con capas `controller`, `service`, `repository` y `model`.
-- CRUDs y flujos operativos para usuarios, rutinas, pagos y asistencias.
-- Nucleo SaaS recuperado con staff, membresias contractuales, trials, clases, sesiones y reservas.
-- Dashboard administrativo con metricas, graficos, notificaciones y navegacion contextual.
-- Acceso MVP por PIN y perfiles de sesion sin Spring Security.
-- Documentacion viva en `docs/agents-memory/`.
+## Stack principal
 
-## Publico objetivo
+- Java 17 como target del build
+- Spring Boot 3.3.5
+- Spring Data JPA
+- Thymeleaf
+- Bootstrap 5
+- JavaScript ligero
+- Chart.js
+- DataTables
+- MySQL / phpMyAdmin
+- Maven Wrapper
+- OpenHTMLtoPDF para PDFs
 
-- Profesorado evaluador del proyecto academico.
-- Estudiantes o desarrolladores que continuen el sistema.
-- Personal de un gimnasio local: administracion, recepcion, entrenadores y gerencia.
+## Estado funcional resumido
 
-## Estado actual del proyecto
+- Usuarios, rutinas, pagos y asistencias: implementados y conectados.
+- Staff, membresias, trials, clases, sesiones y reservas: implementados.
+- Gastos, recurrentes y nominas: implementados a nivel de dominio, servicios, vistas y exportacion PDF.
+- Dashboard: operativo con metricas, graficos y notificaciones.
+- Acceso por PIN con perfiles: operativo.
+- Shell premium: operativo, con splash y transiciones ya protegidas con fail-safe para no dejar modulos en blanco.
 
-- Fecha de referencia: 2026-04-20.
-- Rama de trabajo: `recovery/restore-core-saas-plan-a`.
-- Estado: cierre funcional avanzado con automatizaciones activas y shell SaaS premium estabilizado.
-- Backend: compila y los tests pasan con Maven Wrapper en la rama de recuperacion.
-- Frontend: shell SaaS con sidebar, topbar, dashboard con KPIs conectados, comparativa ingresos vs gastos y tablas optimizadas para mobile/desktop.
-- Base de datos: perfil `local` y ejecucion principal usan MySQL sobre la base `flacofitness`; `spring.sql.init.mode=never` evita borrar o duplicar datos.
-- Acceso: PIN global con perfil de sesion `ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE` o `CLIENTE`.
+## Base de datos
 
-## Capacidades diferenciales actuales
+- Base valida unica: `flacofitness`
+- Motor: MySQL / MariaDB en `localhost:3306`
+- Usuario por defecto del proyecto: `flaco_user`
+- Password por defecto del proyecto: `flaco_pass`
+- `spring.sql.init.mode=never`
+- `spring.jpa.hibernate.ddl-auto=update`
 
-- Dashboard operativo con actualizacion de metricas y lectura cruzada de negocio (pagos, gastos, trials, stock y estado de maquinas).
-- Centro de notificaciones accionables priorizadas por criticidad para pagos vencidos, inactividad, sesiones y renovaciones.
-- Modo oscuro con persistencia local para mejorar experiencia de uso continuo.
-- Modulos conectados mediante redirecciones contextuales (usuario, pago, asistencia, rutina, membresia y sesiones).
-- Reloj operativo persistido en MySQL para simular meses anteriores o siguientes sin modificar la fecha real del servidor ni borrar datos.
+No hay H2, no hay fallback en memoria y no debe reintroducirse.
+
+## Estado tecnico actual
+
+- Rama actual: `recovery/restore-core-saas-plan-a`
+- El arbol de trabajo no esta limpio; no hacer reset ciego.
+- `.\mvnw.cmd clean -DskipTests compile` pasa.
+- `.\mvnw.cmd test` pasa.
+- La app responde en `http://localhost:8080`.
+- Acceso inicial: `PIN 2468`
+
+## Reloj operativo
+
+El proyecto ya no usa reloj simulado persistido. `OperationalClockService` sigue siendo la abstraccion temporal unica del negocio, pero ahora delega en la fecha y hora reales del sistema.
+
+## Fuente de verdad para continuidad
+
+Si otro agente o desarrollador entra al proyecto, debe leer en este orden:
+
+1. `docs/agents-memory/claude-code-handoff.md`
+2. `docs/agents-memory/agent-working-rules.md`
+3. `docs/agents-memory/architecture.md`
+4. `docs/agents-memory/domain-model.md`
+5. `docs/agents-memory/setup-status.md`
+6. `docs/agents-memory/module-status.md`
+7. `docs/agents-memory/decisions-log.md`
+8. `docs/agents-memory/backlog.md`
 
 ## Nota de continuidad
 
-El estado sucio previo a la recuperacion se preservo en un stash Git llamado `backup before recovery core saas plan a`. No eliminar ese stash hasta confirmar que no contiene nada que se quiera rescatar manualmente.
+Este repositorio ya paso por una recuperacion fuerte. Hay trabajo previo importante preservado en Git y en la rama actual. La prioridad no es crecer a lo loco, sino continuar con cambios pequenos, validados y documentados.

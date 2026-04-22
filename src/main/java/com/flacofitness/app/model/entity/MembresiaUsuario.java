@@ -76,9 +76,6 @@ public class MembresiaUsuario {
     @PrePersist
     @PreUpdate
     private void sincronizarDerivados() {
-        if (fechaInicio == null) {
-            fechaInicio = LocalDate.now();
-        }
         if (estado == null) {
             estado = EstadoMembresia.ACTIVA;
         }

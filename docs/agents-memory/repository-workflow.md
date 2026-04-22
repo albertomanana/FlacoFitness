@@ -1,6 +1,6 @@
 # Repository Workflow
 
-Fecha de referencia: 2026-04-17
+Fecha de referencia: 2026-04-22
 
 ## Objetivo
 
@@ -52,3 +52,4 @@ Definir un flujo de repositorio consistente para que el desarrollo de FlacoFitne
 - Workflow de CI orientado a compilacion y test Maven
 - Repositorio remoto publicado en GitHub
 - Pendiente activar manualmente proteccion de ramas en la interfaz de GitHub
+- El working tree local no esta limpio; antes de refactorizar o fusionar, revisar `git status --short` y decidir si conviene crear una rama nueva de estabilizacion

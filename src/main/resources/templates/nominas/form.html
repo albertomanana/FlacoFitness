@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar n&oacute;mina' : 'Nueva n&oacute;mina')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('nominas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar n&oacute;mina' : 'Nueva n&oacute;mina', 'Emision interna de salario experimental.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+                    <ul class="mb-0">
+                        <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                    </ul>
+                </div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Editar n&oacute;mina' : 'Nueva n&oacute;mina'">Nueva n&oacute;mina</h2>
+                        <p class="ff-section-subtitle">Genera la pieza contable interna con un flujo simple y auditable.</p>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <form th:action="@{/nominas}" th:object="${nomina}" method="post" class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="staffPerfil">Staff</label>
+                                <select id="staffPerfil" class="form-select" th:classappend="${#fields.hasErrors('staffPerfil.id')} ? ' is-invalid' : ''" th:field="*{staffPerfil.id}" required>
+                                    <option value="">Selecciona...</option>
+                                    <option th:each="staff : ${staffActivos}" th:value="${staff.id}" th:text="${staff.usuario.nombre + (staff.usuario.apellidos != null and !staff.usuario.apellidos.isBlank() ? ' ' + staff.usuario.apellidos : '')}">Staff</option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('staffPerfil.id')}" th:errors="*{staffPerfil.id}">Error</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="periodo">Periodo</label>
+                                <input id="periodo" type="month" class="form-control" th:classappend="${#fields.hasErrors('periodo')} ? ' is-invalid' : ''" th:field="*{periodo}" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('periodo')}" th:errors="*{periodo}">Error</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" for="salarioBase">Salario base</label>
+                                <input id="salarioBase" type="number" step="0.01" min="0.01" class="form-control" th:classappend="${#fields.hasErrors('salarioBase')} ? ' is-invalid' : ''" th:field="*{salarioBase}" required>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('salarioBase')}" th:errors="*{salarioBase}">Error</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="bonus">Bonus</label>
+                                <input id="bonus" type="number" step="0.01" min="0" class="form-control" th:classappend="${#fields.hasErrors('bonus')} ? ' is-invalid' : ''" th:field="*{bonus}">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('bonus')}" th:errors="*{bonus}">Error</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="deducciones">Deducciones</label>
+                                <input id="deducciones" type="number" step="0.01" min="0" class="form-control" th:classappend="${#fields.hasErrors('deducciones')} ? ' is-invalid' : ''" th:field="*{deducciones}">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('deducciones')}" th:errors="*{deducciones}">Error</div>
+                            </div>
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-success">Generar n&oacute;mina</button>
+                                <a class="btn btn-outline-secondary" th:href="@{/nominas}">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

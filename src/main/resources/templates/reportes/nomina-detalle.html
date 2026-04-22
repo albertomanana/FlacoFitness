@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${titulo}">Nomina</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #102033; margin: 0; padding: 24px; background: #f5f7fb; }
+        .sheet { background: #ffffff; border: 1px solid #dbe4ee; border-radius: 18px; padding: 24px; }
+        .header { border-bottom: 2px solid #e7edf5; padding-bottom: 16px; margin-bottom: 18px; }
+        .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; color: #4b647f; margin: 0 0 6px; }
+        h1 { margin: 0; font-size: 28px; }
+        .subtitle { margin: 6px 0 0; color: #607387; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; }
+        .card { border: 1px solid #dfe8f2; border-radius: 14px; padding: 14px 16px; background: #fbfdff; }
+        .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6b7f92; margin: 0 0 4px; }
+        .value { font-size: 18px; font-weight: 700; margin: 0; }
+        .full { grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+<div class="sheet">
+    <div class="header">
+        <p class="eyebrow">FlacoFitness / Finanzas</p>
+        <h1 th:text="${titulo}">Nomina interna</h1>
+        <p class="subtitle" th:text="${subtitulo}">Detalle salarial individual.</p>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <p class="label">Staff</p>
+            <p class="value" th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre : '-'}">-</p>
+        </div>
+        <div class="card">
+            <p class="label">Periodo</p>
+            <p class="value" th:text="${nomina.periodo}">-</p>
+        </div>
+        <div class="card">
+            <p class="label">Referencia</p>
+            <p class="value" th:text="${nomina.referencia}">-</p>
+        </div>
+        <div class="card">
+            <p class="label">Estado</p>
+            <p class="value" th:text="${nomina.estado}">-</p>
+        </div>
+        <div class="card">
+            <p class="label">Base</p>
+            <p class="value" th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+        </div>
+        <div class="card">
+            <p class="label">Bonus</p>
+            <p class="value" th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+        </div>
+        <div class="card">
+            <p class="label">Deducciones</p>
+            <p class="value" th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+        </div>
+        <div class="card">
+            <p class="label">Neto</p>
+            <p class="value" th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</p>
+        </div>
+        <div class="card full">
+            <p class="label">Gasto vinculado</p>
+            <p class="value" th:text="${nomina.gasto != null ? nomina.gasto.concepto : 'Sin vinculo'}">-</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -17,6 +17,7 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - JavaScript ligero en `static/js/`.
 - Chart.js para dashboard.
 - DataTables para listados interactivos.
+- La shell premium usa splash y transiciones, pero desde 2026-04-22 `.ff-main` queda visible por defecto y existe fail-safe para que un fallo visual no deje modulos en blanco.
 
 ### Controladores
 
@@ -32,6 +33,9 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - Evitan duplicidades funcionales.
 - Orquestan casos de uso como alta de membresia, conversion de trial, reservas de sesion, pagos y check-in.
 - Usan `OperationalClockService` como fuente temporal de negocio cuando una regla depende de "hoy" o "ahora".
+- El cambio del reloj operativo persiste primero la fecha y ejecuta `FinancialAutomationService`; si una automatizacion falla, no se revierte el reloj.
+- `FinancialAutomationService` es la unica fachada para automatizacion financiera: actualiza pagos/gastos vencidos y genera pagos, gastos recurrentes y nominas.
+- `RecurrenceService` centraliza calculos de siguiente ciclo por duracion de plan o frecuencia recurrente.
 
 ### Repositorios
 
@@ -89,7 +93,26 @@ Esta capa es intencionadamente simple y defendible. Spring Security queda como e
 - `ReservaSesion` conecta usuarios con sesiones.
 - `Asistencia` conserva check-in libre y puede asociarse opcionalmente a una sesion.
 - `StaffPerfil` se liga a `Usuario` para no duplicar identidad.
-- `AppClockSetting` guarda el reloj operativo para simular fechas sin cambiar el sistema ni borrar datos.
+
+## Reloj operativo
+
+El topbar muestra la fecha y hora operativa basada en el reloj real del sistema.
+
+No existe ruta de ajuste manual del reloj. `OperationalClockService` expone una abstraccion de tiempo unica para reglas de negocio, pero siempre delega en la fecha y hora reales del servidor.
+
+Al cambiar la fecha, la app ejecuta una automatizacion financiera central:
+
+- marca pagos no pagados como `VENCIDO` cuando `fecha_vencimiento` queda antes de la fecha operativa;
+- marca gastos abiertos como `VENCIDO` con la misma regla;
+- genera pagos mensuales desde `MembresiaUsuario` activa y mantiene compatibilidad con `Usuario.plan`;
+- genera gastos desde `GastoRecurrente` sin duplicar por plantilla y vencimiento;
+- genera nominas automaticas si el staff tiene salario y automatizacion activa.
+
+Excepciones permitidas de fecha real:
+
+- bloqueo temporal del PIN en `AccessSessionService`, porque es seguridad de sesion y no tiempo de negocio;
+- metadatos tecnicos de actualizacion del propio reloj;
+- seeder demo desactivable, que no forma parte de la operacion real de MySQL.
 
 ## Convencion de paquetes
 

@@ -2,11 +2,16 @@ package com.flacofitness.app.model.enums;
 
 public enum CategoriaGasto {
     ALQUILER,
+    LUZ,
+    AGUA,
+    INTERNET,
     NOMINA,
-    SUMINISTROS,
     MANTENIMIENTO,
-    COMPRA_MATERIAL,
+    MATERIAL,
+    MAQUINA,
     SOFTWARE,
     MARKETING,
+    LIMPIEZA,
+    IMPUESTOS,
     OTROS
 }

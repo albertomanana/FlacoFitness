@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle recurrente')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('recurrentes')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle recurrente', 'Configuracion financiera automatizada.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title" th:text="${recurrente.concepto}">Detalle recurrente</h2>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-outline-secondary" th:href="@{/gastos/recurrentes}">Volver</a>
+                        <a class="btn btn-success" th:href="@{/gastos/recurrentes/{id}/editar(id=${recurrente.id})}">Editar</a>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><strong>Categoria:</strong> <span th:text="${recurrente.categoria != null ? #strings.replace(recurrente.categoria.name(), '_', ' ') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Tipo:</strong> <span th:text="${recurrente.tipoGasto != null ? #strings.replace(recurrente.tipoGasto.name(), '_', ' ') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Frecuencia:</strong> <span th:text="${recurrente.frecuencia != null ? #strings.replace(recurrente.frecuencia.name(), '_', ' ') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Importe:</strong> <span th:text="${recurrente.importe != null ? #numbers.formatDecimal(recurrente.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span></div>
+                            <div class="col-md-6"><strong>Inicio:</strong> <span th:text="${recurrente.fechaInicio != null ? #temporals.format(recurrente.fechaInicio, 'dd/MM/yyyy') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Pr&oacute;ximo cargo:</strong> <span th:text="${recurrente.fechaProximoCargo != null ? #temporals.format(recurrente.fechaProximoCargo, 'dd/MM/yyyy') : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Proveedor:</strong> <span th:text="${#strings.defaultString(recurrente.proveedor, '-')}">-</span></div>
+                            <div class="col-md-6"><strong>Estado:</strong> <span th:text="${recurrente.activo ? 'Activa' : 'Inactiva'}">Activa</span></div>
+                            <div class="col-md-6">
+                                <strong>Staff:</strong>
+                                <span th:if="${recurrente.staffResponsable != null and recurrente.staffResponsable.usuario != null}" th:text="${recurrente.staffResponsable.usuario.nombre}">Staff</span>
+                                <span th:if="${recurrente.staffResponsable == null or recurrente.staffResponsable.usuario == null}">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Maquina:</strong>
+                                <span th:if="${recurrente.maquina != null}" th:text="${recurrente.maquina.nombre}">Maquina</span>
+                                <span th:if="${recurrente.maquina == null}">-</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Material:</strong>
+                                <span th:if="${recurrente.material != null}" th:text="${recurrente.material.nombre}">Material</span>
+                                <span th:if="${recurrente.material == null}">-</span>
+                            </div>
+                            <div class="col-12">
+                                <strong>Observaciones:</strong>
+                                <p class="mb-0" th:text="${#strings.defaultString(recurrente.observaciones, 'Sin observaciones')}">Sin observaciones</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -22,31 +22,41 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
 public class PagoService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PagoService.class);
+    private static final List<EstadoMembresia> MEMBRESIAS_COBRABLES = List.of(
+            EstadoMembresia.ACTIVA,
+            EstadoMembresia.PENDIENTE,
+            EstadoMembresia.PRUEBA
+    );
 
     private final PagoRepository pagoRepository;
     private final UsuarioRepository usuarioRepository;
     private final PlanRepository planRepository;
     private final MembresiaUsuarioRepository membresiaUsuarioRepository;
     private final OperationalClockService operationalClockService;
+    private final RecurrenceService recurrenceService;
 
     public PagoService(PagoRepository pagoRepository,
                        UsuarioRepository usuarioRepository,
                        PlanRepository planRepository,
                        MembresiaUsuarioRepository membresiaUsuarioRepository,
-                       OperationalClockService operationalClockService) {
+                       OperationalClockService operationalClockService,
+                       RecurrenceService recurrenceService) {
         this.pagoRepository = pagoRepository;
         this.usuarioRepository = usuarioRepository;
         this.planRepository = planRepository;
         this.membresiaUsuarioRepository = membresiaUsuarioRepository;
         this.operationalClockService = operationalClockService;
+        this.recurrenceService = recurrenceService;
     }
 
     public List<Pago> listarTodos() {
@@ -61,15 +71,12 @@ public class PagoService {
         if (usuarioId != null && estado != null) {
             return pagoRepository.findByUsuarioIdAndEstadoOrderByFechaVencimientoDescIdDesc(usuarioId, estado);
         }
-
         if (usuarioId != null) {
             return pagoRepository.findByUsuarioIdOrderByFechaVencimientoDescIdDesc(usuarioId);
         }
-
         if (estado != null) {
             return pagoRepository.findByEstadoOrderByFechaVencimientoDescIdDesc(estado);
         }
-
         return pagoRepository.findAllByOrderByFechaVencimientoDescIdDesc();
     }
 
@@ -94,20 +101,21 @@ public class PagoService {
     }
 
     public BigDecimal calcularIngresosTotales() {
-        return pagoRepository.sumMontoByEstado(EstadoPago.PAGADO);
+        BigDecimal total = pagoRepository.sumMontoByEstado(EstadoPago.PAGADO);
+        return total != null ? total : BigDecimal.ZERO;
     }
 
     public BigDecimal calcularDeudaTotalPorUsuario(Long usuarioId) {
-        BigDecimal deudaPendiente = pagoRepository.findByUsuarioId(usuarioId).stream()
+        return pagoRepository.findByUsuarioId(usuarioId).stream()
                 .filter(p -> p.getEstado() != EstadoPago.PAGADO)
                 .map(Pago::getMonto)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        return deudaPendiente;
     }
 
     public BigDecimal calcularIngresosMesActual() {
         LocalDate hoy = operationalClockService.today();
-        return pagoRepository.sumMontoByEstadoAndPeriodo(EstadoPago.PAGADO, hoy.getYear(), hoy.getMonthValue());
+        BigDecimal total = pagoRepository.sumMontoByEstadoAndPeriodo(EstadoPago.PAGADO, hoy.getYear(), hoy.getMonthValue());
+        return total != null ? total : BigDecimal.ZERO;
     }
 
     public long contarPagosPendientes() {
@@ -123,28 +131,21 @@ public class PagoService {
     }
 
     @Transactional
+    public int actualizarPagosVencidos() {
+        return pagoRepository.marcarVencidos(
+                List.of(EstadoPago.PROGRAMADO, EstadoPago.PENDIENTE),
+                EstadoPago.VENCIDO,
+                operationalClockService.today());
+    }
+
+    @Transactional
     public int generarPagosMensuales() {
         LocalDate fechaReferencia = operationalClockService.today();
-        List<Usuario> usuariosConPagoPendiente = usuarioRepository.findUsuariosConPagoPendiente(fechaReferencia);
-        int pagosGenerados = 0;
+        int pagosGenerados = generarPagosDesdeMembresias(fechaReferencia);
+        pagosGenerados += generarPagosLegacy(fechaReferencia);
 
-        for (Usuario usuario : usuariosConPagoPendiente) {
-            Plan plan = usuario.getPlan();
-            LocalDate fechaProximoVencimiento = resolverFechaProximoPago(usuario, plan, fechaReferencia);
-
-            while (fechaProximoVencimiento != null && !fechaProximoVencimiento.isAfter(fechaReferencia)) {
-                if (!pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaProximoVencimiento)) {
-                    pagoRepository.save(crearPagoAutomatico(usuario, plan, fechaProximoVencimiento));
-                    pagosGenerados++;
-                }
-
-                fechaProximoVencimiento = calcularSiguienteFechaPago(fechaProximoVencimiento, plan);
-            }
-
-            usuario.setFechaProximoPago(fechaProximoVencimiento);
-        }
-
-        LOGGER.info("Proceso de pagos automáticos completado. Pagos generados: {}", pagosGenerados);
+        LOGGER.info("Proceso de pagos automaticos completado con fecha operativa {}. Pagos generados: {}",
+                fechaReferencia, pagosGenerados);
         return pagosGenerados;
     }
 
@@ -177,7 +178,10 @@ public class PagoService {
     public Pago actualizar(Long id, Pago pagoActualizado) {
         Pago pagoExistente = buscarPorId(id);
         Usuario usuario = obtenerUsuarioValido(pagoActualizado.getUsuario());
-        MembresiaUsuario membresia = resolverMembresia(pagoActualizado.getMembresiaUsuario(), usuario, pagoActualizado.getPlan());
+        MembresiaUsuario membresia = resolverMembresia(
+                pagoActualizado.getMembresiaUsuario(),
+                usuario,
+                pagoActualizado.getPlan());
         Plan plan = membresia != null ? membresia.getPlan() : resolverPlan(pagoActualizado.getPlan(), usuario);
 
         pagoExistente.setFechaVencimiento(pagoActualizado.getFechaVencimiento());
@@ -192,7 +196,7 @@ public class PagoService {
 
         return pagoRepository.save(pagoExistente);
     }
-    
+
     @Transactional
     public Pago marcarComoPagado(Long id) {
         Pago pagoExistente = buscarPorId(id);
@@ -200,6 +204,65 @@ public class PagoService {
         pagoExistente.setFechaPago(operationalClockService.today());
         normalizarEstadoYFechas(pagoExistente);
         return pagoRepository.save(pagoExistente);
+    }
+
+    private int generarPagosDesdeMembresias(LocalDate fechaReferencia) {
+        List<MembresiaUsuario> membresias = membresiaUsuarioRepository
+                .findByEstadoInOrderByFechaInicioDescIdDesc(MEMBRESIAS_COBRABLES);
+        if (membresias == null) {
+            membresias = List.of();
+        }
+        Set<Long> usuariosProcesados = new HashSet<>();
+        int pagosGenerados = 0;
+
+        for (MembresiaUsuario membresia : membresias) {
+            if (membresia.getUsuario() == null
+                    || membresia.getUsuario().getId() == null
+                    || !usuariosProcesados.add(membresia.getUsuario().getId())) {
+                continue;
+            }
+
+            Usuario usuario = membresia.getUsuario();
+            Plan plan = membresia.getPlan();
+            if (!Boolean.TRUE.equals(usuario.getActivo()) || plan == null || !Boolean.TRUE.equals(plan.getActivo())) {
+                continue;
+            }
+
+            LocalDate fechaProximoVencimiento = resolverFechaProximoPago(membresia, fechaReferencia);
+            while (fechaProximoVencimiento != null && !fechaProximoVencimiento.isAfter(fechaReferencia)) {
+                if (!existePagoAutomatico(usuario.getId(), membresia.getId(), fechaProximoVencimiento)) {
+                    pagoRepository.save(crearPagoAutomatico(usuario, plan, membresia, fechaProximoVencimiento));
+                    pagosGenerados++;
+                }
+                fechaProximoVencimiento = calcularSiguienteFechaPago(fechaProximoVencimiento, plan);
+            }
+
+            usuario.setFechaProximoPago(fechaProximoVencimiento);
+        }
+
+        return pagosGenerados;
+    }
+
+    private int generarPagosLegacy(LocalDate fechaReferencia) {
+        List<Usuario> usuariosConPagoPendiente = usuarioRepository.findUsuariosConPagoPendiente(fechaReferencia);
+        int pagosGenerados = 0;
+
+        for (Usuario usuario : usuariosConPagoPendiente) {
+            Plan plan = usuario.getPlan();
+            LocalDate fechaProximoVencimiento = resolverFechaProximoPago(usuario, plan, fechaReferencia);
+
+            while (fechaProximoVencimiento != null && !fechaProximoVencimiento.isAfter(fechaReferencia)) {
+                if (!pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaProximoVencimiento)) {
+                    pagoRepository.save(crearPagoAutomatico(usuario, plan, null, fechaProximoVencimiento));
+                    pagosGenerados++;
+                }
+                fechaProximoVencimiento = calcularSiguienteFechaPago(fechaProximoVencimiento, plan);
+            }
+
+            usuario.setFechaProximoPago(fechaProximoVencimiento);
+        }
+
+        return pagosGenerados;
     }
 
     private void validarDuplicadoCiclo(Long usuarioId, LocalDate fechaVencimiento, Long idExcluir) {
@@ -212,14 +275,16 @@ public class PagoService {
                 : pagoRepository.existsByUsuarioIdAndFechaVencimientoAndIdNot(usuarioId, fechaVencimiento, idExcluir);
 
         if (duplicado) {
-            throw new BusinessValidationException(
-                    "Ya existe una cuota para este usuario con la misma fecha de vencimiento");
+            throw new BusinessValidationException("Ya existe una cuota para este usuario con la misma fecha de vencimiento");
         }
     }
 
     private void normalizarEstadoYFechas(Pago pago) {
         if (pago.getEstado() == null) {
-            pago.setEstado(EstadoPago.PENDIENTE);
+            pago.setEstado(pago.getFechaVencimiento() != null
+                    && pago.getFechaVencimiento().isAfter(operationalClockService.today())
+                    ? EstadoPago.PROGRAMADO
+                    : EstadoPago.PENDIENTE);
         }
 
         if (pago.getEstado() == EstadoPago.PAGADO) {
@@ -230,6 +295,14 @@ public class PagoService {
         }
 
         pago.setFechaPago(null);
+        if (pago.getFechaVencimiento() != null
+                && pago.getFechaVencimiento().isBefore(operationalClockService.today())) {
+            pago.setEstado(EstadoPago.VENCIDO);
+        } else if (pago.getEstado() == EstadoPago.PROGRAMADO
+                && pago.getFechaVencimiento() != null
+                && !pago.getFechaVencimiento().isAfter(operationalClockService.today())) {
+            pago.setEstado(EstadoPago.PENDIENTE);
+        }
     }
 
     private Usuario obtenerUsuarioValido(Usuario usuario) {
@@ -271,9 +344,7 @@ public class PagoService {
 
         Long finalPlanId = planId;
         return membresiaUsuarioRepository
-                .findTopByUsuarioIdAndEstadoInOrderByFechaInicioDescIdDesc(
-                        usuario.getId(),
-                        List.of(EstadoMembresia.ACTIVA, EstadoMembresia.PENDIENTE, EstadoMembresia.PRUEBA))
+                .findTopByUsuarioIdAndEstadoInOrderByFechaInicioDescIdDesc(usuario.getId(), MEMBRESIAS_COBRABLES)
                 .filter(membresia -> finalPlanId == null || membresia.getPlan().getId().equals(finalPlanId))
                 .orElse(null);
     }
@@ -299,24 +370,63 @@ public class PagoService {
                 .orElseGet(() -> calcularSiguienteFechaPago(fechaReferencia, plan));
     }
 
-    private Pago crearPagoAutomatico(Usuario usuario, Plan plan, LocalDate fechaVencimiento) {
+    private LocalDate resolverFechaProximoPago(MembresiaUsuario membresia, LocalDate fechaReferencia) {
+        Usuario usuario = membresia.getUsuario();
+        Plan plan = membresia.getPlan();
+        if (usuario.getFechaProximoPago() != null) {
+            return usuario.getFechaProximoPago();
+        }
+
+        return pagoRepository.findTopByUsuarioIdOrderByFechaVencimientoDescIdDesc(usuario.getId())
+                .map(pago -> calcularSiguienteFechaPago(pago.getFechaVencimiento(), plan))
+                .orElseGet(() -> {
+                    if (membresia.getFechaFin() != null) {
+                        return membresia.getFechaFin();
+                    }
+                    if (membresia.getFechaInicio() != null) {
+                        return calcularSiguienteFechaPago(membresia.getFechaInicio(), plan);
+                    }
+                    return calcularSiguienteFechaPago(fechaReferencia, plan);
+                });
+    }
+
+    private boolean existePagoAutomatico(Long usuarioId, Long membresiaId, LocalDate fechaVencimiento) {
+        if (membresiaId != null
+                && pagoRepository.existsByMembresiaUsuarioIdAndFechaVencimiento(membresiaId, fechaVencimiento)) {
+            return true;
+        }
+        return pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuarioId, fechaVencimiento);
+    }
+
+    private Pago crearPagoAutomatico(Usuario usuario,
+                                     Plan plan,
+                                     MembresiaUsuario membresia,
+                                     LocalDate fechaVencimiento) {
         Pago pago = new Pago();
         pago.setUsuario(usuario);
-        MembresiaUsuario membresia = resolverMembresia(null, usuario, plan);
         pago.setMembresiaUsuario(membresia);
         pago.setPlan(membresia != null ? membresia.getPlan() : plan);
         pago.setFechaVencimiento(fechaVencimiento);
-        pago.setFechaPago(null); 
+        pago.setFechaPago(null);
         pago.setMetodoPago(MetodoPago.TRANSFERENCIA);
-        pago.setEstado(EstadoPago.PENDIENTE);
+        pago.setEstado(estadoInicialAutomatico(fechaVencimiento));
         return pago;
     }
 
-    private LocalDate calcularSiguienteFechaPago(LocalDate fechaBase, Plan plan) {
-        return fechaBase.plusDays(Math.max(plan.getDuracionDias(), 1));
+    private EstadoPago estadoInicialAutomatico(LocalDate fechaVencimiento) {
+        LocalDate hoy = operationalClockService.today();
+        if (fechaVencimiento.isBefore(hoy)) {
+            return EstadoPago.VENCIDO;
+        }
+        if (fechaVencimiento.isAfter(hoy)) {
+            return EstadoPago.PROGRAMADO;
+        }
+        return EstadoPago.PENDIENTE;
     }
 
-    // NUEVAS MÉTRICAS PARA CONTROL FINANCIERO
+    private LocalDate calcularSiguienteFechaPago(LocalDate fechaBase, Plan plan) {
+        return recurrenceService.nextByPlanDuration(fechaBase, plan != null ? plan.getDuracionDias() : null);
+    }
 
     public enum EstadoFinanciero {
         AL_DIA, CON_DEUDA, CON_PAGOS_VENCIDOS
@@ -350,21 +460,21 @@ public class PagoService {
 
     public long contarUsuariosAlDia() {
         return usuarioRepository.findAll().stream()
-                .mapToLong(u -> u.getId())
+                .mapToLong(Usuario::getId)
                 .filter(id -> determinarEstadoFinanciero(id) == EstadoFinanciero.AL_DIA)
                 .count();
     }
 
     public long contarUsuariosConDeuda() {
         return usuarioRepository.findAll().stream()
-                .mapToLong(u -> u.getId())
+                .mapToLong(Usuario::getId)
                 .filter(id -> determinarEstadoFinanciero(id) == EstadoFinanciero.CON_DEUDA)
                 .count();
     }
 
     public long contarUsuariosConPagosVencidos() {
         return usuarioRepository.findAll().stream()
-                .mapToLong(u -> u.getId())
+                .mapToLong(Usuario::getId)
                 .filter(id -> determinarEstadoFinanciero(id) == EstadoFinanciero.CON_PAGOS_VENCIDOS)
                 .count();
     }

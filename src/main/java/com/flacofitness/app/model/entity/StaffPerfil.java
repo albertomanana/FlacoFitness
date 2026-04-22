@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -60,11 +61,24 @@ public class StaffPerfil {
     @Column(columnDefinition = "TEXT")
     private String observaciones;
 
+    @Column(name = "salario_base_mensual", precision = 10, scale = 2)
+    private BigDecimal salarioBaseMensual;
+
+    @Column(name = "bonus_mensual", precision = 10, scale = 2)
+    private BigDecimal bonusMensual;
+
+    @Column(name = "deducciones_mensuales", precision = 10, scale = 2)
+    private BigDecimal deduccionesMensuales;
+
+    @Column(name = "nomina_automatica", nullable = false)
+    private Boolean nominaAutomatica;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "fecha_proxima_nomina")
+    private LocalDate fechaProximaNomina;
+
     @PrePersist
     private void inicializarValores() {
-        if (fechaAlta == null) {
-            fechaAlta = LocalDate.now();
-        }
         if (activo == null) {
             activo = true;
         }
@@ -73,6 +87,9 @@ public class StaffPerfil {
         }
         if (puedeImpartirClases == null) {
             puedeImpartirClases = rolStaff == RolStaff.ENTRENADOR;
+        }
+        if (nominaAutomatica == null) {
+            nominaAutomatica = false;
         }
     }
 }

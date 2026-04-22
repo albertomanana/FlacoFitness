@@ -4,6 +4,7 @@
     const LIGHT_THEME = "light";
     const DARK_THEME = "dark";
     const PAGE_TRANSITION_DELAY = 140;
+    const PAGE_VISIBILITY_FAILSAFE_DELAY = 1800;
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     document.documentElement.classList.add("ff-motion-enabled");
@@ -74,6 +75,14 @@
         revealCurrentPage();
     });
 
+    window.addEventListener("load", () => {
+        forceShellVisibility();
+    }, { once: true });
+
+    window.setTimeout(() => {
+        forceShellVisibility();
+    }, PAGE_VISIBILITY_FAILSAFE_DELAY);
+
     function primeSplashVisibility() {
         const splash = document.querySelector("[data-app-splash]");
 
@@ -132,6 +141,18 @@
         window.requestAnimationFrame(() => {
             document.body.classList.add("ff-page-ready");
         });
+    }
+
+    function forceShellVisibility() {
+        const splash = document.querySelector("[data-app-splash]");
+        revealCurrentPage();
+        deactivateGlobalLoading();
+
+        if (!splash || splash.classList.contains("ff-app-splash-hidden")) {
+            return;
+        }
+
+        hideSplashImmediately(splash);
     }
 
     function shouldSkipSplash() {

@@ -8,7 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import com.flacofitness.app.model.enums.CategoriaGasto;
-import com.flacofitness.app.model.enums.FrecuenciaGasto;
+import com.flacofitness.app.model.enums.EstadoGasto;
+import com.flacofitness.app.model.enums.TipoGasto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,6 +50,11 @@ public class Gasto {
     private CategoriaGasto categoria;
 
     @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_gasto", nullable = false, length = 20)
+    private TipoGasto tipoGasto;
+
+    @NotNull
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal importe;
 
@@ -57,15 +63,18 @@ public class Gasto {
     @Column(name = "fecha_gasto", nullable = false)
     private LocalDate fecha;
 
-    @Column(nullable = false)
-    private Boolean recurrente;
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    @Column(name = "fecha_vencimiento")
+    private LocalDate fechaVencimiento;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private FrecuenciaGasto frecuencia;
+    @Column(nullable = false, length = 30)
+    private EstadoGasto estado;
 
-    @Column(nullable = false)
-    private Boolean pagado;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "gasto_recurrente_id")
+    private GastoRecurrente gastoRecurrente;
 
     @Column(length = 120)
     private String proveedor;
@@ -92,22 +101,42 @@ public class Gasto {
     @Column(name = "fecha_creacion", nullable = false, updatable = false, columnDefinition = "TIMESTAMP")
     private LocalDateTime fechaCreacion;
 
+    public boolean estaPagado() {
+        return estado == EstadoGasto.PAGADO;
+    }
+
+    public boolean isPagado() {
+        return estaPagado();
+    }
+
+    public boolean isRecurrente() {
+        return gastoRecurrente != null;
+    }
+
+    public boolean estaVencido(LocalDate fechaReferencia) {
+        return estado != EstadoGasto.PAGADO
+                && estado != EstadoGasto.CANCELADO
+                && fechaVencimiento != null
+                && fechaReferencia != null
+                && fechaVencimiento.isBefore(fechaReferencia);
+    }
+
     @PrePersist
     private void prePersist() {
-        if (recurrente == null) {
-            recurrente = false;
-        }
-        if (pagado == null) {
-            pagado = false;
-        }
         if (activo == null) {
             activo = true;
         }
         if (categoria == null) {
             categoria = CategoriaGasto.OTROS;
         }
-        if (!Boolean.TRUE.equals(recurrente)) {
-            frecuencia = null;
+        if (tipoGasto == null) {
+            tipoGasto = TipoGasto.VARIABLE;
+        }
+        if (fechaVencimiento == null) {
+            fechaVencimiento = fecha;
+        }
+        if (estado == null) {
+            estado = EstadoGasto.PENDIENTE;
         }
     }
 }

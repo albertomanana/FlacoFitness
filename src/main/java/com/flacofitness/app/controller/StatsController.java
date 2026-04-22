@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.flacofitness.app.model.dto.AsistenciasStatsResponse;
 import com.flacofitness.app.model.dto.DashboardStatsResponse;
+import com.flacofitness.app.model.dto.GastosStatsResponse;
 import com.flacofitness.app.model.dto.PagosStatsResponse;
 import com.flacofitness.app.model.dto.RutinasStatsResponse;
 import com.flacofitness.app.model.dto.UsuariosStatsResponse;
@@ -15,6 +16,7 @@ import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaquinaService;
 import com.flacofitness.app.service.MaterialService;
 import com.flacofitness.app.service.MembresiaService;
+import com.flacofitness.app.service.NominaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.RutinaService;
@@ -40,6 +42,7 @@ public class StatsController {
     private final SesionClaseService sesionClaseService;
     private final MembresiaService membresiaService;
     private final GastoService gastoService;
+    private final NominaService nominaService;
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
 
@@ -53,6 +56,7 @@ public class StatsController {
                            SesionClaseService sesionClaseService,
                            MembresiaService membresiaService,
                            GastoService gastoService,
+                           NominaService nominaService,
                            MaquinaService maquinaService,
                            MaterialService materialService) {
         this.usuarioService = usuarioService;
@@ -65,6 +69,7 @@ public class StatsController {
         this.sesionClaseService = sesionClaseService;
         this.membresiaService = membresiaService;
         this.gastoService = gastoService;
+        this.nominaService = nominaService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
     }
@@ -139,6 +144,23 @@ public class StatsController {
                 membresiaService.contarVencidas(),
                 maquinaService.contarRevisionProxima(7),
                 materialService.contarBajoStock()
+        );
+    }
+
+    @GetMapping("/gastos")
+    public GastosStatsResponse obtenerEstadisticasGastos() {
+        return new GastosStatsResponse(
+                gastoService.calcularGastoMesActual(),
+                gastoService.calcularGastoFijoMesActual(),
+                gastoService.calcularGastoVariableMesActual(),
+                pagoService.calcularIngresosMesActual(),
+                pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()),
+                gastoService.contarCriticos(),
+                gastoService.contarVencimientosProximos(7),
+                gastoService.contarRecurrentesProximos(7),
+                nominaService.contarPendientes(),
+                gastoService.obtenerGastosPorCategoriaMesActual(),
+                gastoService.obtenerGastosMensuales()
         );
     }
 

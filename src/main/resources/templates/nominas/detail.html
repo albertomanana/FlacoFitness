@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle n&oacute;mina')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('nominas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle n&oacute;mina', 'Archivo y cierre salarial interno.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title" th:text="${nomina.periodo}">Detalle</h2>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-outline-secondary" th:href="@{/nominas}">Volver</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
+                        <form th:if="${nomina.estado != null and nomina.estado.name() != 'PAGADA'}" th:action="@{/nominas/{id}/pagada(id=${nomina.id})}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-success">Marcar pagada</button>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6"><strong>Staff:</strong> <span th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre : '-'}">-</span></div>
+                            <div class="col-md-6"><strong>Referencia:</strong> <span th:text="${nomina.referencia}">-</span></div>
+                            <div class="col-md-6"><strong>Periodo:</strong> <span th:text="${nomina.periodo}">-</span></div>
+                            <div class="col-md-6"><strong>Estado:</strong> <span th:text="${nomina.estado}">-</span></div>
+                            <div class="col-md-6"><strong>Salario base:</strong> <span th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
+                            <div class="col-md-6"><strong>Bonus:</strong> <span th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
+                            <div class="col-md-6"><strong>Deducciones:</strong> <span th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
+                            <div class="col-md-6"><strong>Salario neto:</strong> <span th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</span></div>
+                            <div class="col-md-6"><strong>Fecha emision:</strong> <span th:text="${#temporals.format(nomina.fechaEmision, 'dd/MM/yyyy')}">-</span></div>
+                            <div class="col-md-6"><strong>Gasto vinculado:</strong> <a th:if="${nomina.gasto != null}" th:href="@{/gastos/{id}(id=${nomina.gasto.id})}" th:text="${nomina.gasto.concepto}">Gasto</a><span th:if="${nomina.gasto == null}">-</span></div>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

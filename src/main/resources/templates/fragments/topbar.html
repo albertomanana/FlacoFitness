@@ -16,27 +16,11 @@
         </a>
         <div class="ff-operational-clock" th:if="${operationalClock != null}">
             <div class="ff-operational-clock-display">
-                <span class="ff-operational-clock-status"
-                      th:classappend="${operationalClock.simulated} ? ' is-simulated' : ' is-system'"
-                      th:text="${operationalClock.statusLabel}">Sistema</span>
+                <span class="ff-operational-clock-status is-system"
+                    th:text="${operationalClock.statusLabel}">Sistema</span>
                 <strong th:text="${operationalClock.dateLabel}">Lunes, 20 abril 2026</strong>
                 <span th:text="${operationalClock.timeLabel}">12:00</span>
             </div>
-            <form class="ff-operational-clock-form"
-                  th:if="${accessProfile != null and accessProfile.name() == 'ADMIN'}"
-                  th:action="@{/reloj-operativo}"
-                  method="post">
-                <input type="hidden" name="returnTo" th:value="${currentRequestUri}">
-                <button class="ff-clock-step" type="submit" name="accion" value="minusMonth" title="Simular mes anterior">-1 mes</button>
-                <input class="ff-clock-input"
-                       type="datetime-local"
-                       name="fechaHora"
-                       th:value="${operationalClock.inputValue}"
-                       aria-label="Fecha y hora operativa">
-                <button class="ff-clock-primary" type="submit" name="accion" value="set">Fijar</button>
-                <button class="ff-clock-step" type="submit" name="accion" value="plusMonth" title="Simular mes siguiente">+1 mes</button>
-                <button class="ff-clock-reset" type="submit" name="accion" value="reset" title="Volver a fecha real">Hoy</button>
-            </form>
         </div>
         <div class="ff-topbar-info">
             <span class="ff-topbar-eyebrow">FlacoFitness</span>

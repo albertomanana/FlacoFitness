@@ -176,3 +176,37 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Se anadio el reloj operativo persistido en `app_clock_settings`, visible en el topbar y configurable por ADMIN para simular meses anteriores o siguientes.
 - Se conecto el reloj operativo con servicios de asistencias, pagos, membresias, sesiones, gastos, maquinaria, staff, trials, renovaciones y notificaciones.
 - Se verifico la existencia de la base `flacofitness` y la tabla `app_clock_settings` desde MySQL con las credenciales `flaco_user/flaco_pass`.
+- Se corrigio el flujo de hardcode del reloj operativo: el formulario ahora usa un panel `Ajustar` visible, el parseo de `datetime-local` es explicito y las automatizaciones financieras ya no bloquean el guardado de la fecha si fallan.
+- Se anadio prueba MVC para garantizar que un `ADMIN` puede fijar el reloj operativo desde el topbar y que se persiste `simulado=true` con la fecha indicada.
+
+### 2026-04-20 (Bloque financiero interno)
+
+- Se profesionalizo el bloque financiero con controladores dedicados para `gastos/recurrentes` y `/nominas`, manteniendo el modelo existente como base de negocio y no como CRUD aislado.
+- Se anadio exportacion PDF para gastos, plantillas recurrentes y nominas mediante HTML renderizado con Thymeleaf y OpenHTMLtoPDF.
+- Se conecto la automatizacion de nominas al reloj operativo y a los schedulers financieros, de forma que los cierres recurrentes se puedan generar junto con pagos y gastos automaticos.
+- Se corrigio el formulario legacy de gastos para que coincida con el modelo actual y no enlace campos inexistentes.
+
+### 2026-04-21
+
+- Se cerro la automatizacion temporal unica para pagos y gastos recurrentes.
+- Se creo `FinancialAutomationService` como fachada central para actualizar vencidos y generar pagos, gastos recurrentes y nominas.
+- Se creo `RecurrenceService` para calcular ciclos por duracion de plan o frecuencia de gasto desde un unico punto.
+- Se elimino el doble disparo financiero: `OperationalClockController`, el scheduler diario, recurrentes y nominas delegan en la automatizacion central.
+- Se extendio `EstadoPago` con `PROGRAMADO` y se marcaron automaticamente como `VENCIDO` los pagos no pagados con vencimiento anterior a la fecha operativa.
+- Se mantuvo `MembresiaUsuario` como contrato primario de cuotas y `Usuario.plan` como compatibilidad legacy.
+- Se corrigio `FinancialSchemaRepairRunner` para no usar `CURDATE()` de MySQL al normalizar estados legacy.
+- Se retiraron defaults de fecha real en entidades de negocio; las fechas se asignan desde servicios con `OperationalClockService`.
+- Se validaron compilacion y tests con 17 pruebas en verde, incluyendo pagos vencidos y gastos recurrentes idempotentes.
+
+### 2026-04-22
+
+- Se elimino definitivamente la simulacion de fecha/hora operativa: se retiro `POST /reloj-operativo`, se limpio el topbar de controles de ajuste y se dejo una sola fuente temporal basada en reloj real del sistema.
+- Se eliminaron los artefactos persistidos de simulacion (`AppClockSetting` y su repositorio), evitando deuda tecnica y dobles fuentes de verdad temporal.
+- Se ajustaron pruebas de servicios para instanciar `PagoService` y `GastoService` de forma directa (sin mockear clases concretas), corrigiendo fallos de Mockito inline con Java 25.
+- Se revalido la suite completa con 16 pruebas en verde.
+- Se corrigio el bug visual por el que los modulos podian aparecer en blanco aunque el HTML y los controladores estuvieran bien.
+- La causa raiz del blanco estaba en la shell premium: splash y transiciones dependian demasiado de `ff-page-ready` y podian dejar `.ff-main` oculto.
+- Se anadio un fail-safe en `static/js/app.js` para forzar visibilidad del shell y ocultar la splash/loading aunque una transicion falle.
+- Se cambio la animacion de `.ff-main` en `static/css/styles.css` para que el contenido sea visible por defecto y la entrada sea decorativa, no bloqueante.
+- Se validaron visualmente `usuarios` y `pagos` con Chrome headless tras el fix.
+- Se dejo preparado un handoff documental completo para continuidad con Claude Code dentro de `docs/agents-memory/`.

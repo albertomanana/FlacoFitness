@@ -99,6 +99,12 @@ Campos clave:
 
 Los pagos legacy sin membresia contractual siguen siendo validos.
 
+Reglas de automatizacion:
+- `MembresiaUsuario` activa es la fuente primaria para cuotas recurrentes.
+- `Usuario.plan` y `Usuario.fechaProximoPago` se mantienen como compatibilidad legacy.
+- La idempotencia funcional se mantiene por usuario/membresia y `fecha_vencimiento`.
+- Si la fecha operativa supera el vencimiento y el pago no esta pagado, pasa a `VENCIDO`.
+
 ### Trial
 
 Lead comercial o dia de prueba.
@@ -184,17 +190,6 @@ Campos clave:
 
 Puede representar check-in libre o asistencia vinculada a clase/sesion.
 
-### AppClockSetting
-
-Configuracion persistida del reloj operativo de la aplicacion.
-
-Campos clave:
-- fecha y hora operativa simulada
-- indicador `simulado`
-- fecha de ultima actualizacion
-
-Permite avanzar o retroceder meses para demos, pagos, asistencias y renovaciones sin cambiar la fecha del sistema ni borrar datos de MySQL.
-
 ### Gasto
 
 Registro de gasto operativo o financiero del gimnasio.
@@ -202,10 +197,51 @@ Registro de gasto operativo o financiero del gimnasio.
 Campos clave:
 - concepto
 - categoria
-- monto
+- tipo de gasto
+- importe
 - fecha
+- fecha vencimiento
 - estado
+- proveedor
+- staff responsable opcional
+- maquina opcional
+- material opcional
+- plantilla recurrente opcional
 - observaciones
+
+Los gastos recurrentes se generan desde `GastoRecurrente`, no desde el propio `Gasto`, para separar plantilla y cargo real.
+
+### GastoRecurrente
+
+Plantilla de gasto periodico.
+
+Campos clave:
+- concepto
+- categoria
+- tipo de gasto
+- importe
+- frecuencia
+- fecha inicio
+- fecha proximo cargo
+- relaciones opcionales con staff, maquina o material
+- activo
+
+La combinacion plantilla + vencimiento evita duplicar cargos aunque la automatizacion se ejecute varias veces.
+
+### Nomina
+
+Nomina experimental vinculada a `StaffPerfil` y opcionalmente a `Gasto`.
+
+Campos clave:
+- staff perfil
+- periodo
+- salario base
+- bonus
+- deducciones
+- salario neto
+- estado
+- referencia
+- gasto asociado
 
 ### Maquina
 
@@ -238,7 +274,8 @@ Campos clave:
 - `EstadoTrial`: PENDIENTE, ASISTIO, NO_ASISTIO, CONVERTIDO, CANCELADO.
 - `EstadoSesion`: PROGRAMADA, CANCELADA, FINALIZADA.
 - `EstadoReservaSesion`: RESERVADA, ASISTIO, CANCELADA, NO_ASISTIO.
-- `EstadoPago`: PENDIENTE, PAGADO, VENCIDO.
+- `EstadoPago`: PROGRAMADO, PENDIENTE, PAGADO, VENCIDO.
+- `EstadoGasto`: PROGRAMADO, PENDIENTE, PAGADO, VENCIDO, CANCELADO.
 - `MetodoPago`: EFECTIVO, TARJETA, TRANSFERENCIA.
 - `TipoRutina`: GENERAL, PERSONALIZADA.
 
@@ -248,6 +285,6 @@ Campos clave:
 - `Pago` puede existir sin `MembresiaUsuario`.
 - `Asistencia` puede existir sin `SesionClase`.
 - `Rutina` puede existir sin `StaffPerfil`.
-- `AppClockSetting` puede no tener fila inicial; el sistema usa fecha real hasta que ADMIN fija una fecha simulada.
+- El tiempo de negocio se consulta mediante `OperationalClockService`, pero ya no existe entidad persistida de reloj simulado.
 
 Esta compatibilidad permite recuperar el proyecto sin romper datos ya creados.

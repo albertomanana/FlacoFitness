@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Gastos recurrentes')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('recurrentes')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Gastos recurrentes', 'Automatizacion y control de cargos periodicos.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title">Plantillas recurrentes</h2>
+                        <p class="ff-section-subtitle">Configura cargos automaticos, vencimientos y relaciones con la operacion.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <form th:action="@{/gastos/recurrentes/procesar}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-outline-warning">Procesar vencimientos</button>
+                        </form>
+                        <a class="btn btn-outline-secondary" th:href="@{/gastos/recurrentes/export/pdf}">Exportar PDF</a>
+                        <a class="btn btn-success" th:href="@{/gastos/recurrentes/nuevo}">Nueva plantilla</a>
+                    </div>
+                </section>
+
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Activas</p>
+                            <p class="ff-stat-value" th:text="${recurrentesActivos}">0</p>
+                            <p class="ff-stat-note">Plantillas registradas</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Proximas 7 dias</p>
+                            <p class="ff-stat-value" th:text="${recurrentesProximos}">0</p>
+                            <p class="ff-stat-note">Cargos por generar</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-4">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Alertas relacionadas</p>
+                            <p class="ff-stat-value" th:text="${gastosGeneradosHoy}">0</p>
+                            <p class="ff-stat-note">Seguimiento operativo</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header">
+                        <div>
+                            <h3 class="ff-card-title">Listado recurrente</h3>
+                            <p class="ff-card-subtitle">Periodicidad, importe y siguiente cargo.</p>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar concepto o proveedor...">
+                                <thead>
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th>Categoria</th>
+                                    <th>Frecuencia</th>
+                                    <th>Siguiente cargo</th>
+                                    <th>Importe</th>
+                                    <th>Estado</th>
+                                    <th class="text-end" data-orderable="false" data-searchable="false">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody th:if="${not #lists.isEmpty(recurrentes)}">
+                                <tr th:each="recurrente : ${recurrentes}" class="ff-clickable-row" tabindex="0"
+                                    th:attr="data-row-href=@{/gastos/recurrentes/{id}(id=${recurrente.id})}">
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <a class="ff-row-link ff-table-primary" th:href="@{/gastos/recurrentes/{id}(id=${recurrente.id})}" th:text="${recurrente.concepto}">Concepto</a>
+                                            <span class="ff-table-secondary" th:text="${#strings.defaultString(recurrente.proveedor, 'Sin proveedor')}">Proveedor</span>
+                                        </div>
+                                    </td>
+                                    <td th:text="${recurrente.categoria != null ? #strings.replace(recurrente.categoria.name(), '_', ' ') : '-'}">Categoria</td>
+                                    <td th:text="${recurrente.frecuencia != null ? #strings.replace(recurrente.frecuencia.name(), '_', ' ') : '-'}">Frecuencia</td>
+                                    <td th:text="${recurrente.fechaProximoCargo != null ? #temporals.format(recurrente.fechaProximoCargo, 'dd/MM/yyyy') : '-'}">01/01/2026</td>
+                                    <td th:text="${recurrente.importe != null ? #numbers.formatDecimal(recurrente.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+                                    <td><span class="ff-status-badge" th:classappend="${recurrente.activo} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${recurrente.activo} ? 'Activa' : 'Inactiva'">Activa</span></td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a class="btn btn-outline-success btn-sm" th:href="@{/gastos/recurrentes/{id}(id=${recurrente.id})}">Detalle</a>
+                                            <a class="btn btn-outline-primary btn-sm" th:href="@{/gastos/recurrentes/{id}/editar(id=${recurrente.id})}">Editar</a>
+                                            <form th:if="${recurrente.activo}" th:action="@{/gastos/recurrentes/{id}/desactivar(id=${recurrente.id})}" method="post" class="m-0">
+                                                <button type="submit" class="btn btn-outline-danger btn-sm">Desactivar</button>
+                                            </form>
+                                            <form th:if="${!recurrente.activo}" th:action="@{/gastos/recurrentes/{id}/activar(id=${recurrente.id})}" method="post" class="m-0">
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm">Activar</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(recurrentes)}">
+                                <tr><td colspan="7" class="text-center ff-empty-state">No hay plantillas recurrentes activas.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

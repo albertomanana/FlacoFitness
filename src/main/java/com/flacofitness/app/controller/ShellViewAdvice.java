@@ -25,6 +25,8 @@ import java.util.List;
         ClaseController.class,
         SesionClaseController.class,
         GastoController.class,
+        GastoRecurrenteController.class,
+        NominaController.class,
         MaquinaController.class,
         MaterialController.class,
         ClientePortalController.class

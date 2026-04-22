@@ -10,7 +10,14 @@
             <div class="ff-content-stack">
                 <section class="ff-section-header ff-animate-in">
                     <div><span class="ff-section-eyebrow">Finanzas</span><h2 class="ff-section-title" th:text="${gasto.concepto}">Detalle</h2></div>
-                    <div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/gastos}">Volver</a><a class="btn btn-success" th:href="@{/gastos/{id}/editar(id=${gasto.id})}">Editar</a></div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-outline-secondary" th:href="@{/gastos}">Volver</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/gastos/export/pdf}">PDF</a>
+                        <a class="btn btn-success" th:href="@{/gastos/{id}/editar(id=${gasto.id})}">Editar</a>
+                        <form th:if="${!gasto.pagado}" th:action="@{/gastos/{id}/pagado(id=${gasto.id})}" method="post" class="m-0">
+                            <button type="submit" class="btn btn-primary">Marcar pagado</button>
+                        </form>
+                    </div>
                 </section>
                 <section class="ff-surface-card ff-animate-in">
                     <div class="ff-card-body">

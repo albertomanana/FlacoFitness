@@ -36,7 +36,6 @@
 --             sesion_clase_id)
 -- pagos(id, fecha_pago, fecha_vencimiento, monto, metodo_pago, estado,
 --       referencia, usuario_id, plan_id, membresia_usuario_id)
--- app_clock_settings(id, fecha_hora_operativa, simulado, actualizado_en)
 
 -- Comercial:
 -- trials(id, nombre, apellidos, telefono, email, origen, fecha_prueba,
@@ -48,3 +47,8 @@
 -- reservas_sesion debe ser unico por (sesion_clase_id, usuario_id).
 -- staff_perfiles.usuario_id debe ser unico.
 -- pagos.referencia debe ser unica.
+
+-- Compatibilidad financiera legacy:
+-- En algunas instalaciones antiguas, `gastos` conserva la columna `recurrente`.
+-- El modelo actual usa `gasto_recurrente_id`, pero `recurrente` debe permanecer como
+-- BIT(1) NOT NULL DEFAULT b'0' para no romper inserts de automatizacion al simular fecha.

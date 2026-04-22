@@ -4,6 +4,7 @@ import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.enums.EstadoPago;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -42,7 +43,9 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
 
     boolean existsByUsuarioIdAndFechaVencimiento(Long usuarioId, LocalDate fechaVencimiento);
 
-        boolean existsByUsuarioIdAndFechaVencimientoAndIdNot(Long usuarioId, LocalDate fechaVencimiento, Long id);
+    boolean existsByUsuarioIdAndFechaVencimientoAndIdNot(Long usuarioId, LocalDate fechaVencimiento, Long id);
+
+    boolean existsByMembresiaUsuarioIdAndFechaVencimiento(Long membresiaUsuarioId, LocalDate fechaVencimiento);
 
     Optional<Pago> findTopByUsuarioIdOrderByFechaVencimientoDescIdDesc(Long usuarioId);
 
@@ -67,4 +70,11 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
             "group by year(pago.fechaPago), month(pago.fechaPago) " +
             "order by year(pago.fechaPago), month(pago.fechaPago)")
     List<IngresoPorMesView> sumMontoGroupedByMes(@Param("estado") EstadoPago estado);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Pago pago set pago.estado = :vencido " +
+            "where pago.estado in :estadosAbiertos and pago.fechaVencimiento < :fechaReferencia")
+    int marcarVencidos(@Param("estadosAbiertos") List<EstadoPago> estadosAbiertos,
+                       @Param("vencido") EstadoPago vencido,
+                       @Param("fechaReferencia") LocalDate fechaReferencia);
 }

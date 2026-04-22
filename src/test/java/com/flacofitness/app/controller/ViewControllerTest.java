@@ -45,9 +45,10 @@ class ViewControllerTest {
     @MockBean private SesionClaseRepository sesionClaseRepository;
     @MockBean private ReservaSesionRepository reservaSesionRepository;
     @MockBean private GastoRepository gastoRepository;
+        @MockBean private GastoRecurrenteRepository gastoRecurrenteRepository;
+        @MockBean private NominaRepository nominaRepository;
     @MockBean private MaquinaRepository maquinaRepository;
     @MockBean private MaterialRepository materialRepository;
-    @MockBean private AppClockSettingRepository appClockSettingRepository;
 
     @Test
     void rutasProtegidasRedirigenAAccesoSiNoHaySesion() throws Exception {
@@ -74,8 +75,10 @@ class ViewControllerTest {
         MockHttpSession session = new MockHttpSession();
         accessSessionService.grantAccess(session, AccessProfile.ADMIN);
 
-        // This expects the context loads to fail if mock repositories are needed, but this is a high-level test
-        // Because of the @SpringBootTest setup, it will try to access the DB and fail unless we mock the services or repositories.
-        // Wait, FlacoFitnessApplicationTests mocks all repositories. If I don't mock them, it might fail.
+        mockMvc.perform(get("/").session(session))
+            .andExpect(status().isOk());
+
+        mockMvc.perform(get("/usuarios").session(session))
+            .andExpect(status().isOk());
     }
 }

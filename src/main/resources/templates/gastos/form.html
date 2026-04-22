@@ -47,20 +47,12 @@
                                 <input id="proveedor" type="text" class="form-control" th:field="*{proveedor}">
                             </div>
 
-                            <div class="col-md-4 d-flex align-items-center gap-2 mt-4">
-                                <input id="recurrente" type="checkbox" class="form-check-input" th:field="*{recurrente}">
-                                <label class="form-check-label" for="recurrente">Recurrente</label>
-                            </div>
                             <div class="col-md-4">
-                                <label class="form-label" for="frecuencia">Frecuencia</label>
-                                <select id="frecuencia" class="form-select" th:field="*{frecuencia}">
-                                    <option value="">No aplica</option>
-                                    <option th:each="freq : ${T(com.flacofitness.app.model.enums.FrecuenciaGasto).values()}" th:value="${freq}" th:text="${#strings.replace(freq.name(), '_', ' ')}">Frecuencia</option>
+                                <label class="form-label" for="estado">Estado</label>
+                                <select id="estado" class="form-select" th:field="*{estado}" required>
+                                    <option value="">Selecciona...</option>
+                                    <option th:each="estado : ${T(com.flacofitness.app.model.enums.EstadoGasto).values()}" th:value="${estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option>
                                 </select>
-                            </div>
-                            <div class="col-md-4 d-flex align-items-center gap-2 mt-4">
-                                <input id="pagado" type="checkbox" class="form-check-input" th:field="*{pagado}">
-                                <label class="form-check-label" for="pagado">Marcado como pagado</label>
                             </div>
 
                             <div class="col-md-4">

@@ -8,7 +8,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -49,11 +48,4 @@ public class Asistencia {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sesion_clase_id")
     private SesionClase sesionClase;
-
-    @PrePersist
-    private void asignarFechaActualSiFalta() {
-        if (fecha == null) {
-            fecha = LocalDate.now();
-        }
-    }
 }
