@@ -4710,3 +4710,160 @@ code { color: var(--ff-primary-dark); }
 :root[data-theme="dark"] .ff-global-search-submit:hover {
     color: var(--ff-accent);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   OPERATIONS DECK — KPI cards + panel cards (Block 3)
+   Evolves .ff-kpi-card, .ff-stat-card, .ff-surface-card with
+   HUD typography, corner ticks, luminous hover glow.
+   Dark-mode overrides. Light mode keeps current values.
+══════════════════════════════════════════════════════════════ */
+
+/* Panel cards — glass surface + luminous border at rest */
+:root[data-theme="dark"] .ff-surface-card {
+    background: rgba(18, 28, 46, 0.72);
+    backdrop-filter: var(--ff-glass-blur);
+    -webkit-backdrop-filter: var(--ff-glass-blur);
+    border: 1px solid var(--ff-border);
+    box-shadow: var(--ff-glow-shadow);
+    transition:
+        border-color var(--transition-hud),
+        box-shadow var(--transition-hud),
+        transform var(--transition-hud);
+}
+:root[data-theme="dark"] .ff-surface-card:hover {
+    border-color: var(--ff-border-glow);
+    box-shadow: var(--ff-glow-shadow-hover);
+}
+
+/* Fallback when backdrop-filter unavailable */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root[data-theme="dark"] .ff-surface-card {
+        background: var(--ff-surface-solid);
+    }
+}
+
+/* Card headers: gradient rule (the panel signature line) */
+:root[data-theme="dark"] .ff-card-header {
+    border-bottom: 1px solid transparent;
+    background-image: linear-gradient(90deg, rgba(56, 189, 248, 0.22), transparent 70%);
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: bottom left;
+}
+
+/* KPI cards: HUD typography + bigger tabular value + corner ticks */
+:root[data-theme="dark"] .ff-kpi-card {
+    position: relative;
+    padding-top: 1.15rem;
+}
+
+/* Eyebrow (reused .ff-stat-label) — uppercase HUD label */
+:root[data-theme="dark"] .ff-kpi-card .ff-stat-label {
+    font-family: "Manrope", "Inter", sans-serif;
+    font-weight: 600;
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ff-text-muted);
+    margin-bottom: 0.6rem;
+}
+
+/* Value (reused .ff-stat-value) — large tabular metric */
+:root[data-theme="dark"] .ff-kpi-card .ff-stat-value {
+    font-family: "Manrope", "Inter", sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.75rem, 2.4vw, 2.35rem);
+    line-height: 1.05;
+    color: var(--ff-text);
+    font-feature-settings: "tnum" 1, "ss01" 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.4rem;
+}
+
+/* Caption (reused .ff-stat-note) */
+:root[data-theme="dark"] .ff-kpi-card .ff-stat-note {
+    font-size: 0.8125rem;
+    color: var(--ff-text-secondary);
+    margin-bottom: 0;
+}
+
+/* Corner ticks — 4 L-shaped marks, cyan at 40% (moderate HUD dose) */
+:root[data-theme="dark"] .ff-kpi-card::before,
+:root[data-theme="dark"] .ff-kpi-card::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    opacity: 0.5;
+    transition: opacity var(--transition-hud);
+}
+:root[data-theme="dark"] .ff-kpi-card::before {
+    top: 10px;
+    left: 10px;
+    border-top: 1px solid var(--ff-accent);
+    border-left: 1px solid var(--ff-accent);
+}
+:root[data-theme="dark"] .ff-kpi-card::after {
+    bottom: 10px;
+    right: 10px;
+    border-bottom: 1px solid var(--ff-accent);
+    border-right: 1px solid var(--ff-accent);
+}
+:root[data-theme="dark"] .ff-kpi-card:hover::before,
+:root[data-theme="dark"] .ff-kpi-card:hover::after {
+    opacity: 1;
+}
+
+/* Semantic KPI variants re-express accent color on the ticks */
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-positive::before,
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-positive::after {
+    border-color: var(--ff-success);
+}
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-warning::before,
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-warning::after {
+    border-color: var(--ff-warning);
+}
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-danger::before,
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-danger::after {
+    border-color: var(--ff-error);
+}
+
+/* Profit sign variants (data attribute) */
+:root[data-theme="dark"] .ff-kpi-card[data-kpi-profit="positive"]::before,
+:root[data-theme="dark"] .ff-kpi-card[data-kpi-profit="positive"]::after {
+    border-color: var(--ff-success);
+}
+:root[data-theme="dark"] .ff-kpi-card[data-kpi-profit="negative"]::before,
+:root[data-theme="dark"] .ff-kpi-card[data-kpi-profit="negative"]::after {
+    border-color: var(--ff-error);
+}
+
+/* KPI hover: subtle lift + stronger luminous ring */
+:root[data-theme="dark"] .ff-kpi-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Chart cards — same glass treatment but preserve .ff-chart-card- specific rules */
+:root[data-theme="dark"] .ff-chart-card {
+    background: rgba(18, 28, 46, 0.72);
+    backdrop-filter: var(--ff-glass-blur);
+    -webkit-backdrop-filter: var(--ff-glass-blur);
+    border: 1px solid var(--ff-border);
+    box-shadow: var(--ff-glow-shadow);
+}
+:root[data-theme="dark"] .ff-chart-card:hover {
+    border-color: var(--ff-border-glow);
+    box-shadow: var(--ff-glow-shadow-hover);
+}
+
+/* Make all metric digits tabular across the dashboard, not just KPIs */
+:root[data-theme="dark"] .ff-stat-value,
+:root[data-theme="dark"] .ff-metric-value,
+:root[data-theme="dark"] .ff-payroll-metric-value,
+:root[data-theme="dark"] [data-stat-kind="currency"],
+:root[data-theme="dark"] [data-stat-kind="integer"] {
+    font-feature-settings: "tnum" 1, "ss01" 1;
+    font-variant-numeric: tabular-nums;
+}
