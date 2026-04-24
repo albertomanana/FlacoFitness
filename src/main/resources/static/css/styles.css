@@ -5172,3 +5172,156 @@ code { color: var(--ff-primary-dark); }
     color: var(--ff-error-text);
     border-color: rgba(239, 68, 68, 0.24);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   OPERATIONS DECK — Nómina stepper + empty state (Block 6)
+══════════════════════════════════════════════════════════════ */
+
+/* ── Nomina workflow stepper (works in both themes) ── */
+.ff-stepper {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+    position: relative;
+}
+.ff-stepper-node {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 0 0.5rem;
+}
+.ff-stepper-node::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    left: calc(50% + 22px);
+    right: calc(-50% + 22px);
+    height: 2px;
+    background: var(--ff-border-strong);
+    border-radius: 2px;
+    transition: background-color var(--transition-hud);
+}
+.ff-stepper-node:last-child::after {
+    display: none;
+}
+.ff-stepper-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Manrope", "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    background: rgba(148, 176, 220, 0.10);
+    border: 1px solid var(--ff-border-strong);
+    color: var(--ff-text-muted);
+    margin-bottom: 0.65rem;
+    transition:
+        background-color var(--transition-hud),
+        border-color var(--transition-hud),
+        color var(--transition-hud),
+        box-shadow var(--transition-hud);
+}
+.ff-stepper-label {
+    font-family: "Manrope", "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--ff-text);
+}
+.ff-stepper-hint {
+    font-size: 0.75rem;
+    color: var(--ff-text-muted);
+    margin-top: 0.15rem;
+}
+
+/* Completed nodes: filled green */
+.ff-stepper-node.is-done .ff-stepper-dot {
+    background: var(--ff-primary);
+    border-color: var(--ff-primary);
+    color: #031007;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.14);
+}
+.ff-stepper-node.is-done::after {
+    background: var(--ff-primary);
+}
+
+/* Current node: cyan glow ring */
+.ff-stepper-node.is-current .ff-stepper-dot {
+    background: rgba(56, 189, 248, 0.14);
+    border-color: var(--ff-accent);
+    color: var(--ff-accent);
+    box-shadow:
+        0 0 0 3px var(--ff-accent-halo),
+        0 0 18px rgba(56, 189, 248, 0.30);
+}
+.ff-stepper-node.is-current .ff-stepper-label {
+    color: var(--ff-text);
+}
+
+/* Cancelled branch: node 3 shows as error */
+.ff-stepper-node.is-cancel-branch .ff-stepper-dot {
+    background: var(--ff-error-bg);
+    border-color: var(--ff-error);
+    color: var(--ff-error-text);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12);
+}
+
+/* When the whole stepper is in CANCELADA state, dim node 2's connector */
+.ff-stepper[data-ff-stepper-state="CANCELADA"] .ff-stepper-node:nth-child(2)::after {
+    background: repeating-linear-gradient(
+        90deg,
+        var(--ff-error) 0 8px,
+        transparent 8px 14px
+    );
+    opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+    .ff-stepper {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .ff-stepper-node::after {
+        display: none;
+    }
+}
+
+/* ── Empty-state HUD frame (dark only) ── */
+:root[data-theme="dark"] .ff-empty,
+:root[data-theme="dark"] [data-empty-state] {
+    border: 1px dashed rgba(56, 189, 248, 0.22);
+    background: rgba(18, 28, 46, 0.4);
+    color: var(--ff-text-secondary);
+}
+
+/* ── Dashboard alert rail refinement (dark) ── */
+:root[data-theme="dark"] .ff-dashboard-alert {
+    border-left: 3px solid var(--ff-accent);
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.08), transparent 60%);
+}
+
+/* ── Section eyebrow/title harmonization across all screens ── */
+:root[data-theme="dark"] .ff-section-eyebrow,
+:root[data-theme="dark"] .ff-card-eyebrow {
+    color: var(--ff-text-muted);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    font-family: "Manrope", "Inter", sans-serif;
+}
+:root[data-theme="dark"] .ff-section-title,
+:root[data-theme="dark"] .ff-card-title {
+    color: var(--ff-text);
+}
+:root[data-theme="dark"] .ff-section-subtitle {
+    color: var(--ff-text-muted);
+}

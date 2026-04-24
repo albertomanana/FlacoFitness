@@ -19,11 +19,26 @@
                     <div class="d-flex gap-2 flex-wrap">
                         <a class="btn btn-outline-secondary" th:href="@{/nominas}">Volver</a>
                         <a class="btn btn-outline-secondary" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
-                        <form th:if="${nomina.estado != null and nomina.estado.name() != 'PAGADA'}"
+                        <a class="btn btn-outline-secondary"
+                           th:if="${nomina.estado != null and nomina.estado.name() == 'BORRADOR'}"
+                           th:href="@{/nominas/{id}/editar(id=${nomina.id})}">Editar</a>
+                        <form th:if="${nomina.estado != null and nomina.estado.name() == 'BORRADOR'}"
+                              th:action="@{/nominas/{id}/emitir(id=${nomina.id})}"
+                              method="post"
+                              class="m-0">
+                            <button type="submit" class="btn btn-success">Emitir</button>
+                        </form>
+                        <form th:if="${nomina.estado != null and nomina.estado.name() != 'PAGADA' and nomina.estado.name() != 'CANCELADA'}"
                               th:action="@{/nominas/{id}/pagada(id=${nomina.id})}"
                               method="post"
                               class="m-0">
                             <button type="submit" class="btn btn-success">Marcar pagada</button>
+                        </form>
+                        <form th:if="${nomina.estado != null and nomina.estado.name() != 'PAGADA' and nomina.estado.name() != 'CANCELADA'}"
+                              th:action="@{/nominas/{id}/cancelar(id=${nomina.id})}"
+                              method="post"
+                              class="m-0">
+                            <button type="submit" class="btn btn-outline-danger">Cancelar</button>
                         </form>
                     </div>
                 </section>
@@ -32,6 +47,7 @@
                     <div class="ff-card-body">
                         <div class="ff-payroll-hero-layout">
                             <div>
+                                <img th:src="@{/img/logo.svg}" alt="FlacoFitness" class="ff-payroll-brand">
                                 <span class="ff-payroll-overline">FlacoFitness / N&oacute;mina interna</span>
                                 <h3 class="ff-payroll-title" th:text="${nomina.periodo}">2026-01</h3>
                                 <p class="ff-payroll-subtitle"
@@ -39,13 +55,46 @@
                             </div>
                             <div class="ff-payroll-hero-aside">
                                 <span class="ff-status-badge"
-                                      th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : ' ff-status-warning'"
+                                      th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : (${nomina.estado != null and nomina.estado.name() == 'CANCELADA'} ? ' ff-status-danger' : (${nomina.estado != null and nomina.estado.name() == 'BORRADOR'} ? ' ff-status-pending' : ' ff-status-warning'))"
                                       th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">EMITIDA</span>
                                 <strong class="ff-payroll-net"
                                         th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0.00 EUR</strong>
                                 <span class="ff-table-secondary">Neto liquidado</span>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in"
+                         th:with="est=${nomina.estado != null ? nomina.estado.name() : 'BORRADOR'},
+                                  cancel=${est == 'CANCELADA'}">
+                    <div class="ff-card-header">
+                        <div>
+                            <span class="ff-card-eyebrow">Workflow</span>
+                            <h2 class="ff-card-title">Flujo de n&oacute;mina</h2>
+                        </div>
+                    </div>
+                    <div class="ff-card-body">
+                        <ol class="ff-stepper" th:attr="data-ff-stepper-state=${est}">
+                            <li class="ff-stepper-node"
+                                th:classappend="${est == 'BORRADOR'} ? ' is-current' : (${est == 'EMITIDA' or est == 'PAGADA' or cancel} ? ' is-done' : '')">
+                                <span class="ff-stepper-dot">1</span>
+                                <span class="ff-stepper-label">Borrador</span>
+                                <span class="ff-stepper-hint">Preparaci&oacute;n</span>
+                            </li>
+                            <li class="ff-stepper-node"
+                                th:classappend="${est == 'EMITIDA'} ? ' is-current' : (${est == 'PAGADA' or cancel} ? ' is-done' : '')">
+                                <span class="ff-stepper-dot">2</span>
+                                <span class="ff-stepper-label">Emitida</span>
+                                <span class="ff-stepper-hint">Validada y lista</span>
+                            </li>
+                            <li class="ff-stepper-node"
+                                th:classappend="${est == 'PAGADA'} ? ' is-current is-done' : (${cancel} ? ' is-cancel-branch' : '')">
+                                <span class="ff-stepper-dot">3</span>
+                                <span class="ff-stepper-label" th:text="${cancel} ? 'Cancelada' : 'Pagada'">Pagada</span>
+                                <span class="ff-stepper-hint" th:text="${cancel} ? 'Flujo revertido' : 'Gasto generado'">Gasto generado</span>
+                            </li>
+                        </ol>
                     </div>
                 </section>
 
@@ -103,6 +152,10 @@
                                     <div class="ff-payroll-detail-item">
                                         <span class="ff-payroll-detail-label">Fecha de emision</span>
                                         <strong th:text="${nomina.fechaEmision != null ? #temporals.format(nomina.fechaEmision, 'dd/MM/yyyy') : '-'}">-</strong>
+                                    </div>
+                                    <div class="ff-payroll-detail-item">
+                                        <span class="ff-payroll-detail-label">Cuenta del staff</span>
+                                        <strong th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? (nomina.staffPerfil.usuario.username != null ? nomina.staffPerfil.usuario.username : nomina.staffPerfil.usuario.email) : '-'}">-</strong>
                                     </div>
                                     <div class="ff-payroll-detail-item">
                                         <span class="ff-payroll-detail-label">Estado</span>
