@@ -131,6 +131,7 @@ function updateDashboardStats(stats, utils, options = {}) {
     animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency", utils, animate);
     animateDashboardStat("gastoMesActual", stats.gastoMesActual, "currency", utils, animate);
     animateDashboardStat("beneficioEstimado", stats.beneficioEstimado, "currency", utils, animate);
+    updateProfitCardColor(stats.beneficioEstimado);
     animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils, animate);
     animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils, animate);
     animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils, animate);
@@ -177,6 +178,13 @@ function animateDashboardStat(key, rawValue, kind, utils, animate = true) {
         }
 
         target.dataset.statAnimationFrame = String(window.requestAnimationFrame(step));
+    });
+}
+
+function updateProfitCardColor(value) {
+    const isPositive = Number(value || 0) >= 0;
+    document.querySelectorAll("[data-kpi-profit]").forEach((card) => {
+        card.dataset.kpiProfit = isPositive ? "positive" : "negative";
     });
 }
 
@@ -247,12 +255,7 @@ function renderPlanChart(planDistribution) {
         labels: planDistribution.map((item) => item.plan),
         datasets: [{
             data: planDistribution.map((item) => Number(item.totalUsuarios || 0)),
-            backgroundColor: [
-                "rgba(22, 163, 74, 0.88)",
-                "rgba(59, 130, 246, 0.88)",
-                "rgba(249, 115, 22, 0.88)",
-                "rgba(148, 163, 184, 0.88)"
-            ],
+            backgroundColor: getChartColors().donutColors,
             borderWidth: 0
         }]
     }, {
@@ -286,8 +289,8 @@ function renderIngresosGastosChart(ingresosMensuales, gastosMensuales, utils) {
             {
                 label: "Ingresos",
                 data: orderedPeriods.map((period) => ingresosByPeriod.get(period) || 0),
-                backgroundColor: "rgba(22, 163, 74, 0.82)",
-                hoverBackgroundColor: "rgba(21, 128, 61, 0.92)",
+                backgroundColor: getChartColors().incomeBar,
+                hoverBackgroundColor: getChartColors().incomeBarHover,
                 borderRadius: 12,
                 borderSkipped: false,
                 maxBarThickness: 34
@@ -295,8 +298,8 @@ function renderIngresosGastosChart(ingresosMensuales, gastosMensuales, utils) {
             {
                 label: "Gastos",
                 data: orderedPeriods.map((period) => gastosByPeriod.get(period) || 0),
-                backgroundColor: "rgba(239, 68, 68, 0.72)",
-                hoverBackgroundColor: "rgba(220, 38, 38, 0.84)",
+                backgroundColor: getChartColors().expenseBar,
+                hoverBackgroundColor: getChartColors().expenseBarHover,
                 borderRadius: 12,
                 borderSkipped: false,
                 maxBarThickness: 34
@@ -387,8 +390,8 @@ function renderAsistenciasChart(asistenciasRecientes) {
         datasets: [{
             label: "Asistencias",
             data: asistenciasRecientes.map((item) => Number(item.total || 0)),
-            borderColor: "rgba(37, 99, 235, 0.92)",
-            backgroundColor: "rgba(37, 99, 235, 0.16)",
+            borderColor: getChartColors().attendanceLine,
+            backgroundColor: getChartColors().attendanceFill,
             fill: true,
             tension: 0.35,
             pointRadius: 3,
@@ -447,7 +450,20 @@ function createChart(canvasId, type, data, options) {
                 titleColor: theme.tooltipText,
                 bodyColor: theme.tooltipText,
                 padding: 12,
-                displayColors: false
+                cornerRadius: 10,
+                borderColor: theme.tooltipBorder,
+                borderWidth: 1,
+                displayColors: false,
+                titleFont: {
+                    family: "'Manrope', 'Inter', sans-serif",
+                    weight: "700",
+                    size: 12
+                },
+                bodyFont: {
+                    family: "'Inter', system-ui, sans-serif",
+                    weight: "500",
+                    size: 13
+                }
             }
         }
     };
@@ -525,6 +541,39 @@ function toggleDashboardAlert(visible, message) {
     }
 }
 
+function getChartColors() {
+    const isDark = document.documentElement.dataset.theme === "dark";
+    // Operations Deck palette in dark:
+    //   primary (ingresos) = verde marca #22C55E
+    //   accent HUD (attendance) = cian #38BDF8
+    //   warning = ámbar #F59E0B
+    //   danger (gastos) = rojo #EF4444
+    //   donut rotation: cyan, green, amber, rose, gray
+    return {
+        incomeBar:       isDark ? "rgba(34,197,94,0.78)"  : "rgba(22,163,74,0.82)",
+        incomeBarHover:  isDark ? "rgba(34,197,94,0.95)"  : "rgba(21,128,61,0.92)",
+        expenseBar:      isDark ? "rgba(239,68,68,0.68)"  : "rgba(239,68,68,0.72)",
+        expenseBarHover: isDark ? "rgba(239,68,68,0.88)"  : "rgba(220,38,38,0.84)",
+        attendanceLine:  isDark ? "rgba(56,189,248,0.92)" : "rgba(14,165,233,0.92)",
+        attendanceFill:  isDark ? "rgba(56,189,248,0.20)" : "rgba(14,165,233,0.16)",
+        donutColors: isDark
+            ? [
+                "rgba(56,189,248,0.85)",  // cyan — primary HUD
+                "rgba(74,222,128,0.85)",  // green — brand
+                "rgba(251,191,36,0.85)",  // amber
+                "rgba(244,114,182,0.85)", // rose
+                "rgba(148,176,220,0.75)"  // steel
+            ]
+            : [
+                "rgba(14,165,233,0.88)",
+                "rgba(22,163,74,0.88)",
+                "rgba(249,115,22,0.88)",
+                "rgba(236,72,153,0.88)",
+                "rgba(148,163,184,0.88)"
+            ]
+    };
+}
+
 function getChartTheme() {
     const styles = window.getComputedStyle(document.documentElement);
 
@@ -532,7 +581,8 @@ function getChartTheme() {
         textSecondary: (styles.getPropertyValue("--ff-text-muted") || "#475569").trim(),
         grid: (styles.getPropertyValue("--ff-chart-grid") || "rgba(148, 163, 184, 0.18)").trim(),
         tooltipBg: (styles.getPropertyValue("--ff-chart-tooltip-bg") || "#1d2939").trim(),
-        tooltipText: (styles.getPropertyValue("--ff-chart-tooltip-text") || "#ffffff").trim()
+        tooltipText: (styles.getPropertyValue("--ff-chart-tooltip-text") || "#ffffff").trim(),
+        tooltipBorder: (styles.getPropertyValue("--ff-border-glow") || "rgba(56, 189, 248, 0.22)").trim()
     };
 }
 
