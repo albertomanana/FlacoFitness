@@ -12,6 +12,10 @@ import com.flacofitness.app.service.UsuarioControlCenterService;
 import com.flacofitness.app.service.UsuarioService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.PagoService;
+import com.flacofitness.app.service.ActivityLogService;
+import com.flacofitness.app.service.ControllerActivityLogger;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.data.domain.Sort;
@@ -38,6 +42,8 @@ public class UsuarioController {
     private final PlanRepository planRepository;
     private final RutinaService rutinaService;
     private final PagoService pagoService;
+    private final ActivityLogService activityLogService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public UsuarioController(UsuarioService usuarioService,
                              UsuarioControlCenterService usuarioControlCenterService,
@@ -45,7 +51,9 @@ public class UsuarioController {
                              RolRepository rolRepository,
                              PlanRepository planRepository,
                              RutinaService rutinaService,
-                             PagoService pagoService) {
+                             PagoService pagoService,
+                             ActivityLogService activityLogService,
+                             ControllerActivityLogger controllerActivityLogger) {
         this.usuarioService = usuarioService;
         this.usuarioControlCenterService = usuarioControlCenterService;
         this.userPhotoStorageService = userPhotoStorageService;
@@ -53,6 +61,8 @@ public class UsuarioController {
         this.planRepository = planRepository;
         this.rutinaService = rutinaService;
         this.pagoService = pagoService;
+        this.activityLogService = activityLogService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -76,8 +86,12 @@ public class UsuarioController {
     public String guardarUsuario(@Valid @ModelAttribute("usuario") Usuario usuario,
                                  BindingResult bindingResult,
                                  Model model,
-                                 RedirectAttributes redirectAttributes) {
+                                 @RequestParam(name = "fotoFile", required = false) MultipartFile fotoFile,
+                                 RedirectAttributes redirectAttributes,
+                                 HttpServletRequest request,
+                                 HttpSession session) {
         asignarRelaciones(usuario);
+        validarFotoEnFormulario(fotoFile, bindingResult);
 
         if (bindingResult.hasErrors()) {
             prepararRelaciones(usuario);
@@ -87,17 +101,30 @@ public class UsuarioController {
         }
 
         try {
-            usuarioService.guardar(usuario);
+            Usuario guardado = usuarioService.guardar(usuario);
+            guardarFotoSiCorresponde(guardado, fotoFile);
+            controllerActivityLogger.log(request, session,
+                    "usuarios", "usuario_creado", "usuario", guardado.getId(),
+                    "Usuario creado",
+                    "Se dio de alta a " + construirNombreUsuario(guardado) + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito",
+                    "Usuario creado correctamente. Credenciales activas para " + guardado.getUsername() + ".");
+            return "redirect:/usuarios/" + guardado.getId();
         } catch (DuplicateResourceException ex) {
-            bindingResult.rejectValue("email", "duplicate", ex.getMessage());
+            rejectDuplicate(bindingResult, ex.getMessage());
             prepararRelaciones(usuario);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", false);
+            model.addAttribute("mensajeError", ex.getMessage());
+            return "usuarios/form";
+        } catch (BusinessValidationException ex) {
+            bindingResult.reject("usuarioError", ex.getMessage());
+            prepararRelaciones(usuario);
+            cargarCatalogos(model);
+            model.addAttribute("modoEdicion", false);
+            model.addAttribute("mensajeError", ex.getMessage());
             return "usuarios/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Usuario creado correctamente.");
-        return "redirect:/usuarios";
     }
 
     @GetMapping("/{id}")
@@ -106,6 +133,7 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("controlCenter", usuarioControlCenterService.construirVista(usuario));
         model.addAttribute("deudaTotalUsuario", pagoService.calcularDeudaTotalPorUsuario(id));
+        model.addAttribute("activityTimeline", activityLogService.recentByEntity("usuario", id));
         return "usuarios/detail";
     }
 
@@ -146,8 +174,12 @@ public class UsuarioController {
                                     @Valid @ModelAttribute("usuario") Usuario usuario,
                                     BindingResult bindingResult,
                                     Model model,
-                                    RedirectAttributes redirectAttributes) {
+                                    @RequestParam(name = "fotoFile", required = false) MultipartFile fotoFile,
+                                    RedirectAttributes redirectAttributes,
+                                    HttpServletRequest request,
+                                    HttpSession session) {
         asignarRelaciones(usuario);
+        validarFotoEnFormulario(fotoFile, bindingResult);
 
         if (bindingResult.hasErrors()) {
             prepararRelaciones(usuario);
@@ -157,17 +189,30 @@ public class UsuarioController {
         }
 
         try {
-            usuarioService.actualizar(id, usuario);
+            Usuario actualizado = usuarioService.actualizar(id, usuario);
+            guardarFotoSiCorresponde(actualizado, fotoFile);
+            controllerActivityLogger.log(request, session,
+                    "usuarios", "usuario_actualizado", "usuario", actualizado.getId(),
+                    "Usuario actualizado",
+                    "Se actualizo la ficha de " + construirNombreUsuario(actualizado) + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Usuario actualizado correctamente.");
         } catch (DuplicateResourceException ex) {
-            bindingResult.rejectValue("email", "duplicate", ex.getMessage());
+            rejectDuplicate(bindingResult, ex.getMessage());
             prepararRelaciones(usuario);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", true);
+            model.addAttribute("mensajeError", ex.getMessage());
+            return "usuarios/form";
+        } catch (BusinessValidationException ex) {
+            bindingResult.reject("usuarioError", ex.getMessage());
+            prepararRelaciones(usuario);
+            cargarCatalogos(model);
+            model.addAttribute("modoEdicion", true);
+            model.addAttribute("mensajeError", ex.getMessage());
             return "usuarios/form";
         }
 
-        redirectAttributes.addFlashAttribute("mensajeExito", "Usuario actualizado correctamente.");
-        return "redirect:/usuarios";
+        return "redirect:/usuarios/" + id;
     }
 
     @GetMapping("/{id}/rutinas")
@@ -183,24 +228,59 @@ public class UsuarioController {
     @PostMapping("/{id}/rutinas")
     public String actualizarRutinas(@PathVariable Long id,
                                     @RequestParam(name = "rutinaIds", required = false) List<Long> rutinaIds,
-                                    RedirectAttributes redirectAttributes) {
+                                    RedirectAttributes redirectAttributes,
+                                    HttpServletRequest request,
+                                    HttpSession session) {
         rutinaService.sincronizarRutinasDeUsuario(id, rutinaIds);
+        controllerActivityLogger.log(request, session,
+                "rutinas", "rutina_asignada", "usuario", id,
+                "Rutinas actualizadas",
+                "Se sincronizaron las rutinas del usuario.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Rutinas del usuario actualizadas correctamente.");
         return "redirect:/usuarios/" + id;
     }
 
     @PostMapping("/{id}/desactivar")
-    public String desactivarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivarUsuario(@PathVariable Long id,
+                                    RedirectAttributes redirectAttributes,
+                                    HttpServletRequest request,
+                                    HttpSession session) {
         usuarioService.desactivar(id);
+        controllerActivityLogger.log(request, session,
+                "usuarios", "usuario_desactivado", "usuario", id,
+                "Usuario desactivado",
+                "Se desactivo la cuenta del usuario.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Usuario desactivado correctamente.");
         return "redirect:/usuarios";
     }
 
     @PostMapping("/{id}/activar")
-    public String activarUsuario(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activarUsuario(@PathVariable Long id,
+                                 RedirectAttributes redirectAttributes,
+                                 HttpServletRequest request,
+                                 HttpSession session) {
         usuarioService.activar(id);
+        controllerActivityLogger.log(request, session,
+                "usuarios", "usuario_activado", "usuario", id,
+                "Usuario activado",
+                "Se reactivo la cuenta del usuario.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Usuario activado correctamente.");
         return "redirect:/usuarios";
+    }
+
+    @PostMapping("/{id}/reset-password")
+    public String resetPassword(@PathVariable Long id,
+                                RedirectAttributes redirectAttributes,
+                                HttpServletRequest request,
+                                HttpSession session) {
+        String temporal = usuarioService.resetPasswordTemporal(id);
+        controllerActivityLogger.log(request, session,
+                "usuarios", "password_reseteada", "usuario", id,
+                "Password reseteada",
+                "Se genero una contrasena temporal para la cuenta.");
+        redirectAttributes.addFlashAttribute("mensajeExito",
+                "Contrasena temporal generada: " + temporal + ". El usuario debera cambiarla al entrar.");
+        return "redirect:/usuarios/" + id;
     }
 
     private void cargarCatalogos(Model model) {
@@ -231,5 +311,40 @@ public class UsuarioController {
         } else {
             usuario.setPlan(null);
         }
+    }
+
+    private String construirNombreUsuario(Usuario usuario) {
+        if (usuario == null) {
+            return "usuario";
+        }
+        if (usuario.getApellidos() == null || usuario.getApellidos().isBlank()) {
+            return usuario.getNombre();
+        }
+        return usuario.getNombre() + " " + usuario.getApellidos();
+    }
+
+    private void rejectDuplicate(BindingResult bindingResult, String message) {
+        if (message != null && message.toLowerCase().contains("username")) {
+            bindingResult.rejectValue("username", "duplicate", message);
+            return;
+        }
+        bindingResult.rejectValue("email", "duplicate", message);
+    }
+
+    private void validarFotoEnFormulario(MultipartFile fotoFile, BindingResult bindingResult) {
+        try {
+            userPhotoStorageService.validarFotoUsuario(fotoFile);
+        } catch (BusinessValidationException ex) {
+            bindingResult.rejectValue("fotoPath", "fotoPath", ex.getMessage());
+        }
+    }
+
+    private void guardarFotoSiCorresponde(Usuario usuario, MultipartFile fotoFile) {
+        if (fotoFile == null || fotoFile.isEmpty()) {
+            return;
+        }
+        String fotoPath = userPhotoStorageService.guardarFotoUsuario(usuario.getId(), fotoFile, usuario.getFotoPath());
+        usuarioService.actualizarFotoPath(usuario.getId(), fotoPath);
+        usuario.setFotoPath(fotoPath);
     }
 }
