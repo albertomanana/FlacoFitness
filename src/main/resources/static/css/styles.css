@@ -4444,5 +4444,269 @@ code { color: var(--ff-primary-dark); }
 :root[data-theme="dark"] .ff-global-search-input,
 :root[data-theme="dark"] .ff-global-search-results,
 :root[data-theme="dark"] .ff-fab-menu {
-    background: #0f172a;
+    background: var(--ff-surface-solid);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   OPERATIONS DECK — Shell reskin (Block 2)
+   Dark-mode overrides for sidebar + topbar. Light mode untouched.
+══════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar: glass surface + deeper bg ── */
+:root[data-theme="dark"] .ff-sidebar {
+    background: linear-gradient(180deg, #070B15 0%, #05080F 100%) !important;
+    background-color: var(--sidebar-bg) !important;
+    border-right: 1px solid var(--sidebar-border);
+    box-shadow:
+        inset -1px 0 0 rgba(148, 176, 220, 0.06),
+        4px 0 32px rgba(0, 0, 0, 0.35);
+}
+
+:root[data-theme="dark"] .ff-sidebar .offcanvas-header,
+:root[data-theme="dark"] .ff-sidebar .offcanvas-body {
+    background: transparent;
+}
+
+:root[data-theme="dark"] .ff-sidebar-logo {
+    border-bottom: 1px solid var(--sidebar-border);
+    background: linear-gradient(180deg, rgba(56, 189, 248, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
+}
+
+/* Logo panel: dark glass instead of white block */
+:root[data-theme="dark"] .ff-sidebar-logo-panel {
+    background: rgba(18, 28, 46, 0.72);
+    backdrop-filter: var(--ff-glass-blur);
+    -webkit-backdrop-filter: var(--ff-glass-blur);
+    border: 1px solid rgba(148, 176, 220, 0.10);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 12px 24px rgba(0, 0, 0, 0.4);
+}
+:root[data-theme="dark"] .ff-sidebar-logo img,
+:root[data-theme="dark"] .ff-sidebar-logo svg {
+    filter: drop-shadow(0 2px 10px rgba(56, 189, 248, 0.18));
+}
+
+/* Section labels in cyan (was pale blue) */
+:root[data-theme="dark"] .ff-nav-section-label {
+    color: var(--ff-text-muted);
+    letter-spacing: 0.14em;
+}
+
+/* Nav group containers: glass panel with soft cyan hairline */
+:root[data-theme="dark"] .ff-nav-group {
+    border: 1px solid rgba(148, 176, 220, 0.08);
+    background: rgba(10, 18, 32, 0.5);
+    backdrop-filter: var(--ff-glass-blur);
+    -webkit-backdrop-filter: var(--ff-glass-blur);
+}
+:root[data-theme="dark"] .ff-nav-group-toggle {
+    color: var(--ff-text-secondary);
+}
+:root[data-theme="dark"] .ff-nav-group-toggle::after {
+    color: var(--ff-accent);
+}
+:root[data-theme="dark"] .ff-nav-group[open] .ff-nav-group-toggle {
+    border-bottom-color: rgba(56, 189, 248, 0.14);
+    color: var(--ff-text);
+}
+
+/* Nav links: muted on rest, cyan accent when active */
+:root[data-theme="dark"] .ff-nav-link {
+    color: var(--ff-text-secondary) !important;
+}
+:root[data-theme="dark"] .ff-nav-link:hover {
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.10), rgba(56, 189, 248, 0.02));
+    color: var(--ff-text) !important;
+    border-color: rgba(56, 189, 248, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.06);
+}
+
+/* Active state: luminous cyan bar + subtle glass tint (signature of Operations Deck) */
+:root[data-theme="dark"] .ff-nav-link.is-active {
+    background: linear-gradient(90deg, rgba(56, 189, 248, 0.14), rgba(56, 189, 248, 0.03));
+    color: #E6F7FF !important;
+    border-color: rgba(56, 189, 248, 0.22);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 0 0 1px rgba(56, 189, 248, 0.18),
+        0 10px 28px rgba(56, 189, 248, 0.10);
+}
+:root[data-theme="dark"] .ff-nav-link.is-active::before {
+    background: var(--ff-accent);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    top: 16%;
+    bottom: 16%;
+    width: 3px;
+    transition: background var(--transition-hud), box-shadow var(--transition-hud), top var(--transition-hud), bottom var(--transition-hud);
+}
+:root[data-theme="dark"] .ff-nav-link.is-active .ff-nav-icon {
+    color: var(--ff-accent);
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.35));
+}
+
+/* Sidebar footer: small-status feel */
+:root[data-theme="dark"] .ff-sidebar-footer {
+    border-top: 1px solid var(--sidebar-border);
+    background: linear-gradient(180deg, transparent, rgba(56, 189, 248, 0.04));
+}
+:root[data-theme="dark"] .ff-sidebar-avatar {
+    background: linear-gradient(135deg, var(--ff-primary) 0%, var(--ff-accent-strong) 100%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.18),
+        0 6px 16px rgba(14, 165, 233, 0.22);
+}
+
+/* ── Topbar: glass + scanline divider ── */
+:root[data-theme="dark"] .ff-topbar {
+    background: linear-gradient(180deg, rgba(10, 18, 32, 0.82), rgba(10, 18, 32, 0.58));
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border-bottom: 1px solid var(--ff-border);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.3);
+    position: sticky;
+    /* Room for the scanline pseudo-element */
+}
+
+/* Scanline divider — sits exactly on the bottom border, 1px tall */
+:root[data-theme="dark"] .ff-topbar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.35) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: ff-topbar-scanline 8s linear infinite;
+    pointer-events: none;
+    opacity: 0.7;
+}
+@keyframes ff-topbar-scanline {
+    0%   { background-position: -100% 0; opacity: 0; }
+    10%  { opacity: 0.7; }
+    50%  { background-position: 100% 0; opacity: 0.7; }
+    60%  { opacity: 0; }
+    100% { background-position: 200% 0; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    :root[data-theme="dark"] .ff-topbar::after {
+        animation: none;
+        opacity: 0.3;
+        background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.22), transparent);
+    }
+}
+
+/* Operational clock — dark glass chip */
+:root[data-theme="dark"] .ff-operational-clock {
+    background: rgba(18, 28, 46, 0.72);
+    backdrop-filter: var(--ff-glass-blur);
+    -webkit-backdrop-filter: var(--ff-glass-blur);
+    border: 1px solid var(--ff-border-strong);
+    color: var(--ff-text);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+:root[data-theme="dark"] .ff-operational-clock-status.is-system {
+    color: var(--ff-accent);
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+}
+
+/* Topbar title/eyebrow in Operations Deck hierarchy */
+:root[data-theme="dark"] .ff-topbar-eyebrow {
+    color: var(--ff-text-muted);
+    letter-spacing: 0.14em;
+}
+:root[data-theme="dark"] .ff-topbar-title {
+    color: var(--ff-text);
+}
+
+/* Topbar icon buttons: ghost treatment with cyan hover ring */
+:root[data-theme="dark"] .ff-topbar-btn,
+:root[data-theme="dark"] .ff-icon-button {
+    background: rgba(18, 28, 46, 0.6);
+    border: 1px solid var(--ff-border);
+    color: var(--ff-text-secondary);
+    transition: background var(--transition-hud), border-color var(--transition-hud), color var(--transition-hud), box-shadow var(--transition-hud);
+}
+:root[data-theme="dark"] .ff-topbar-btn:hover,
+:root[data-theme="dark"] .ff-icon-button:hover {
+    background: rgba(56, 189, 248, 0.10);
+    border-color: var(--ff-border-glow);
+    color: var(--ff-text);
+    box-shadow: 0 0 0 3px var(--ff-accent-halo);
+}
+
+/* Notification dot: red pulse halo */
+:root[data-theme="dark"] .ff-notif-badge {
+    background: var(--ff-error);
+    border: 2px solid var(--ff-bg);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+    animation: ff-notif-pulse 1.8s ease-out infinite;
+}
+@keyframes ff-notif-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+    70%  { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* Avatar pill in topbar */
+:root[data-theme="dark"] .ff-topbar-avatar {
+    background: linear-gradient(135deg, var(--ff-primary) 0%, var(--ff-accent-strong) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+}
+:root[data-theme="dark"] .ff-topbar-avatar-btn {
+    background: rgba(18, 28, 46, 0.6);
+    border: 1px solid var(--ff-border);
+    color: var(--ff-text-secondary);
+}
+:root[data-theme="dark"] .ff-topbar-avatar-btn:hover {
+    background: rgba(56, 189, 248, 0.08);
+    border-color: var(--ff-border-glow);
+    color: var(--ff-text);
+}
+
+/* Dropdowns anchored in topbar */
+:root[data-theme="dark"] .ff-notification-menu,
+:root[data-theme="dark"] .ff-user-menu {
+    background: rgba(10, 18, 32, 0.94);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border: 1px solid var(--ff-border);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 24px 56px rgba(0, 0, 0, 0.6);
+}
+:root[data-theme="dark"] .ff-notification-menu-title,
+:root[data-theme="dark"] .ff-user-menu-title {
+    color: var(--ff-text);
+}
+:root[data-theme="dark"] .ff-notification-menu-subtitle,
+:root[data-theme="dark"] .ff-user-menu-label {
+    color: var(--ff-text-muted);
+}
+:root[data-theme="dark"] .ff-notification-item:hover,
+:root[data-theme="dark"] .ff-user-menu-item:hover {
+    background: rgba(56, 189, 248, 0.08);
+    color: var(--ff-text);
+}
+
+/* Global search input */
+:root[data-theme="dark"] .ff-global-search-input {
+    background: rgba(18, 28, 46, 0.72) !important;
+    border: 1px solid var(--ff-border);
+    color: var(--ff-text);
+}
+:root[data-theme="dark"] .ff-global-search-input::placeholder {
+    color: var(--ff-text-soft);
+}
+:root[data-theme="dark"] .ff-global-search-input:focus {
+    border-color: var(--ff-accent);
+    box-shadow: 0 0 0 3px var(--ff-accent-halo);
+}
+:root[data-theme="dark"] .ff-global-search-submit {
+    color: var(--ff-text-muted);
+}
+:root[data-theme="dark"] .ff-global-search-submit:hover {
+    color: var(--ff-accent);
 }
