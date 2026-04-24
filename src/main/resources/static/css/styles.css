@@ -24,8 +24,12 @@
     --ff-primary-glow:    rgba(34, 197, 94, 0.16);
     --ff-primary-ring:    rgba(34, 197, 94, 0.18);
 
-    --ff-accent:          #3b82f6;
-    --ff-accent-glow:     rgba(59, 130, 246, 0.12);
+    /* HUD accent — cyan secondary, used for focus rings, chart lines, active sidebar bar, luminous edges */
+    --ff-accent:          #0EA5E9;
+    --ff-accent-strong:   #0284C7;
+    --ff-accent-glow:     rgba(14, 165, 233, 0.14);
+    --ff-accent-halo:     rgba(14, 165, 233, 0.06);
+    --ff-border-glow:     rgba(14, 165, 233, 0.28);
 
     --ff-chart-grid:      rgba(148, 163, 184, 0.18);
     --ff-chart-tooltip-bg:#1d2939;
@@ -105,42 +109,145 @@
     --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-page: 520ms cubic-bezier(0.16, 1, 0.3, 1);
     --transition-emphasis: 700ms cubic-bezier(0.16, 1, 0.3, 1);
+    --transition-hud: 220ms cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* Operations Deck — shared tokens (work in both themes) */
+    --ff-bg-elevated:     #ffffff;
+    --ff-surface-solid:   #ffffff;
+    --ff-info-bg:         rgba(14, 165, 233, 0.10);
+    --ff-info-text:       #0369A1;
 }
 
+/* ══════════════════════════════════════════════
+   OPERATIONS DECK — signature recipes
+   Reusable glass + luminous-border shorthands.
+   Applied via `box-shadow: var(--ff-glow-shadow);` etc.
+══════════════════════════════════════════════ */
+:root {
+    /* Glass surface (translucent, blurred) */
+    --ff-glass-blur:      blur(18px) saturate(140%);
+
+    /* Luminous border shadow stack — at rest (cyan ring invisible) */
+    --ff-glow-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.04),
+        0 0 0 1px rgba(56, 189, 248, 0.00),
+        0 24px 48px -24px rgba(0, 0, 0, 0.18);
+
+    /* Luminous border shadow stack — on hover/focus (cyan ring lights up) */
+    --ff-glow-shadow-hover:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.08),
+        0 0 0 1px rgba(56, 189, 248, 0.22),
+        0 0 32px rgba(56, 189, 248, 0.10),
+        0 28px 56px -24px rgba(0, 0, 0, 0.28);
+}
 :root[data-theme="dark"] {
-    --ff-bg:              #08111f;
-    --ff-surface:         #0f1b2d;
-    --ff-surface-subtle:  #13233a;
-    --ff-surface-hover:   #162943;
+    /* Glass blur slightly stronger in dark */
+    --ff-glass-blur:      blur(18px) saturate(140%);
+    --ff-glow-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.04),
+        0 0 0 1px rgba(56, 189, 248, 0.00),
+        0 24px 48px -24px rgba(0, 0, 0, 0.6);
+    --ff-glow-shadow-hover:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        inset 0 0 0 1px rgba(56, 189, 248, 0.10),
+        0 0 0 1px rgba(56, 189, 248, 0.26),
+        0 0 32px rgba(56, 189, 248, 0.14),
+        0 28px 56px -24px rgba(0, 0, 0, 0.75);
+}
+/* Fallback if backdrop-filter unsupported: opaque surface */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    :root[data-theme="dark"] {
+        --ff-surface:         #121C2E;
+        --ff-surface-subtle:  #162338;
+        --ff-surface-hover:   #1C2A44;
+    }
+}
 
-    --ff-text:            #e2e8f0;
-    --ff-text-secondary:  #cbd5e1;
-    --ff-text-muted:      #b6c7db;
-    --ff-text-soft:       #9db3cc;
+/* Tabular numerals utility — apply to every metric/money/count/time digit */
+.ff-tabular {
+    font-feature-settings: "tnum" 1, "ss01" 1;
+    font-variant-numeric: tabular-nums;
+}
 
-    --ff-border:          rgba(148, 163, 184, 0.22);
-    --ff-border-strong:   rgba(148, 163, 184, 0.34);
+/* Motion guard — respect prefers-reduced-motion globally */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
 
-    --topbar-bg:          rgba(8, 17, 31, 0.88);
+/* ──────────────────────────────────────────────────────────────
+   DARK MODE (principal) — Operations Deck
+   Tactical command-center aesthetic: layered near-black bg,
+   glass surfaces, cyan HUD accent, soft luminous borders.
+   ────────────────────────────────────────────────────────────── */
+:root[data-theme="dark"] {
+    /* Layered backgrounds — depth via near-black with blue cast */
+    --ff-bg:              #05080F;
+    --ff-bg-elevated:     #0A1220;
+    --ff-surface:         rgba(18, 28, 46, 0.72);
+    --ff-surface-solid:   #121C2E;
+    --ff-surface-subtle:  rgba(22, 34, 56, 0.55);
+    --ff-surface-hover:   rgba(32, 48, 78, 0.65);
 
-    --ff-success-bg:      rgba(34, 197, 94, 0.2);
-    --ff-success-text:    #86efac;
+    --ff-text:            #E6EEFB;
+    --ff-text-secondary:  #B8C7DE;
+    --ff-text-muted:      #7F92AE;
+    --ff-text-soft:       #5B6E8A;
 
-    --ff-warning-bg:      rgba(245, 158, 11, 0.2);
-    --ff-warning-text:    #fcd34d;
+    /* Soft luminous borders */
+    --ff-border:          rgba(148, 176, 220, 0.10);
+    --ff-border-strong:   rgba(148, 176, 220, 0.18);
+    --ff-border-glow:     rgba(56, 189, 248, 0.22);
 
-    --ff-error-bg:        rgba(239, 68, 68, 0.2);
-    --ff-error-text:      #fca5a5;
+    /* HUD cyan (slightly brighter than light mode for legibility on dark) */
+    --ff-accent:          #38BDF8;
+    --ff-accent-strong:   #0EA5E9;
+    --ff-accent-glow:     rgba(56, 189, 248, 0.22);
+    --ff-accent-halo:     rgba(56, 189, 248, 0.08);
 
-    --ff-chart-grid:      rgba(148, 163, 184, 0.24);
-    --ff-chart-tooltip-bg:#020817;
-    --ff-chart-tooltip-text:#e2e8f0;
+    --topbar-bg:          rgba(10, 18, 32, 0.72);
 
-    --ff-shadow-xs:       0 1px 2px rgba(2, 6, 23, 0.28);
-    --ff-shadow-sm:       0 2px 6px rgba(2, 6, 23, 0.3);
-    --ff-shadow:          0 8px 24px rgba(2, 6, 23, 0.36);
-    --ff-shadow-md:       0 10px 30px rgba(2, 6, 23, 0.42);
-    --ff-shadow-hover:    0 14px 34px rgba(2, 6, 23, 0.48);
+    --ff-success-bg:      rgba(34, 197, 94, 0.12);
+    --ff-success-text:    #86EFAC;
+
+    --ff-warning-bg:      rgba(245, 158, 11, 0.12);
+    --ff-warning-text:    #FCD34D;
+
+    --ff-error-bg:        rgba(239, 68, 68, 0.12);
+    --ff-error-text:      #FCA5A5;
+
+    --ff-info-bg:         rgba(56, 189, 248, 0.12);
+    --ff-info-text:       #7DD3FC;
+
+    --ff-chart-grid:      rgba(148, 176, 220, 0.14);
+    --ff-chart-tooltip-bg:rgba(10, 18, 32, 0.92);
+    --ff-chart-tooltip-text:#E6EEFB;
+
+    /* Depth shadows tuned for dark — color depth, not flat black */
+    --ff-shadow-xs:       0 1px 0 rgba(148, 176, 220, 0.04) inset, 0 1px 2px rgba(0, 0, 0, 0.4);
+    --ff-shadow-sm:       0 1px 0 rgba(148, 176, 220, 0.05) inset, 0 2px 6px rgba(0, 0, 0, 0.4);
+    --ff-shadow:          0 1px 0 rgba(148, 176, 220, 0.05) inset, 0 8px 24px rgba(0, 0, 0, 0.45);
+    --ff-shadow-md:       0 1px 0 rgba(148, 176, 220, 0.06) inset, 0 10px 30px rgba(0, 0, 0, 0.5);
+    --ff-shadow-hover:    0 1px 0 rgba(148, 176, 220, 0.08) inset, 0 14px 36px rgba(0, 0, 0, 0.55);
+
+    /* Sidebar — glass on deeper bg */
+    --sidebar-bg:         #070B15;
+    --sidebar-surface:    rgba(18, 28, 46, 0.6);
+    --sidebar-border:     rgba(148, 176, 220, 0.08);
+    --sidebar-text:       #E6EEFB;
+    --sidebar-text-muted: #B8C7DE;
+    --sidebar-active-bg:  rgba(56, 189, 248, 0.10);
+    --sidebar-active-border: #38BDF8;
+    --sidebar-hover-bg:   rgba(148, 176, 220, 0.06);
 }
 
 :root[data-theme="dark"] .text-primary { color: #93c5fd !important; }
@@ -181,8 +288,9 @@ body {
 
 :root[data-theme="dark"] body {
     background:
-        radial-gradient(circle at top right, rgba(59, 130, 246, 0.14), transparent 34rem),
-        linear-gradient(135deg, #020817 0%, #08111f 52%, #0b1425 100%);
+        radial-gradient(circle at top right, rgba(56, 189, 248, 0.10), transparent 36rem),
+        radial-gradient(circle at 8% 96%, rgba(34, 197, 94, 0.06), transparent 30rem),
+        linear-gradient(180deg, #05080F 0%, #070C18 60%, #05080F 100%);
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -1811,6 +1919,12 @@ body.ff-global-loading .ff-app-loading-overlay {
     color: var(--ff-warning-text);
 }
 
+.ff-status-warning {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+}
+
+.ff-status-danger,
 .ff-status-overdue {
     background: var(--ff-error-bg);
     color: var(--ff-error-text);
@@ -2690,7 +2804,7 @@ textarea.form-control { min-height: 6rem; }
 }
 
 /* ══════════════════════════════════════════════
-   ACCESS / PIN ENTRY
+   ACCESS / ACCOUNT AUTH
 ══════════════════════════════════════════════ */
 .ff-access-page {
     min-height: 100vh;
@@ -2707,6 +2821,10 @@ textarea.form-control { min-height: 6rem; }
 
 .ff-access-shell {
     width: min(100%, 980px);
+}
+
+.ff-access-shell-premium {
+    width: min(100%, 1120px);
 }
 
 .ff-access-card {
@@ -2822,6 +2940,11 @@ textarea.form-control { min-height: 6rem; }
     border-color: rgba(34, 197, 94, 0.35);
 }
 
+.ff-access-card-auth .ff-access-form {
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 250, 252, 0.94));
+}
+
 .ff-access-help {
     margin-top: var(--space-4);
     color: var(--ff-text-soft);
@@ -2844,6 +2967,40 @@ textarea.form-control { min-height: 6rem; }
     border: 1px solid rgba(245, 158, 11, 0.18);
     color: #92400e;
     font-size: 0.9rem;
+}
+
+:root[data-theme="dark"] .ff-access-page {
+    background:
+        radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 24%),
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 28%),
+        linear-gradient(180deg, #030712 0%, #08111f 100%);
+}
+
+:root[data-theme="dark"] .ff-access-card {
+    background: rgba(11, 20, 34, 0.92);
+    border-color: rgba(148, 163, 184, 0.18);
+}
+
+:root[data-theme="dark"] .ff-access-card-auth .ff-access-form {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(11, 20, 34, 0.98));
+}
+
+:root[data-theme="dark"] .ff-access-form-title,
+:root[data-theme="dark"] .ff-access-form .form-label {
+    color: #f8fafc;
+}
+
+:root[data-theme="dark"] .ff-access-form-text,
+:root[data-theme="dark"] .ff-access-help,
+:root[data-theme="dark"] .ff-access-meta-note,
+:root[data-theme="dark"] .ff-access-form .form-text {
+    color: #cbd5e1;
+}
+
+:root[data-theme="dark"] .ff-access-form .form-control {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(148, 163, 184, 0.24);
+    color: #f8fafc;
 }
 
 /* ══════════════════════════════════════════════
@@ -3687,6 +3844,13 @@ code { color: var(--ff-primary-dark); }
     color: var(--ff-text-soft);
 }
 
+.ff-payroll-brand {
+    width: 126px;
+    height: auto;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 10px 18px rgba(22, 163, 74, 0.14));
+}
+
 .ff-payroll-title {
     margin: 0;
     font-size: clamp(1.8rem, 2.4vw, 2.4rem);
@@ -3787,6 +3951,16 @@ code { color: var(--ff-primary-dark); }
     background: rgba(22, 163, 74, 0.08);
 }
 
+.ff-payroll-preview-card {
+    border-style: dashed;
+}
+
+.ff-payroll-preview-staff {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
 :root[data-theme="dark"] .ff-dashboard-alert-card {
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(17, 24, 39, 0.98));
     border-color: rgba(148, 163, 184, 0.18);
@@ -3829,4 +4003,446 @@ code { color: var(--ff-primary-dark); }
     .ff-payroll-detail-grid {
         grid-template-columns: 1fr;
     }
+}
+
+/* ══════════════════════════════════════════════
+   KPI CARD SEMANTIC VARIANTS
+   Extends .ff-stat-card.ff-kpi-card with color intent.
+   Additive — does not override existing dashboard KPI styles.
+══════════════════════════════════════════════ */
+
+.ff-kpi-card.ff-kpi-positive .ff-stat-value {
+    color: var(--ff-primary-dark);
+}
+.ff-kpi-card.ff-kpi-positive::before {
+    background: var(--ff-primary-glow);
+    opacity: 1;
+}
+
+.ff-kpi-card.ff-kpi-warning .ff-stat-value {
+    color: var(--ff-warning-text);
+}
+.ff-kpi-card.ff-kpi-warning::before {
+    background: rgba(245, 158, 11, 0.10);
+    opacity: 1;
+}
+
+.ff-kpi-card.ff-kpi-danger .ff-stat-value {
+    color: var(--ff-error-text);
+}
+.ff-kpi-card.ff-kpi-danger::before {
+    background: rgba(239, 68, 68, 0.08);
+    opacity: 1;
+}
+
+.ff-kpi-card.ff-kpi-neutral .ff-stat-value {
+    color: var(--ff-text);
+}
+
+/* Dynamic profit card: positive=green, negative=red.
+   Set via th:attr in Thymeleaf and updated by dashboard.js */
+.ff-kpi-card[data-kpi-profit="positive"] .ff-stat-value {
+    color: var(--ff-primary-dark);
+}
+.ff-kpi-card[data-kpi-profit="positive"]::before {
+    background: var(--ff-primary-glow);
+    opacity: 1;
+}
+.ff-kpi-card[data-kpi-profit="negative"] .ff-stat-value {
+    color: var(--ff-error-text);
+}
+.ff-kpi-card[data-kpi-profit="negative"]::before {
+    background: rgba(239, 68, 68, 0.08);
+    opacity: 1;
+}
+
+/* Dark mode adjustments for semantic variants */
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-positive .ff-stat-value,
+:root[data-theme="dark"] .ff-kpi-card[data-kpi-profit="positive"] .ff-stat-value {
+    color: #86efac;
+}
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-danger .ff-stat-value,
+:root[data-theme="dark"] .ff-kpi-card[data-kpi-profit="negative"] .ff-stat-value {
+    color: #fca5a5;
+}
+:root[data-theme="dark"] .ff-kpi-card.ff-kpi-warning .ff-stat-value {
+    color: #fde047;
+}
+
+/* ══════════════════════════════════════════════
+   FILTER PANEL — unified wrapper for filter forms
+══════════════════════════════════════════════ */
+
+.ff-filter-panel {
+    padding: var(--space-4);
+    background: var(--ff-surface-subtle);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--ff-border);
+    margin-bottom: var(--space-1);
+}
+
+@media (min-width: 768px) {
+    .ff-filter-panel {
+        padding: var(--space-5) var(--space-6);
+    }
+}
+
+:root[data-theme="dark"] .ff-filter-panel {
+    background: rgba(15, 23, 42, 0.5);
+    border-color: rgba(148, 163, 184, 0.16);
+}
+
+.ff-global-search {
+    position: relative;
+    display: none;
+    min-width: 320px;
+}
+
+@media (min-width: 1200px) {
+    .ff-global-search {
+        display: block;
+    }
+}
+
+.ff-global-search-form {
+    position: relative;
+}
+
+.ff-global-search-input {
+    padding-right: 2.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--ff-border);
+}
+
+.ff-global-search-submit {
+    position: absolute;
+    top: 50%;
+    right: .4rem;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: var(--ff-text-muted);
+}
+
+.ff-global-search-results {
+    position: absolute;
+    top: calc(100% + .65rem);
+    left: 0;
+    right: 0;
+    z-index: 28;
+    background: var(--ff-surface);
+    border: 1px solid var(--ff-border);
+    border-radius: 1.25rem;
+    box-shadow: var(--ff-shadow-lg);
+    padding: .85rem;
+}
+
+.ff-search-results-group + .ff-search-results-group {
+    margin-top: .75rem;
+    padding-top: .75rem;
+    border-top: 1px solid var(--ff-border);
+}
+
+.ff-search-results-group header {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ff-text-muted);
+    margin-bottom: .4rem;
+}
+
+.ff-search-results-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .75rem .85rem;
+    border-radius: .95rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.ff-search-results-item:hover {
+    background: var(--ff-surface-subtle);
+}
+
+.ff-search-results-item strong,
+.ff-search-results-item small,
+.ff-search-results-item em {
+    display: block;
+}
+
+.ff-search-results-item small,
+.ff-search-results-item em {
+    color: var(--ff-text-muted);
+    font-style: normal;
+}
+
+.ff-user-menu-recent {
+    padding: 0 .85rem .35rem;
+}
+
+.ff-onboarding-tip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 1.25rem;
+    border: 1px solid rgba(37, 99, 235, .18);
+    background: linear-gradient(135deg, rgba(37, 99, 235, .08), rgba(14, 165, 233, .06));
+    border-radius: 1.4rem;
+}
+
+.ff-attention-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.ff-attention-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1rem;
+    border-radius: 1.2rem;
+    border: 1px solid var(--ff-border);
+    text-decoration: none;
+    color: inherit;
+    background: var(--ff-surface-subtle);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.ff-attention-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ff-shadow-md);
+}
+
+.ff-attention-card.is-warning {
+    border-color: rgba(245, 158, 11, .28);
+}
+
+.ff-attention-card.is-danger {
+    border-color: rgba(239, 68, 68, .28);
+}
+
+.ff-attention-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: .95rem;
+    background: rgba(37, 99, 235, .1);
+    color: var(--ff-primary-dark);
+    flex-shrink: 0;
+}
+
+.ff-attention-body {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+}
+
+.ff-attention-title {
+    font-weight: 700;
+}
+
+.ff-attention-count {
+    font-size: 1.45rem;
+    line-height: 1;
+}
+
+.ff-attention-text {
+    color: var(--ff-text-muted);
+    font-size: .92rem;
+}
+
+.ff-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+}
+
+.ff-guide-step {
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+    padding: .9rem 1rem;
+    border-radius: 1rem;
+    text-decoration: none;
+    color: inherit;
+    background: var(--ff-surface-subtle);
+    border: 1px solid transparent;
+}
+
+.ff-guide-step.is-complete {
+    border-color: rgba(22, 163, 74, .24);
+}
+
+.ff-guide-step-mark {
+    color: var(--ff-primary-dark);
+    margin-top: .08rem;
+}
+
+.ff-guide-step-body {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+}
+
+.ff-guide-step-body span {
+    color: var(--ff-text-muted);
+    font-size: .92rem;
+}
+
+.ff-mini-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: .9rem;
+}
+
+.ff-mini-kpi {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: var(--ff-surface-subtle);
+}
+
+.ff-mini-kpi-label {
+    display: block;
+    color: var(--ff-text-muted);
+    font-size: .9rem;
+}
+
+.ff-mini-kpi-value {
+    display: block;
+    font-size: 1.45rem;
+    margin-top: .3rem;
+}
+
+.ff-fab {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    z-index: 40;
+}
+
+.ff-fab-trigger {
+    width: 3.6rem;
+    height: 3.6rem;
+    border: 0;
+    border-radius: 50%;
+    color: #fff;
+    background: linear-gradient(135deg, #16a34a, #0f766e);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, .24);
+}
+
+.ff-fab-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + .9rem);
+    min-width: 220px;
+    display: none;
+    flex-direction: column;
+    gap: .5rem;
+    padding: .8rem;
+    border-radius: 1.2rem;
+    background: var(--ff-surface);
+    border: 1px solid var(--ff-border);
+    box-shadow: var(--ff-shadow-lg);
+}
+
+.ff-fab.is-open .ff-fab-menu {
+    display: flex;
+}
+
+.ff-fab-item {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    text-decoration: none;
+    color: inherit;
+    padding: .75rem .85rem;
+    border-radius: .95rem;
+}
+
+.ff-fab-item:hover {
+    background: var(--ff-surface-subtle);
+}
+
+.ff-empty-state-hero {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--ff-text-muted);
+}
+
+.ff-search-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ff-form-photo-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 10rem;
+    border-radius: 1.25rem;
+    background: var(--ff-surface-subtle);
+    border: 1px solid var(--ff-border);
+    padding: 1rem;
+}
+
+.ff-avatar-xxl {
+    width: 7rem;
+    height: 7rem;
+}
+
+.ff-user-preview-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .75rem;
+    text-align: center;
+}
+
+.ff-form-actions-sticky {
+    position: sticky;
+    bottom: 1rem;
+    z-index: 8;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--ff-border);
+    border-radius: 1.25rem;
+    background: color-mix(in srgb, var(--ff-surface) 88%, transparent);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--ff-shadow-md);
+}
+
+:root[data-theme="dark"] .ff-form-actions-sticky {
+    background: color-mix(in srgb, #0f172a 88%, transparent);
+}
+
+@media (max-width: 991.98px) {
+    .ff-onboarding-tip {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ff-fab {
+        right: 1rem;
+        bottom: 1rem;
+    }
+
+    .ff-form-actions-sticky {
+        bottom: .5rem;
+    }
+}
+
+:root[data-theme="dark"] .ff-global-search-input,
+:root[data-theme="dark"] .ff-global-search-results,
+:root[data-theme="dark"] .ff-fab-menu {
+    background: #0f172a;
 }
