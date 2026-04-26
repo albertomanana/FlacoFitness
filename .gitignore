@@ -33,6 +33,7 @@ temp/
 
 # Herramientas locales
 .tools/
+cookies.txt
 
 # Uploads locales
 uploads/*

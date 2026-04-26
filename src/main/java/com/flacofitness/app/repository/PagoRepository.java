@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,4 +79,35 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     int marcarVencidos(@Param("estadosAbiertos") List<EstadoPago> estadosAbiertos,
                        @Param("vencido") EstadoPago vencido,
                        @Param("fechaReferencia") LocalDate fechaReferencia);
+
+    @Query("""
+        SELECT COUNT(DISTINCT u.id) FROM Usuario u
+        WHERE u.activo = true
+          AND NOT EXISTS (
+              SELECT 1 FROM Pago p WHERE p.usuario.id = u.id AND p.estado IN :estados
+          )
+        """)
+    long countUsuariosSinPagosMorosos(@Param("estados") Collection<EstadoPago> estados);
+
+    @Query("""
+        SELECT COUNT(DISTINCT u.id) FROM Usuario u
+        WHERE u.activo = true
+          AND EXISTS (
+              SELECT 1 FROM Pago p WHERE p.usuario.id = u.id AND p.estado = :pendiente
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM Pago p2 WHERE p2.usuario.id = u.id AND p2.estado = :vencido
+          )
+        """)
+    long countUsuariosConSoloPendiente(@Param("pendiente") EstadoPago pendiente,
+                                       @Param("vencido") EstadoPago vencido);
+
+    @Query("""
+        SELECT COUNT(DISTINCT u.id) FROM Usuario u
+        WHERE u.activo = true
+          AND EXISTS (
+              SELECT 1 FROM Pago p WHERE p.usuario.id = u.id AND p.estado = :vencido
+          )
+        """)
+    long countUsuariosConPagosVencidos(@Param("vencido") EstadoPago vencido);
 }

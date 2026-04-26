@@ -6,9 +6,12 @@ import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.model.enums.EstadoMembresia;
 import com.flacofitness.app.model.enums.TipoMembresia;
+import com.flacofitness.app.service.ControllerActivityLogger;
 import com.flacofitness.app.service.MembresiaService;
 import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,13 +31,16 @@ public class MembresiaController {
     private final MembresiaService membresiaService;
     private final UsuarioService usuarioService;
     private final OperationalClockService operationalClockService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public MembresiaController(MembresiaService membresiaService,
                                UsuarioService usuarioService,
-                               OperationalClockService operationalClockService) {
+                               OperationalClockService operationalClockService,
+                               ControllerActivityLogger controllerActivityLogger) {
         this.membresiaService = membresiaService;
         this.usuarioService = usuarioService;
         this.operationalClockService = operationalClockService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping("/membresias")
@@ -61,16 +67,22 @@ public class MembresiaController {
     public String guardarPlan(@Valid @ModelAttribute("plan") Plan plan,
                               BindingResult bindingResult,
                               Model model,
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              HttpServletRequest request,
+                              HttpSession session) {
         if (bindingResult.hasErrors()) {
             cargarCatalogosPlan(model);
             model.addAttribute("modoEdicion", false);
             return "membresias/form";
         }
 
-        membresiaService.guardarPlan(plan);
+        Plan guardado = membresiaService.guardarPlan(plan);
+        controllerActivityLogger.log(request, session,
+                "membresias", "plan_creado", "plan", guardado.getId(),
+                "Membresia creada",
+                "Se dio de alta el plan " + guardado.getNombre() + ".");
         redirectAttributes.addFlashAttribute("mensajeExito", "Membresia creada correctamente.");
-        return "redirect:/membresias";
+        return "redirect:/membresias/" + guardado.getId();
     }
 
     @GetMapping("/membresias/{id}")
@@ -93,30 +105,52 @@ public class MembresiaController {
                                  @Valid @ModelAttribute("plan") Plan plan,
                                  BindingResult bindingResult,
                                  Model model,
-                                 RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes,
+                                 HttpServletRequest request,
+                                 HttpSession session) {
         if (bindingResult.hasErrors()) {
             cargarCatalogosPlan(model);
             model.addAttribute("modoEdicion", true);
             return "membresias/form";
         }
 
-        membresiaService.actualizarPlan(id, plan);
+        Plan actualizado = membresiaService.actualizarPlan(id, plan);
+        controllerActivityLogger.log(request, session,
+                "membresias", "plan_actualizado", "plan", actualizado.getId(),
+                "Membresia actualizada",
+                "Se actualizo el catalogo del plan " + actualizado.getNombre() + ".");
         redirectAttributes.addFlashAttribute("mensajeExito", "Membresia actualizada correctamente.");
-        return "redirect:/membresias";
+        return "redirect:/membresias/" + actualizado.getId();
     }
 
     @PostMapping("/membresias/{id}/desactivar")
-    public String desactivarPlan(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivarPlan(@PathVariable Long id,
+                                 RedirectAttributes redirectAttributes,
+                                 @RequestParam(name = "returnTo", required = false) String returnTo,
+                                 HttpServletRequest request,
+                                 HttpSession session) {
         membresiaService.desactivarPlan(id);
+        controllerActivityLogger.log(request, session,
+                "membresias", "plan_desactivado", "plan", id,
+                "Membresia desactivada",
+                "Se desactivo temporalmente un plan del catalogo.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Membresia desactivada.");
-        return "redirect:/membresias";
+        return "redirect:" + resolvePlanReturnPath(id, returnTo);
     }
 
     @PostMapping("/membresias/{id}/activar")
-    public String activarPlan(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activarPlan(@PathVariable Long id,
+                              RedirectAttributes redirectAttributes,
+                              @RequestParam(name = "returnTo", required = false) String returnTo,
+                              HttpServletRequest request,
+                              HttpSession session) {
         membresiaService.activarPlan(id);
+        controllerActivityLogger.log(request, session,
+                "membresias", "plan_activado", "plan", id,
+                "Membresia activada",
+                "Se reactivo un plan del catalogo.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Membresia activada.");
-        return "redirect:/membresias";
+        return "redirect:" + resolvePlanReturnPath(id, returnTo);
     }
 
     @GetMapping("/usuarios/{usuarioId}/membresias")
@@ -139,7 +173,9 @@ public class MembresiaController {
                                           @Valid @ModelAttribute("contrato") MembresiaUsuario contrato,
                                           BindingResult bindingResult,
                                           Model model,
-                                          RedirectAttributes redirectAttributes) {
+                                          RedirectAttributes redirectAttributes,
+                                          HttpServletRequest request,
+                                          HttpSession session) {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
         contrato.setUsuario(usuario);
 
@@ -151,7 +187,12 @@ public class MembresiaController {
         }
 
         try {
-            membresiaService.guardarContrato(contrato);
+            MembresiaUsuario guardado = membresiaService.guardarContrato(contrato);
+            controllerActivityLogger.log(request, session,
+                    "membresias", "membresia_asignada", "usuario", usuarioId,
+                    "Membresia asignada",
+                    "Se asigno el plan " + (guardado.getPlan() != null ? guardado.getPlan().getNombre() : "sin plan")
+                            + " al usuario " + usuario.getNombre() + ".");
         } catch (BusinessValidationException ex) {
             bindingResult.reject("membresiaError", ex.getMessage());
             model.addAttribute("usuario", usuario);
@@ -167,8 +208,14 @@ public class MembresiaController {
     @PostMapping("/usuarios/{usuarioId}/membresias/{contratoId}/cancelar")
     public String cancelarMembresiaUsuario(@PathVariable Long usuarioId,
                                            @PathVariable Long contratoId,
-                                           RedirectAttributes redirectAttributes) {
+                                           RedirectAttributes redirectAttributes,
+                                           HttpServletRequest request,
+                                           HttpSession session) {
         membresiaService.cancelarContrato(contratoId);
+        controllerActivityLogger.log(request, session,
+                "membresias", "membresia_cancelada", "usuario", usuarioId,
+                "Membresia cancelada",
+                "Se cancelo un contrato de membresia del usuario.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Contrato de membresia cancelado.");
         return "redirect:/usuarios/" + usuarioId + "/membresias";
     }
@@ -180,5 +227,12 @@ public class MembresiaController {
     private void cargarCatalogosContrato(Model model) {
         model.addAttribute("planes", membresiaService.listarPlanesActivos());
         model.addAttribute("estadosMembresia", EstadoMembresia.values());
+    }
+
+    private String resolvePlanReturnPath(Long id, String returnTo) {
+        if ("detail".equalsIgnoreCase(returnTo)) {
+            return "/membresias/" + id;
+        }
+        return "/membresias";
     }
 }

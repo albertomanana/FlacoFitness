@@ -14,6 +14,12 @@ Tambien se separa actividad y horario:
 - `SesionClase`: ocurrencia programada.
 - `ReservaSesion`: inscripcion de usuario a una sesion.
 
+En 2026-04-23 se anadio una capa de dominio de producto ligera, enfocada a experiencia y trazabilidad:
+
+- `UxMemoryState`: memoria UX por navegador y perfil.
+- `RecentVisit`: ultimas fichas visitadas.
+- `ActivityLog`: actividad reciente del sistema.
+
 ## Entidades principales
 
 ### Usuario
@@ -24,6 +30,9 @@ Campos clave:
 - datos personales y contacto
 - `dni`
 - `fotoPath`
+- `username`
+- `passwordHash`
+- `mustChangePassword`
 - `activo`
 - `fechaRegistro`
 - `fechaProximoPago`
@@ -34,7 +43,7 @@ La relacion legacy con `Plan` se mantiene por compatibilidad; el contrato real v
 
 ### Rol
 
-Clasificacion base del usuario: `ADMIN`, `STAFF` o `CLIENTE` segun semillas y uso del sistema. No sustituye al perfil de acceso por PIN, pero ayuda a modelar identidad en base de datos.
+Clasificacion base del usuario: `ADMIN`, `STAFF` o `CLIENTE` segun semillas y uso del sistema. No sustituye al `AccessProfile` derivado para autorizacion, pero ayuda a modelar identidad y permisos base en base de datos.
 
 ### StaffPerfil
 
@@ -235,6 +244,7 @@ Nomina experimental vinculada a `StaffPerfil` y opcionalmente a `Gasto`.
 Campos clave:
 - staff perfil
 - periodo
+- fecha emision
 - salario base
 - bonus
 - deducciones
@@ -242,6 +252,17 @@ Campos clave:
 - estado
 - referencia
 - gasto asociado
+
+Estados principales:
+- `BORRADOR`
+- `EMITIDA`
+- `PAGADA`
+- `CANCELADA`
+
+Reglas:
+- no se puede duplicar `staff + periodo`;
+- `salarioNeto = salarioBase + bonus - deducciones`;
+- al emitir puede generar automaticamente un `Gasto` de categoria `NOMINA`.
 
 ### Maquina
 
@@ -266,6 +287,55 @@ Campos clave:
 - estado
 - ubicacion
 
+### UxMemoryState
+
+Memoria de onboarding y first-use persistida por navegador y perfil de acceso.
+
+Campos clave:
+- browser token
+- access profile
+- module key
+- tooltip seen
+- empty state dismissed
+- guide step state
+
+No representa negocio de gimnasio; representa continuidad de producto y reduccion de friccion.
+
+### RecentVisit
+
+Historial corto de ultimas fichas consultadas.
+
+Campos clave:
+- browser token
+- access profile
+- entity type
+- entity id
+- title
+- url
+- icon key
+- visited at
+
+Se limita a 10 registros por navegador/perfil para no inflar la tabla.
+
+### ActivityLog
+
+Auditoria ligera de experiencia y operacion.
+
+Campos clave:
+- module key
+- action key
+- entity type
+- entity id
+- title
+- description
+- actor profile
+- browser token
+- route
+- occurred at
+
+Regla importante:
+- el actor persistido sigue siendo el perfil de sesion actual (`ADMIN`, `STAFF_RECEPCION`, etc.), aunque la autenticacion ya sea individual por cuenta.
+
 ## Enums relevantes
 
 - `RolStaff`: RECEPCION, ENTRENADOR, GERENTE, ADMINISTRACION.
@@ -276,6 +346,7 @@ Campos clave:
 - `EstadoReservaSesion`: RESERVADA, ASISTIO, CANCELADA, NO_ASISTIO.
 - `EstadoPago`: PROGRAMADO, PENDIENTE, PAGADO, VENCIDO.
 - `EstadoGasto`: PROGRAMADO, PENDIENTE, PAGADO, VENCIDO, CANCELADO.
+- `EstadoNomina`: BORRADOR, EMITIDA, PAGADA, CANCELADA.
 - `MetodoPago`: EFECTIVO, TARJETA, TRANSFERENCIA.
 - `TipoRutina`: GENERAL, PERSONALIZADA.
 
@@ -286,5 +357,23 @@ Campos clave:
 - `Asistencia` puede existir sin `SesionClase`.
 - `Rutina` puede existir sin `StaffPerfil`.
 - El tiempo de negocio se consulta mediante `OperationalClockService`, pero ya no existe entidad persistida de reloj simulado.
+- La memoria UX y los filtros persistentes no alteran el dominio central: son capas auxiliares de producto.
 
 Esta compatibilidad permite recuperar el proyecto sin romper datos ya creados.
+
+## Nota 2026-04-24
+
+No hubo cambios estructurales en el dominio core del gimnasio o de finanzas. La ampliacion principal fue de identidad y flujo:
+
+- `Usuario` gano credenciales reales (`username`, `passwordHash`, `mustChangePassword`);
+- `Nomina` paso a un flujo mas profesional sin cambiar su rol central en el dominio;
+- `UxMemoryState`, `RecentVisit` y `ActivityLog` siguen sosteniendo onboarding, continuidad y percepcion premium del SaaS.
+
+## Nota 2026-04-26
+
+No hubo cambios en entidades ni reglas de negocio centrales. El bloque fue de estabilizacion:
+
+- busqueda global optimizada mediante repositorios con limite;
+- reutilizacion de calculos mensuales en controladores;
+- mejora ligera de experiencia en nominas/gastos y persistencia de filtros;
+- nuevo test unitario para proteger el contrato funcional de `GlobalSearchService`.

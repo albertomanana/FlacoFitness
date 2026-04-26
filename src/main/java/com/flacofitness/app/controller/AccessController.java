@@ -2,7 +2,6 @@ package com.flacofitness.app.controller;
 
 import com.flacofitness.app.security.AccessAttemptResult;
 import com.flacofitness.app.config.AccessSettings;
-import com.flacofitness.app.security.AccessProfile;
 import com.flacofitness.app.security.AccessSessionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -32,6 +31,12 @@ public class AccessController {
     @GetMapping("/acceso")
     public String mostrarAcceso(HttpSession session, Model model) {
         if (accessSessionService.isGranted(session)) {
+            boolean mustChangePassword = accessSessionService.getCurrentUser(session)
+                    .map(usuario -> Boolean.TRUE.equals(usuario.getMustChangePassword()))
+                    .orElse(false);
+            if (mustChangePassword) {
+                return "redirect:/cuenta/password";
+            }
             return "redirect:" + accessSessionService.resolveTarget(session);
         }
 
@@ -42,24 +47,28 @@ public class AccessController {
         model.addAttribute("targetPath", accessSessionService.resolveTarget(session));
         model.addAttribute("maxAttempts", accessSettings.getMaxAttempts());
         model.addAttribute("lockMinutes", accessSettings.getLockDuration().toMinutes());
-        model.addAttribute("accessProfiles", AccessProfile.values());
         return "auth/acceso";
     }
 
     @PostMapping("/acceso")
-    public String validarAcceso(@RequestParam(name = "pin", required = false) String pin,
-                                @RequestParam(name = "profile", required = false) String rawProfile,
+    public String validarAcceso(@RequestParam(name = "login", required = false) String login,
+                                @RequestParam(name = "password", required = false) String password,
                                 HttpSession session,
                                 RedirectAttributes redirectAttributes) {
-        AccessProfile profile = AccessProfile.from(rawProfile);
-        AccessAttemptResult result = accessSessionService.verifyPin(session, pin, profile);
+        AccessAttemptResult result = accessSessionService.authenticate(session, login, password);
         if (result.granted()) {
             String target = accessSessionService.resolveTarget(session);
             accessSessionService.clearTarget(session);
+            var profile = accessSessionService.getCurrentProfile(session);
             if (!profile.canAccess(target, "GET")) {
                 target = profile.entryPoint();
             }
-            redirectAttributes.addFlashAttribute("mensajeExito", "Acceso concedido en modo " + profile.getLabel() + ".");
+            String successMessage = accessSessionService.getCurrentUser(session)
+                    .map(usuario -> Boolean.TRUE.equals(usuario.getMustChangePassword())
+                            ? "Acceso concedido. Debes cambiar tu contraseña temporal antes de continuar trabajando."
+                            : "Acceso concedido correctamente.")
+                    .orElse("Acceso concedido correctamente.");
+            redirectAttributes.addFlashAttribute("mensajeExito", successMessage);
             return "redirect:" + target;
         }
 
@@ -70,7 +79,7 @@ public class AccessController {
     @PostMapping("/salir")
     public String cerrarAcceso(HttpSession session, RedirectAttributes redirectAttributes) {
         accessSessionService.clear(session);
-        redirectAttributes.addFlashAttribute("mensajeExito", "El acceso se cerro correctamente.");
+        redirectAttributes.addFlashAttribute("mensajeExito", "La sesion se cerro correctamente.");
         return "redirect:/acceso";
     }
 

@@ -13,8 +13,9 @@
                 {}
             </script>
 
-            <div class="ff-content-stack"
+            <div class="ff-content-stack ff-command-stack"
                  data-dashboard
+                 data-module-key="dashboard"
                  th:attr="data-stats-dashboard-url=@{/stats/dashboard},data-default-range=${dashboardRangoDias}">
 
                 <section class="ff-section-header ff-animate-in">
@@ -36,6 +37,18 @@
                         <button type="button" class="btn btn-outline-secondary" data-dashboard-refresh>Actualizar</button>
                         <span class="ff-dashboard-updated" data-dashboard-updated-at>Ultima actualizacion: ahora</span>
                     </div>
+                </section>
+
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${dashboardUxState != null and !dashboardUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="dashboard">
+                    <div>
+                        <span class="ff-section-eyebrow">Primer uso</span>
+                        <h3 class="ff-card-title mt-1">Empieza por tres pasos simples</h3>
+                        <p class="ff-card-subtitle">Crea cliente, conecta membresia y registra el primer pago para que el panel empiece a trabajar contigo.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
                 </section>
 
                 <section class="ff-dashboard-rail-panel ff-animate-in"
@@ -84,6 +97,73 @@
                     </div>
                 </section>
 
+                <section class="row g-4 ff-animate-in">
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Requiere atencion</p>
+                                    <h3 class="ff-card-title mt-1">Prioridades operativas del dia</h3>
+                                    <p class="ff-card-subtitle">Senales unificadas de clientes, cobros, mantenimiento e inventario.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body pt-0">
+                                <div class="ff-attention-grid" th:if="${attentionItems != null and !#lists.isEmpty(attentionItems)}">
+                                    <a class="ff-attention-card"
+                                       th:each="item : ${attentionItems}"
+                                       th:href="${item.url}"
+                                       th:classappend="' is-' + ${item.tone}">
+                                        <div class="ff-attention-icon"><i class="fa-solid" th:classappend="${item.icon}"></i></div>
+                                        <div class="ff-attention-body">
+                                            <span class="ff-attention-title" th:text="${item.title}">Usuarios en riesgo</span>
+                                            <strong class="ff-attention-count" th:text="${item.count}">0</strong>
+                                            <span class="ff-attention-text" th:text="${item.description}">Descripcion</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-12 col-xl-4">
+                        <article class="ff-surface-card h-100"
+                                 data-ux-empty-state
+                                 data-module-key="dashboard">
+                            <div class="ff-card-header">
+                                <div class="d-flex justify-content-between align-items-start gap-3 w-100">
+                                    <div>
+                                        <p class="ff-section-eyebrow mb-0">Onboarding</p>
+                                        <h3 class="ff-card-title mt-1">Guia inicial</h3>
+                                        <p class="ff-card-subtitle">La app se explica sola para que el arranque no tenga friccion.</p>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-ux-empty-dismiss
+                                            th:if="${dashboardGuide != null and !dashboardGuide.completed() and !dashboardGuide.dismissed()}">Ocultar</button>
+                                </div>
+                            </div>
+                            <div class="ff-card-body" th:if="${dashboardGuide != null and !dashboardGuide.dismissed()}">
+                                <div class="ff-guide-list" th:if="${dashboardGuide != null}">
+                                    <a class="ff-guide-step"
+                                       th:each="step : ${dashboardGuide.steps}"
+                                       th:href="${step.url}"
+                                        th:classappend="${step.completed} ? ' is-complete' : ''">
+                                        <span class="ff-guide-step-mark">
+                                            <i class="fa-solid" th:classappend="${step.completed} ? ' fa-circle-check' : ' fa-circle'"></i>
+                                        </span>
+                                        <span class="ff-guide-step-body">
+                                            <strong th:text="${step.title}">Crear cliente</strong>
+                                            <span th:text="${step.description}">Descripcion</span>
+                                        </span>
+                                    </a>
+                                </div>
+                                <div class="ff-empty-inline" th:if="${dashboardGuide != null and dashboardGuide.completed()}">
+                                    El onboarding operativo ya esta completado. Puedes ocultar este bloque y apoyarte en el panel de atencion.
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
                 <section class="ff-kpi-grid ff-kpi-grid-priority ff-animate-in">
                     <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios activos</p>
@@ -115,7 +195,8 @@
                     </a>
                     <a th:href="@{/gastos}"
                        th:if="${accessProfile.canSeeSection('gastos') and accessProfile.canSeeSection('pagos')}"
-                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none"
+                       th:attr="data-kpi-profit=${beneficioEstimado != null and beneficioEstimado.signum() >= 0} ? 'positive' : 'negative'">
                         <p class="ff-stat-label">Beneficio estimado</p>
                         <p class="ff-stat-value" data-stat="beneficioEstimado" data-stat-kind="currency"
                            th:text="${#numbers.formatDecimal(beneficioEstimado, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
@@ -287,6 +368,28 @@
                             <article class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
+                                        <p class="ff-section-eyebrow mb-0">Memoria de trabajo</p>
+                                        <h3 class="ff-card-title mt-1">Ultimos visitados</h3>
+                                        <p class="ff-card-subtitle">Retoma fichas recientes sin buscar otra vez.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-action-list" th:if="${recentVisits != null and !#lists.isEmpty(recentVisits)}">
+                                        <a class="ff-action-link" th:each="visit : ${recentVisits}" th:href="${visit.url}">
+                                            <div>
+                                                <strong th:text="${visit.title}">Visita</strong>
+                                                <span th:text="${visit.visitedAtLabel}">23/04 11:30</span>
+                                            </div>
+                                            <span class="ff-kpi-highlight" th:text="${visit.entityType}">usuario</span>
+                                        </a>
+                                    </div>
+                                    <div class="ff-empty-inline" th:if="${recentVisits == null or #lists.isEmpty(recentVisits)}">Todavia no hay visitas recientes guardadas.</div>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
                                         <p class="ff-section-eyebrow mb-0">Renovaciones</p>
                                         <h3 class="ff-card-title mt-1">Proximos vencimientos</h3>
                                         <p class="ff-card-subtitle">Miembros con cobro o renovacion cercana.</p>
@@ -367,6 +470,67 @@
                                 </div>
                             </article>
                         </div>
+                    </div>
+                </section>
+
+                <section class="row g-4 ff-animate-in">
+                    <div class="col-12 col-xl-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Hoy</p>
+                                    <h3 class="ff-card-title mt-1">Pulso diario</h3>
+                                    <p class="ff-card-subtitle">Lo inmediato del negocio: sesiones, trials y actividad actual.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-mini-kpi-grid">
+                                    <a class="ff-mini-kpi" th:href="@{/sesiones}">
+                                        <span class="ff-mini-kpi-label">Sesiones hoy</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${sesionesHoy}">0</strong>
+                                    </a>
+                                    <a class="ff-mini-kpi" th:href="@{/trials}" th:if="${accessProfile.canSeeSection('trials')}">
+                                        <span class="ff-mini-kpi-label">Trials hoy</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${trialsHoy}">0</strong>
+                                    </a>
+                                    <a class="ff-mini-kpi" th:href="@{/asistencias}" th:if="${accessProfile.canSeeSection('asistencias')}">
+                                        <span class="ff-mini-kpi-label">Asistencias hoy</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${asistenciasHoy}">0</strong>
+                                    </a>
+                                    <a class="ff-mini-kpi" th:href="@{/staff}" th:if="${accessProfile.canSeeSection('staff')}">
+                                        <span class="ff-mini-kpi-label">Staff activo</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${staffActivos}">0</strong>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Actividad reciente</p>
+                                    <h3 class="ff-card-title mt-1">Registro operativo</h3>
+                                    <p class="ff-card-subtitle">Acciones recientes del sistema para dar sensacion de producto vivo.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-timeline-list" th:if="${recentActivity != null and !#lists.isEmpty(recentActivity)}">
+                                    <article class="ff-timeline-item" th:each="item : ${recentActivity}">
+                                        <div class="ff-timeline-dot"></div>
+                                        <div class="ff-timeline-body">
+                                            <div class="ff-timeline-meta">
+                                                <span class="ff-soft-badge" th:text="${item.actorProfileLabel}">ADMIN</span>
+                                                <span th:text="${item.occurredAtLabel}">23/04/2026 12:00</span>
+                                            </div>
+                                            <strong th:text="${item.title}">Pago registrado</strong>
+                                            <p th:text="${item.description}">Descripcion</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="ff-empty-inline" th:if="${recentActivity == null or #lists.isEmpty(recentActivity)}">Todavia no hay actividad operativa reciente registrada.</div>
+                            </div>
+                        </article>
                     </div>
                 </section>
 

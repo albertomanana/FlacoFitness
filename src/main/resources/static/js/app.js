@@ -1,6 +1,7 @@
 (() => {
     const SPLASH_SESSION_KEY = "flacofitness:splash-seen:v1";
     const THEME_STORAGE_KEY = "flacofitness:theme:v1";
+    const BROWSER_TOKEN_STORAGE_KEY = "flacofitness:browser-token:v1";
     const LIGHT_THEME = "light";
     const DARK_THEME = "dark";
     const PAGE_TRANSITION_DELAY = 140;
@@ -68,7 +69,16 @@
         initializeRevealBlocks();
         initializeScrollableRails();
         initializePaymentFormAssistant();
+        initializePayrollBuilder();
+        initializeUserFormAssistant();
+        initializeSelectSearch();
         initializeThemeToggle();
+        initializeBrowserTokenMirror();
+        initializeFab();
+        initializeGlobalSearch();
+        initializeUxMemoryActions();
+        initializeUxEmptyStateActions();
+        initializePersistentFilters();
     });
 
     window.addEventListener("pageshow", () => {
@@ -226,7 +236,7 @@
 
     function initializeThemeState() {
         const storedTheme = readStoredTheme();
-        applyTheme(storedTheme || LIGHT_THEME, false);
+        applyTheme(storedTheme || DARK_THEME, false);
     }
 
     function initializeThemeToggle() {
@@ -275,9 +285,12 @@
     function readStoredTheme() {
         try {
             const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-            return stored === DARK_THEME ? DARK_THEME : LIGHT_THEME;
+            if (stored === DARK_THEME || stored === LIGHT_THEME) {
+                return stored;
+            }
+            return null;
         } catch (error) {
-            return LIGHT_THEME;
+            return null;
         }
     }
 
@@ -490,6 +503,209 @@
         updateSummary();
     }
 
+    function initializePayrollBuilder() {
+        const root = document.querySelector("[data-payroll-builder]");
+        if (!root) {
+            return;
+        }
+
+        const staffSelect = root.querySelector("[name='staffPerfil.id']");
+        const periodInput = root.querySelector("[name='periodo']");
+        const baseInput = root.querySelector("[data-payroll-base]");
+        const bonusInput = root.querySelector("[data-payroll-bonus]");
+        const deductionsInput = root.querySelector("[data-payroll-deductions]");
+        const roleTarget = root.querySelector("[data-payroll-role]");
+        const nameTarget = root.querySelector("[data-payroll-name]");
+        const periodTarget = root.querySelector("[data-payroll-period]");
+        const baseTarget = root.querySelector("[data-payroll-base-text]");
+        const bonusTarget = root.querySelector("[data-payroll-bonus-text]");
+        const deductionsTarget = root.querySelector("[data-payroll-deductions-text]");
+        const netTarget = root.querySelector("[data-payroll-net-text]");
+        const referenceTarget = root.querySelector("[data-payroll-reference]");
+
+        if (!staffSelect || !periodInput || !baseInput || !bonusInput || !deductionsInput) {
+            return;
+        }
+
+        const parseAmount = (value) => {
+            const parsed = Number.parseFloat(value || "0");
+            return Number.isFinite(parsed) ? parsed : 0;
+        };
+
+        const updatePreview = () => {
+            const selectedOption = staffSelect.options[staffSelect.selectedIndex];
+            const selectedLabel = selectedOption?.dataset.displayName
+                || selectedOption?.textContent?.split(" - ")[0]?.trim()
+                || "Selecciona un staff";
+            const role = selectedOption?.dataset.role || "STAFF";
+            const period = periodInput.value || "Periodo sin definir";
+
+            if (selectedOption?.dataset.base && !baseInput.value) {
+                baseInput.value = selectedOption.dataset.base;
+            }
+            if (selectedOption?.dataset.bonus && !bonusInput.value) {
+                bonusInput.value = selectedOption.dataset.bonus;
+            }
+            if (selectedOption?.dataset.deducciones && !deductionsInput.value) {
+                deductionsInput.value = selectedOption.dataset.deducciones;
+            }
+
+            const base = parseAmount(baseInput.value);
+            const bonus = parseAmount(bonusInput.value);
+            const deductions = parseAmount(deductionsInput.value);
+            const net = base + bonus - deductions;
+
+            roleTarget && (roleTarget.textContent = role);
+            nameTarget && (nameTarget.textContent = selectedLabel);
+            periodTarget && (periodTarget.textContent = period);
+            baseTarget && (baseTarget.textContent = utils.formatCurrency(parseAmount(baseInput.value)));
+            bonusTarget && (bonusTarget.textContent = utils.formatCurrency(parseAmount(bonusInput.value)));
+            deductionsTarget && (deductionsTarget.textContent = utils.formatCurrency(parseAmount(deductionsInput.value)));
+            netTarget && (netTarget.textContent = utils.formatCurrency(net));
+            referenceTarget && (referenceTarget.textContent = selectedOption?.value
+                ? `NOM-${String(period).replace("-", "")}-${selectedOption.value}`
+                : "se genera al guardar");
+        };
+
+        [staffSelect, periodInput, baseInput, bonusInput, deductionsInput].forEach((element) => {
+            element.addEventListener("change", updatePreview);
+            element.addEventListener("input", updatePreview);
+        });
+
+        updatePreview();
+    }
+
+    function initializeUserFormAssistant() {
+        const form = document.querySelector("[data-ff-user-form]");
+        if (!form) {
+            return;
+        }
+
+        const emailInput = form.querySelector("[data-ff-username-source]");
+        const usernameInput = form.querySelector("[data-ff-username-input]");
+        const photoInput = form.querySelector("[data-ff-photo-input]");
+        const photoPreview = form.querySelector("[data-ff-photo-preview]");
+        const photoPreviewSecondary = form.querySelector("[data-ff-photo-preview-secondary]");
+        const namePreview = form.querySelector("[data-ff-name-preview]");
+        const emailPreview = form.querySelector("[data-ff-email-preview]");
+        const usernamePreview = form.querySelector("[data-ff-username-preview]");
+        const firstNameInput = form.querySelector("[name='nombre']");
+        const lastNameInput = form.querySelector("[name='apellidos']");
+
+        if (!emailInput || !usernameInput) {
+            return;
+        }
+
+        const originalPhoto = photoPreview?.getAttribute("src") || photoPreviewSecondary?.getAttribute("src") || "";
+        let usernameTouched = usernameInput.value.trim().length > 0;
+
+        const slugifyUsername = (value) => String(value || "")
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/@.*$/, "")
+            .replace(/[^a-zA-Z0-9._-]/g, "")
+            .toLowerCase();
+
+        const updatePreview = () => {
+            const fullName = [firstNameInput?.value, lastNameInput?.value]
+                .map((part) => String(part || "").trim())
+                .filter(Boolean)
+                .join(" ");
+
+            if (namePreview) {
+                namePreview.textContent = fullName || "Nuevo usuario";
+            }
+            if (emailPreview) {
+                emailPreview.textContent = emailInput.value.trim() || "correo@ejemplo.com";
+            }
+            if (usernamePreview) {
+                usernamePreview.textContent = `@${usernameInput.value.trim() || "username"}`;
+            }
+        };
+
+        const syncGeneratedUsername = () => {
+            if (!usernameTouched) {
+                usernameInput.value = slugifyUsername(emailInput.value.trim());
+            }
+            updatePreview();
+        };
+
+        const updatePhotoPreview = (file) => {
+            const nextSource = !file ? originalPhoto : URL.createObjectURL(file);
+            if (photoPreview) {
+                photoPreview.src = nextSource;
+            }
+            if (photoPreviewSecondary) {
+                photoPreviewSecondary.src = nextSource;
+            }
+        };
+
+        usernameInput.addEventListener("input", () => {
+            usernameTouched = usernameInput.value.trim().length > 0;
+            updatePreview();
+        });
+
+        emailInput.addEventListener("input", syncGeneratedUsername);
+        firstNameInput?.addEventListener("input", updatePreview);
+        lastNameInput?.addEventListener("input", updatePreview);
+        photoInput?.addEventListener("change", () => updatePhotoPreview(photoInput.files?.[0]));
+
+        syncGeneratedUsername();
+        updatePreview();
+    }
+
+    function initializeSelectSearch() {
+        document.querySelectorAll("[data-ff-select-search]").forEach((input) => {
+            const targetId = input.dataset.selectSearchTarget;
+            const select = targetId ? document.getElementById(targetId) : null;
+            if (!select) {
+                return;
+            }
+
+            const originalOptions = Array.from(select.options).map((option) => ({
+                value: option.value,
+                text: option.textContent || "",
+                disabled: option.disabled
+            }));
+
+            const renderOptions = (term) => {
+                const normalizedTerm = String(term || "").trim().toLowerCase();
+                const selectedValue = select.value;
+                const placeholder = originalOptions[0];
+                const matches = originalOptions.slice(1).filter((option) =>
+                    !normalizedTerm || option.text.toLowerCase().includes(normalizedTerm)
+                );
+
+                select.innerHTML = "";
+
+                if (placeholder) {
+                    const placeholderOption = new Option(placeholder.text, placeholder.value, false, !selectedValue);
+                    placeholderOption.disabled = placeholder.disabled;
+                    select.add(placeholderOption);
+                }
+
+                if (matches.length === 0) {
+                    select.add(new Option(input.dataset.noResults || "Sin coincidencias", ""));
+                    select.value = "";
+                    return;
+                }
+
+                matches.forEach((option) => {
+                    const next = new Option(option.text, option.value, false, option.value === selectedValue);
+                    next.disabled = option.disabled;
+                    select.add(next);
+                });
+
+                if (matches.some((option) => option.value === selectedValue)) {
+                    select.value = selectedValue;
+                }
+            };
+
+            input.addEventListener("input", () => renderOptions(input.value));
+            renderOptions(input.value);
+        });
+    }
+
     function initializeScrollableRails() {
         document.querySelectorAll("[data-scroll-rail]").forEach((rail) => {
             const railId = rail.getAttribute("id");
@@ -518,5 +734,231 @@
                 button.addEventListener("click", () => scrollByCard(1));
             });
         });
+    }
+
+    function initializeBrowserTokenMirror() {
+        const browserToken = readCookie("ff_browser_token");
+        if (!browserToken) {
+            return;
+        }
+
+        try {
+            window.localStorage.setItem(BROWSER_TOKEN_STORAGE_KEY, browserToken);
+        } catch (error) {
+            // Ignore storage failures gracefully.
+        }
+    }
+
+    function initializeFab() {
+        const fab = document.querySelector("[data-fab]");
+        if (!fab) {
+            return;
+        }
+
+        const trigger = fab.querySelector("[data-fab-trigger]");
+        const menu = fab.querySelector("[data-fab-menu]");
+        if (!trigger || !menu) {
+            return;
+        }
+
+        const closeFab = () => fab.classList.remove("is-open");
+
+        trigger.addEventListener("click", () => {
+            fab.classList.toggle("is-open");
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!fab.contains(event.target)) {
+                closeFab();
+            }
+        });
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeFab();
+            }
+        });
+    }
+
+    function initializeGlobalSearch() {
+        const root = document.querySelector("[data-global-search]");
+        if (!root) {
+            return;
+        }
+
+        const input = root.querySelector("[data-global-search-input]");
+        const results = root.querySelector("[data-global-search-results]");
+        if (!input || !results) {
+            return;
+        }
+
+        const closeResults = () => {
+            results.innerHTML = "";
+            results.classList.add("d-none");
+        };
+
+        const renderResults = (payload) => {
+            const groups = Array.isArray(payload?.groups) ? payload.groups : [];
+            if (groups.length === 0) {
+                closeResults();
+                return;
+            }
+
+            results.innerHTML = groups.map((group) => `
+                <section class="ff-search-results-group">
+                    <header>${escapeHtml(group.label || "Resultados")}</header>
+                    ${(group.items || []).map((item) => `
+                        <a class="ff-search-results-item" href="${item.url}">
+                            <span>
+                                <strong>${escapeHtml(item.title || "Resultado")}</strong>
+                                <small>${escapeHtml(item.subtitle || "")}</small>
+                            </span>
+                            <em>${escapeHtml(item.group || "")}</em>
+                        </a>
+                    `).join("")}
+                </section>
+            `).join("");
+            results.classList.remove("d-none");
+        };
+
+        const debouncedSearch = utils.debounce(async () => {
+            const query = input.value.trim();
+            if (query.length < 2) {
+                closeResults();
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/busqueda/global?q=${encodeURIComponent(query)}`, {
+                    headers: { Accept: "application/json" }
+                });
+                if (!response.ok) {
+                    closeResults();
+                    return;
+                }
+                renderResults(await response.json());
+            } catch (error) {
+                console.error(error);
+                closeResults();
+            }
+        }, 180);
+
+        input.addEventListener("input", debouncedSearch);
+        document.addEventListener("click", (event) => {
+            if (!root.contains(event.target)) {
+                closeResults();
+            }
+        });
+        input.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+                closeResults();
+            }
+        });
+    }
+
+    function initializeUxMemoryActions() {
+        document.querySelectorAll("[data-ux-tooltip]").forEach((tooltip) => {
+            const dismissButton = tooltip.querySelector("[data-ux-tooltip-dismiss]");
+            const moduleKey = tooltip.dataset.moduleKey;
+            if (!dismissButton || !moduleKey) {
+                return;
+            }
+
+            dismissButton.addEventListener("click", async () => {
+                await postUxState("/ux/tooltip/seen", { moduleKey });
+                tooltip.remove();
+            });
+        });
+    }
+
+    function initializeUxEmptyStateActions() {
+        document.querySelectorAll("[data-ux-empty-state]").forEach((panel) => {
+            const dismissButton = panel.querySelector("[data-ux-empty-dismiss]");
+            const moduleKey = panel.dataset.moduleKey;
+            if (!dismissButton || !moduleKey) {
+                return;
+            }
+
+            dismissButton.addEventListener("click", async () => {
+                await postUxState("/ux/empty-state/dismiss", { moduleKey });
+                panel.remove();
+            });
+        });
+    }
+
+    function initializePersistentFilters() {
+        document.querySelectorAll("form[data-filter-memory-key]").forEach((form) => {
+            const key = form.dataset.filterMemoryKey;
+            if (!key) {
+                return;
+            }
+
+            restoreFormState(form, key);
+            form.addEventListener("change", () => persistFormState(form, key));
+            form.addEventListener("submit", () => persistFormState(form, key));
+        });
+    }
+
+    async function postUxState(url, payload) {
+        const body = new URLSearchParams(payload);
+        try {
+            await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+                },
+                body: body.toString()
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function persistFormState(form, key) {
+        const values = {};
+        new FormData(form).forEach((value, field) => {
+            values[field] = value;
+        });
+
+        try {
+            window.localStorage.setItem(`ff:filters:${key}`, JSON.stringify(values));
+        } catch (error) {
+            // Ignore storage failures gracefully.
+        }
+    }
+
+    function restoreFormState(form, key) {
+        try {
+            const raw = window.localStorage.getItem(`ff:filters:${key}`);
+            if (!raw) {
+                return;
+            }
+
+            const values = JSON.parse(raw);
+            Object.entries(values).forEach(([field, value]) => {
+                const target = form.elements.namedItem(field);
+                if (target && "value" in target) {
+                    target.value = value;
+                }
+            });
+        } catch (error) {
+            // Ignore storage failures gracefully.
+        }
+    }
+
+    function readCookie(name) {
+        const prefix = `${name}=`;
+        return document.cookie.split(";").map((value) => value.trim())
+            .find((value) => value.startsWith(prefix))
+            ?.slice(prefix.length) || null;
+    }
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll("\"", "&quot;")
+            .replaceAll("'", "&#39;");
     }
 })();

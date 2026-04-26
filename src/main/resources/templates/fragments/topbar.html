@@ -17,7 +17,7 @@
         <div class="ff-operational-clock" th:if="${operationalClock != null}">
             <div class="ff-operational-clock-display">
                 <span class="ff-operational-clock-status is-system"
-                    th:text="${operationalClock.statusLabel}">Sistema</span>
+                      th:text="${operationalClock.statusLabel}">Sistema</span>
                 <strong th:text="${operationalClock.dateLabel}">Lunes, 20 abril 2026</strong>
                 <span th:text="${operationalClock.timeLabel}">12:00</span>
             </div>
@@ -25,11 +25,28 @@
         <div class="ff-topbar-info">
             <span class="ff-topbar-eyebrow">FlacoFitness</span>
             <h1 class="ff-topbar-title" th:text="${pageTitle}">Panel</h1>
-            <span class="ff-topbar-text" th:text="${pageHint}">Vista de trabajo del modulo actual.</span>
+            <span class="ff-topbar-text" th:text="${pageHint}">Vista de trabajo del panel actual.</span>
         </div>
     </div>
 
     <div class="ff-topbar-actions">
+        <div class="ff-global-search" data-global-search th:if="${accessProfile.name() != 'CLIENTE'}">
+            <form class="ff-global-search-form" th:action="@{/busqueda}" method="get">
+                <label class="visually-hidden" for="ffGlobalSearchInput">Buscar en usuarios, staff y sesiones</label>
+                <input id="ffGlobalSearchInput"
+                       class="form-control ff-global-search-input"
+                       type="search"
+                       name="q"
+                       placeholder="Buscar usuarios, staff o sesiones"
+                       autocomplete="off"
+                       data-global-search-input>
+                <button class="ff-global-search-submit" type="submit" aria-label="Buscar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+            </form>
+            <div class="ff-global-search-results d-none" data-global-search-results></div>
+        </div>
+
         <button class="ff-topbar-btn ff-theme-toggle"
                 type="button"
                 data-theme-toggle
@@ -80,7 +97,7 @@
                         <span class="ff-notification-item-body">
                             <span class="ff-notification-item-title" th:text="${notification.title}">Pago pendiente</span>
                             <span class="ff-notification-item-text" th:text="${notification.description}">Revisa el estado del cobro.</span>
-                            <span class="ff-notification-item-link" th:text="${notification.actionLabel}">Abrir modulo</span>
+                            <span class="ff-notification-item-link" th:text="${notification.actionLabel}">Abrir panel</span>
                         </span>
                     </a>
                 </div>
@@ -97,18 +114,29 @@
                     aria-expanded="false"
                     aria-label="Sesion de acceso">
                 <div class="ff-topbar-avatar" th:text="${accessProfile.initials}">AD</div>
-                <span class="ff-topbar-avatar-name" th:text="${accessProfile.label}">Acceso PIN</span>
+                <span class="ff-topbar-avatar-name"
+                      th:text="${currentUser != null ? (currentUser.username != null ? currentUser.username : currentUser.email) : accessProfile.label}">usuario</span>
             </button>
             <div class="dropdown-menu dropdown-menu-end ff-user-menu shadow-lg">
                 <div class="ff-user-menu-header">
                     <span class="ff-user-menu-label">Sesion activa</span>
-                    <strong class="ff-user-menu-title" th:text="${accessProfile.displayName}">Modo operador</strong>
-                    <small class="text-muted" th:text="${accessProfile.description}">Perfil activo</small>
+                    <strong class="ff-user-menu-title"
+                            th:text="${currentUser != null ? currentUser.nombre + (currentUser.apellidos != null and !currentUser.apellidos.isBlank() ? ' ' + currentUser.apellidos : '') : accessProfile.displayName}">Cuenta</strong>
+                    <small class="text-muted"
+                           th:text="${currentUser != null ? ((currentUser.username != null ? currentUser.username : currentUser.email) + ' · ' + accessProfile.label) : accessProfile.description}">Perfil activo</small>
                 </div>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item ff-user-menu-item" th:href="@{/}">Ir al dashboard</a>
+                <a class="dropdown-item ff-user-menu-item" th:href="@{/cuenta/password}">Cambiar contraseña</a>
+                <div class="ff-user-menu-recent" th:if="${recentVisits != null and !#lists.isEmpty(recentVisits)}">
+                    <span class="ff-user-menu-label mt-2">Ultimos visitados</span>
+                    <a class="dropdown-item ff-user-menu-item"
+                       th:each="visit : ${recentVisits}"
+                       th:href="${visit.url}"
+                       th:text="${visit.title}">Visita</a>
+                </div>
                 <form th:action="@{/salir}" method="post" class="m-0">
-                    <button class="dropdown-item ff-user-menu-item text-danger" type="submit">Cerrar acceso</button>
+                    <button class="dropdown-item ff-user-menu-item text-danger" type="submit">Cerrar sesion</button>
                 </form>
             </div>
         </div>

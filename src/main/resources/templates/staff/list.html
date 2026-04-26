@@ -7,8 +7,19 @@
     <div class="ff-main">
         <div th:replace="~{fragments/topbar :: topbar('Staff', 'Equipo operativo.')}"></div>
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack" data-module-key="staff">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="staff">
+                    <div>
+                        <span class="ff-section-eyebrow">Staff</span>
+                        <h3 class="ff-card-title mt-1">Modela el equipo con criterio operativo</h3>
+                        <p class="ff-card-subtitle">Define quien entrena, quien recepciona y quien gestiona para que clases, nominas y gastos queden conectados.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Gestion</span>
@@ -96,7 +107,6 @@
                                     <td><span class="ff-status-badge" th:classappend="${perfil.activo == true} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${perfil.activo == true} ? 'Activo' : 'Inactivo'">Activo</span></td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2">
-                                            <a class="btn btn-outline-success btn-sm" th:href="@{/staff/{id}/editar(id=${perfil.id})}">Editar</a>
                                             <form th:if="${perfil.activo == true}" th:action="@{/staff/{id}/desactivar(id=${perfil.id})}" method="post"><button class="btn btn-outline-danger btn-sm" type="submit">Desactivar</button></form>
                                             <form th:unless="${perfil.activo == true}" th:action="@{/staff/{id}/activar(id=${perfil.id})}" method="post"><button class="btn btn-outline-success btn-sm" type="submit">Activar</button></form>
                                         </div>
@@ -104,7 +114,7 @@
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(staff)}">
-                                <tr><td colspan="7" class="text-center ff-empty-state">No hay perfiles de staff todavia.</td></tr>
+                                <tr><td colspan="7" class="text-center ff-empty-state">No hay perfiles de staff todavia. Crea el primero para conectar sesiones, nominas y operativa interna. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/staff/nuevo}">Crear perfil</a></td></tr>
                                 </tbody>
                             </table>
                         </div>

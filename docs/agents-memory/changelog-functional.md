@@ -6,6 +6,40 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 ## Historial
 
+### 2026-04-24 (Operations Deck — rediseño visual completo)
+
+- Se lanzó un rediseño visual completo de la shell y los módulos con la estética "Operations Deck": dark-first, glassmorphism sutil, acento HUD cian `#38BDF8`, verde `#22C55E` preservado para marca y CTAs.
+- Bloque 1: tokens de color renovados en `:root[data-theme="dark"]` con paleta táctica (azul near-black, superficies glass, borders luminosos). Tokens cian añadidos al root claro como fallback. Clase `.ff-tabular` para dígitos métricos.
+- Bloque 2: sidebar con fondo glass, barra activa cian con glow, scanline animada en topbar (8 s, 6 % opacidad, off en reduced-motion), dropdowns glass, toggle rail persistido.
+- Bloque 3: `.ff-kpi-card` evolucionada con eyebrow/chip/value/foot, corner ticks via pseudo-elementos, hover lift 1.005 con glow cian. `.ff-surface-card` recibe header con regla gradiente.
+- Bloque 4: override global de DataTables (header Manrope, filas 52 px, paginación ghost pills, activo cian), formularios con input glass, focus ring cian halo, barra roja en error. Botones primary con gradiente verde glow.
+- Bloque 5: `getChartColors()` actualizado con paleta temática via `getComputedStyle`; tooltip glass panel con borde cian y fuentes Manrope/Inter; re-render en cambio de tema.
+- Bloque 6: stepper horizontal 4-estados (BORRADOR → EMITIDA → PAGADA, con rama CANCELADA) añadido a `nominas/detail.html`; CSS para nodos HUD, conector línea, estado cancelado dashed rojo; empty state `.ff-empty` con marco dashed cian y corner ticks; alert rail del dashboard con borde izquierdo semántico.
+- Corrección de bug crítico preexistente: `UsuarioController.java` tenía `UserPhotoStorageService` declarado dos veces en el constructor — causa de ~200 errores en cascada. Eliminado parámetro duplicado; `BUILD SUCCESS` recuperado.
+
+### 2026-04-24 (auth por cuenta + nominas — registrado por separado)
+
+- Se sustituyo el acceso compartido por PIN por autenticacion por cuenta con `email/username + password`.
+- `Usuario` ahora soporta `username`, `passwordHash` y `mustChangePassword`.
+- Se anadio `PasswordEncoder` BCrypt y se mantuvo la capa de autorizacion basada en `AccessProfile`.
+- `AccessSessionService` ahora autentica usuarios reales, mantiene bloqueo temporal por intentos y guarda identidad actual en sesion.
+- `AuthBootstrapRunner` crea credenciales temporales para usuarios legacy sin password hash y fuerza cambio de password en el primer acceso.
+- Se anadio cambio de password en `/cuenta/password` y reset temporal por admin desde la ficha de usuario.
+- `ClientePortalController` deja de depender de un usuario demo y usa la cuenta autenticada.
+- Se rehizo el login para aceptar email o username y una password real, con UI mas premium.
+- Se profesionalizo el flujo manual de nominas:
+  - guardado como borrador
+  - emision posterior
+  - marcado como pagada
+  - cancelacion
+  - generacion de gasto `NOMINA` al emitir
+- Se rediseño `nominas/form.html` con preview lateral en vivo y `nominas/detail.html` como expediente salarial.
+- Se reforzo `reportes/nomina-detalle.html` para que el PDF tenga mejor cabecera, branding y desglose.
+- Se validaron `.\mvnw.cmd clean -DskipTests compile` y `.\mvnw.cmd test` con 21 pruebas en verde.
+- Se corrigio un `500` real en login por `LazyInitializationException` al resolver el rol del usuario autenticado.
+- Se redujo el bloqueo temporal del acceso a 1 minuto para hacer la recuperacion mas util en entorno local.
+- Se dejo operativa una cuenta admin real en MySQL: `admin` / `FlacoAdmin2026!`.
+
 ### 2026-03-23
 
 - Se creo la estructura inicial del proyecto FlacoFitness.
@@ -261,3 +295,75 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
   - `/nominas` responde 200
   - `/nominas/{id}` responde 200 con un registro real de validacion
   - `/nominas/{id}/pdf` responde 200 `application/pdf`
+
+### 2026-04-23
+
+- Se ejecuto una pasada fuerte de coherencia global sin cambiar el dominio ni reescribir la app.
+- Se normalizaron redirecciones post-accion para que crear, editar o cambiar estado lleve a la ficha o al contexto mas logico en `staff`, `materiales`, `maquinas`, `membresias`, `pagos`, `gastos` y `recurrentes`.
+- Se enriquecio `staff/detail` como panel operativo con agenda del dia, clientes inactivos, nominas recientes y gastos relacionados.
+- Se elevaron `maquinas/detail` y `materiales/detail` a mini paneles de control con riesgos, accesos rapidos y relacion directa con gastos.
+- Se reforzo `membresias/detail` como ficha comercial con activacion, uso reciente y contratos visibles.
+- Se rehizo `pagos/detail` para convertirlo en una ficha de cobro util, con accion de registrar cobro, apertura de usuario y resumen operativo.
+- Se limpio `pagos/list` para reforzar filtros, eliminar ruido y mantener `Cobrar` como accion primaria en una tabla con fila clicable.
+- Se volvieron mas contextuales varias notificaciones del shell para evitar enlaces genericos a listados sin filtro.
+- Se corrigieron restos de copy roto o mojibake en `sidebar`, `staff/detail`, `pagos/list`, `pagos/detail`, `topbar`, `footer` y `NominaController`.
+- Se ampliaron pruebas MVC para cubrir render de detalle de `staff`, `maquinas` y `materiales`.
+- Se validaron `.\mvnw.cmd clean -DskipTests compile` y `.\mvnw.cmd test` con 21 pruebas en verde.
+
+### 2026-04-23 (Producto premium e inteligencia)
+
+- Se anadio una capa de inteligencia de producto para que el dashboard detecte:
+  - usuarios en riesgo
+  - membresias por caducar
+  - material bajo
+  - maquinas con revision proxima
+  - pagos vencidos
+  - gastos anomalos
+- El dashboard ya muestra:
+  - bloque `Requiere atencion`
+  - onboarding inicial de tres pasos
+  - `Hoy`
+  - `Actividad reciente`
+  - `Ultimos visitados`
+- Se incorporo busqueda global real en topbar con resultados agrupados y pagina completa en `/busqueda`.
+- Se anadio un FAB global por perfil para reducir friccion en altas y operaciones frecuentes.
+- Se implemento memoria UX persistente por `browser_token + access_profile` para tooltips y estados de onboarding.
+- Se implemento `RecentVisit` para recuperar ultimas fichas visitadas desde dashboard y topbar.
+- Se implemento `ActivityLog` para reflejar actividad reciente del sistema y dar trazabilidad a acciones operativas clave.
+- Se reforzo el registro de actividad en usuarios, staff, membresias, pagos, gastos, sesiones, trials, nominas, maquinas y materiales.
+- Se mejoraron los empty states de modulos prioritarios con copy mas accionable y orientado a flujo.
+- Se validaron nuevamente `compile` y `test` con 21 pruebas en verde.
+
+### 2026-04-23 (Cierre profesional SaaS)
+
+- Se elimino `fragments/navbar.html`, unico archivo de dead code confirmado con grep.
+- Se anadieron tests de regresion en `ViewControllerTest` para `GET /gastos` y `GET /gastos/1`, cubriendo el bug `EL1008E` que causaba 500 silencioso en detalle de gasto.
+- Se unificaron las KPI cards de `pagos/list.html`, `gastos/list.html` y `nominas/list.html` al sistema `.ff-kpi-card` con variantes semanticas `ff-kpi-positive/warning/danger/neutral`.
+- Se normalizaron los status badges en `pagos/list.html` para usar `.ff-status-badge` en lugar de clases Bootstrap inline; se corrigio `ff-status-warning` → `ff-status-pending` en `nominas/list.html`.
+- Se anadio `.ff-filter-panel` como wrapper unificado para los bloques de filtros en los modulos financieros.
+- Se implemento color dinamico del beneficio estimado en el dashboard: `data-kpi-profit` en `home/index.html` + `updateProfitCardColor()` en `dashboard.js`.
+- Se anadio `getChartColors()` en `dashboard.js` para que los tres charts (donut, barras, linea) usen colores adaptados al tema claro/oscuro del sistema.
+- Se elimino el N+1 en `PagoService`: tres nuevas queries JPQL de agregacion en `PagoRepository` reemplazan el patron `findAll()` + loop por usuario.
+- Se cerro el flujo Trial→MembresiaUsuario: `TrialService.convertirAUsuario()` auto-crea `MembresiaUsuario` cuando el trial convierte un usuario nuevo que tiene plan asignado y no tiene membresia activa.
+- Se validaron `compile` y `test` con 21 pruebas en verde.
+
+### 2026-04-26 (Estabilizacion premium y busqueda global v2)
+
+- Se sustituyo el escaneo completo de la busqueda global por consultas limitadas en `UsuarioRepository`, `StaffPerfilRepository` y `SesionClaseRepository`.
+- Se mantuvo intacto el endpoint `/api/busqueda/global` y la forma JSON usada por topbar y pagina `/busqueda`.
+- Se anadio `GlobalSearchServiceTest` para cubrir query corta sin acceso a repositorios y resultados agrupados de usuarios, staff y sesiones.
+- Se redujeron calculos repetidos en `StatsController`, `ViewController` y exportacion PDF de `GastoController`.
+- `StaffController` ya no invoca dos veces `staffService.listarTodos()` para el mismo listado.
+- `nominas/list.html` recibio filtros persistentes, copy mas limpio y empty state con accion directa.
+- Los contadores del dashboard se hicieron mas suaves y `cookies.txt` quedo ignorado como artefacto local.
+- Validacion: `compile`, `test` con 23 pruebas, MySQL en `localhost:3306` y smoke HTTP basico en puerto temporal `8081`.
+
+### 2026-04-26 (Command Center UI)
+
+- Se incorporo una capa visual final en `styles.css` para convertir la shell en un Command Center oscuro, tactico y premium.
+- Dark mode pasa a ser el tema por defecto cuando no hay preferencia guardada; el `head` aplica el tema temprano para evitar flash claro.
+- Se sustituyo la fuente visual por `Space Grotesk` e `IBM Plex Sans`.
+- Se añadieron patrones CSS reutilizables para stack premium, HUD grids, panel grids, hero operativo, HUD cards, table shell y empty states.
+- Dashboard, usuarios, cliente, pagos, gastos, recurrentes, asistencias, staff, rutinas y nominas activan `ff-command-stack`.
+- Se añadio Anime.js UMD local y `hud-motion.js` para stagger reveals, hover HUD y hints ligeros con fallback si la libreria no carga.
+- Validacion: compile, tests, MySQL, arranque temporal en `8082`, assets nuevos 200 y rutas protegidas 302 a `/acceso`.

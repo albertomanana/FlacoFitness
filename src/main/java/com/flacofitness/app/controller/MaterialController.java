@@ -15,9 +15,12 @@ import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.model.entity.Material;
 import com.flacofitness.app.model.enums.CategoriaMaterial;
 import com.flacofitness.app.model.enums.EstadoMaterial;
+import com.flacofitness.app.service.ControllerActivityLogger;
 import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaterialService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -26,11 +29,14 @@ public class MaterialController {
 
     private final MaterialService materialService;
     private final GastoService gastoService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public MaterialController(MaterialService materialService,
-                              GastoService gastoService) {
+                              GastoService gastoService,
+                              ControllerActivityLogger controllerActivityLogger) {
         this.materialService = materialService;
         this.gastoService = gastoService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -60,7 +66,9 @@ public class MaterialController {
     public String guardar(@Valid @ModelAttribute("material") Material material,
                           BindingResult bindingResult,
                           Model model,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          HttpServletRequest request,
+                          HttpSession session) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("modoEdicion", false);
             cargarCatalogos(model);
@@ -68,16 +76,19 @@ public class MaterialController {
         }
 
         try {
-            materialService.guardar(material);
+            Material guardado = materialService.guardar(material);
+            controllerActivityLogger.log(request, session,
+                    "materiales", "material_creado", "material", guardado.getId(),
+                    "Material creado",
+                    "Se registro el material " + guardado.getNombre() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Material creado correctamente.");
+            return "redirect:/materiales/" + guardado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("materialError", ex.getMessage());
             model.addAttribute("modoEdicion", false);
             cargarCatalogos(model);
             return "materiales/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Material creado correctamente.");
-        return "redirect:/materiales";
     }
 
     @GetMapping("/{id}")
@@ -100,7 +111,9 @@ public class MaterialController {
                              @Valid @ModelAttribute("material") Material material,
                              BindingResult bindingResult,
                              Model model,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request,
+                             HttpSession session) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("modoEdicion", true);
             cargarCatalogos(model);
@@ -108,34 +121,60 @@ public class MaterialController {
         }
 
         try {
-            materialService.actualizar(id, material);
+            Material actualizado = materialService.actualizar(id, material);
+            controllerActivityLogger.log(request, session,
+                    "materiales", "material_actualizado", "material", actualizado.getId(),
+                    "Material actualizado",
+                    "Se actualizo la ficha del material " + actualizado.getNombre() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Material actualizado correctamente.");
+            return "redirect:/materiales/" + actualizado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("materialError", ex.getMessage());
             model.addAttribute("modoEdicion", true);
             cargarCatalogos(model);
             return "materiales/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Material actualizado correctamente.");
-        return "redirect:/materiales";
     }
 
     @PostMapping("/{id}/desactivar")
-    public String desactivar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivar(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes,
+                             @RequestParam(name = "returnTo", required = false) String returnTo,
+                             HttpServletRequest request,
+                             HttpSession session) {
         materialService.desactivar(id);
+        controllerActivityLogger.log(request, session,
+                "materiales", "material_desactivado", "material", id,
+                "Material desactivado",
+                "Se retiro temporalmente un material del catalogo operativo.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Material desactivado.");
-        return "redirect:/materiales";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     @PostMapping("/{id}/activar")
-    public String activar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activar(@PathVariable Long id,
+                          RedirectAttributes redirectAttributes,
+                          @RequestParam(name = "returnTo", required = false) String returnTo,
+                          HttpServletRequest request,
+                          HttpSession session) {
         materialService.activar(id);
+        controllerActivityLogger.log(request, session,
+                "materiales", "material_activado", "material", id,
+                "Material activado",
+                "Se reactivo un material para volver a usarlo.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Material activado.");
-        return "redirect:/materiales";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     private void cargarCatalogos(Model model) {
         model.addAttribute("estadosMaterial", EstadoMaterial.values());
         model.addAttribute("categoriasMaterial", CategoriaMaterial.values());
+    }
+
+    private String resolveReturnPath(Long id, String returnTo) {
+        if ("detail".equalsIgnoreCase(returnTo)) {
+            return "/materiales/" + id;
+        }
+        return "/materiales";
     }
 }

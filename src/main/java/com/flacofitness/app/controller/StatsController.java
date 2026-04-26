@@ -19,6 +19,7 @@ import com.flacofitness.app.service.MembresiaService;
 import com.flacofitness.app.service.NominaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
+import com.flacofitness.app.service.ProductIntelligenceService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
@@ -27,6 +28,7 @@ import com.flacofitness.app.service.UsuarioService;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/stats")
@@ -45,6 +47,7 @@ public class StatsController {
     private final NominaService nominaService;
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
+    private final ProductIntelligenceService productIntelligenceService;
 
     public StatsController(UsuarioService usuarioService,
                            PlanService planService,
@@ -58,7 +61,8 @@ public class StatsController {
                            GastoService gastoService,
                            NominaService nominaService,
                            MaquinaService maquinaService,
-                           MaterialService materialService) {
+                           MaterialService materialService,
+                           ProductIntelligenceService productIntelligenceService) {
         this.usuarioService = usuarioService;
         this.planService = planService;
         this.pagoService = pagoService;
@@ -72,6 +76,7 @@ public class StatsController {
         this.nominaService = nominaService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
+        this.productIntelligenceService = productIntelligenceService;
     }
 
     @GetMapping("/usuarios")
@@ -109,6 +114,8 @@ public class StatsController {
             @RequestParam(name = "rangoDias", defaultValue = "30")
             @Min(7) @Max(365) int rangoDias) {
         int rangoNormalizado = normalizarRango(rangoDias);
+        BigDecimal ingresosMesActual = pagoService.calcularIngresosMesActual();
+        BigDecimal gastoMesActual = gastoService.calcularGastoMesActual();
 
         return new DashboardStatsResponse(
                 usuarioService.contarTotal(),
@@ -118,9 +125,9 @@ public class StatsController {
                 pagoService.contarPagosVencidos(),
                 usuarioService.contarRenovacionesProximas(7),
                 pagoService.calcularIngresosTotales(),
-                pagoService.calcularIngresosMesActual(),
-                gastoService.calcularGastoMesActual(),
-                pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()),
+                ingresosMesActual,
+                gastoMesActual,
+                ingresosMesActual.subtract(gastoMesActual),
                 asistenciaService.contarHoy(),
                 rutinaService.contarActivas(),
                 rangoNormalizado,
@@ -144,18 +151,25 @@ public class StatsController {
                 membresiaService.contarVencidas(),
                 maquinaService.contarFueraDeServicio(),
                 maquinaService.contarRevisionProxima(7),
-                materialService.contarBajoStock()
+                materialService.contarBajoStock(),
+                productIntelligenceService.countUsuariosEnRiesgo(),
+                productIntelligenceService.countMembresiasPorCaducar(),
+                productIntelligenceService.countGastosAnomalos(),
+                productIntelligenceService.buildAttentionItems()
         );
     }
 
     @GetMapping("/gastos")
     public GastosStatsResponse obtenerEstadisticasGastos() {
+        BigDecimal gastoMesActual = gastoService.calcularGastoMesActual();
+        BigDecimal ingresoMesActual = pagoService.calcularIngresosMesActual();
+
         return new GastosStatsResponse(
-                gastoService.calcularGastoMesActual(),
+                gastoMesActual,
                 gastoService.calcularGastoFijoMesActual(),
                 gastoService.calcularGastoVariableMesActual(),
-                pagoService.calcularIngresosMesActual(),
-                pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()),
+                ingresoMesActual,
+                ingresoMesActual.subtract(gastoMesActual),
                 gastoService.contarCriticos(),
                 gastoService.contarVencimientosProximos(7),
                 gastoService.contarRecurrentesProximos(7),

@@ -21,6 +21,12 @@
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         <a class="btn btn-success" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar usuario</a>
+                        <form th:if="${accessProfile.name() == 'ADMIN'}"
+                              th:action="@{/usuarios/{id}/reset-password(id=${usuario.id})}"
+                              method="post"
+                              class="m-0">
+                            <button class="btn btn-outline-warning" type="submit">Resetear contraseña</button>
+                        </form>
                         <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
                     </div>
                 </section>
@@ -108,12 +114,14 @@
                                         <div class="ff-detail-item"><span class="ff-detail-label">Apellidos</span><span class="ff-detail-value" th:text="${#strings.defaultString(usuario.apellidos, '-')}">Apellidos</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">DNI</span><span class="ff-detail-value" th:text="${#strings.defaultString(usuario.dni, '-')}">DNI</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Email</span><span class="ff-detail-value" th:text="${usuario.email}">correo@ejemplo.com</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Username</span><span class="ff-detail-value" th:text="${usuario.username != null ? usuario.username : '-'}">username</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Telefono</span><span class="ff-detail-value" th:text="${#strings.defaultString(usuario.telefono, '-')}">Telefono</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Nacimiento</span><span class="ff-detail-value" th:text="${usuario.fechaNacimiento != null ? #temporals.format(usuario.fechaNacimiento, 'dd/MM/yyyy') : '-'}">Fecha</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Registro</span><span class="ff-detail-value" th:text="${usuario.fechaRegistro != null ? #temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Proximo pago</span><span class="ff-detail-value" th:text="${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'dd/MM/yyyy') : '-'}">Fecha</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Rol</span><span class="ff-detail-value" th:text="${usuario.rol != null ? usuario.rol.nombre : '-'}">Rol</span></div>
                                         <div class="ff-detail-item"><span class="ff-detail-label">Plan</span><span class="ff-detail-value" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan asignado'}">Plan</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Password temporal</span><span class="ff-detail-value" th:text="${usuario.mustChangePassword ? 'Pendiente de cambio' : 'Cuenta al dia'}">Cuenta al dia</span></div>
                                         <div class="ff-detail-item ff-detail-full"><span class="ff-detail-label">Direccion</span><span class="ff-detail-value ff-detail-value-muted" th:text="${#strings.defaultString(usuario.direccion, '-')}">Direccion</span></div>
                                     </div>
                                 </div>
@@ -136,6 +144,26 @@
                                         </article>
                                     </div>
                                     <div th:if="${#lists.isEmpty(controlCenter.timeline)}" class="ff-empty-inline">Todavia no hay actividad suficiente para construir la timeline.</div>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header"><div><h3 class="ff-card-title">Actividad del sistema</h3><p class="ff-card-subtitle">Trazabilidad operativa registrada sobre la ficha.</p></div></div>
+                                <div class="ff-card-body">
+                                    <div th:if="${activityTimeline != null and !#lists.isEmpty(activityTimeline)}" class="ff-timeline-list">
+                                        <article class="ff-timeline-item" th:each="evento : ${activityTimeline}">
+                                            <div class="ff-timeline-dot"></div>
+                                            <div class="ff-timeline-body">
+                                                <div class="ff-timeline-meta">
+                                                    <span class="ff-soft-badge" th:text="${evento.actorProfileLabel}">ADMIN</span>
+                                                    <span th:text="${evento.occurredAtLabel}">23/04/2026 12:00</span>
+                                                </div>
+                                                <strong th:text="${evento.title}">Accion</strong>
+                                                <p th:text="${evento.description}">Descripcion</p>
+                                            </div>
+                                        </article>
+                                    </div>
+                                    <div th:if="${activityTimeline == null or #lists.isEmpty(activityTimeline)}" class="ff-empty-inline">Todavia no hay acciones internas registradas sobre este usuario.</div>
                                 </div>
                             </article>
 

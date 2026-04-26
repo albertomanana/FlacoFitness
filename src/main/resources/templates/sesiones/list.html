@@ -7,8 +7,19 @@
     <div class="ff-main">
         <div th:replace="~{fragments/topbar :: topbar('Sesiones', 'Horarios y reservas.')}"></div>
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack" data-module-key="sesiones">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="sesiones">
+                    <div>
+                        <span class="ff-section-eyebrow">Sesiones</span>
+                        <h3 class="ff-card-title mt-1">Programa y opera desde la misma ficha</h3>
+                        <p class="ff-card-subtitle">Cada sesion conecta clase, staff, reservas y asistencias. La fila te lleva al detalle para cerrar todo sin pasos extra.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
                 <section class="ff-section-header ff-animate-in">
                     <div><span class="ff-section-eyebrow">Operacion</span><h2 class="ff-section-title">Sesiones programadas</h2><p class="ff-section-subtitle">Cada sesion conecta clase, staff, horario, reservas y asistencias.</p></div>
                     <div class="d-flex gap-2 flex-wrap"><a class="btn btn-outline-secondary" th:href="@{/sesiones(fecha=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')})}">Hoy</a><a class="btn btn-success" th:href="@{/sesiones/nueva}">Nueva sesion</a></div>
@@ -19,7 +30,7 @@
                     <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Futuras</p><p class="ff-stat-value" th:text="${sesionesProgramadas}">0</p><p class="ff-stat-note">Pendientes de operar</p></article></div>
                 </section>
                 <section class="ff-surface-card ff-animate-in">
-                    <div class="ff-card-header"><div class="ff-card-toolbar w-100"><div><h3 class="ff-card-title">Agenda</h3><p class="ff-card-subtitle">Filtra por fecha y abre la sesion desde la fila.</p></div><form class="d-flex gap-2" th:action="@{/sesiones}" method="get"><input type="date" name="fecha" class="form-control form-control-sm" th:value="${fechaFiltro}"><select name="estado" class="form-select form-select-sm"><option value="">Todos</option><option th:each="est : ${estadosSesion}" th:value="${est.name()}" th:text="${est.name()}" th:selected="${estadoFiltro != null and estadoFiltro.name() == est.name()}"></option></select><button class="btn btn-outline-secondary btn-sm" type="submit">Filtrar</button><a class="btn btn-outline-secondary btn-sm" th:href="@{/sesiones}">Limpiar</a></form></div></div>
+                    <div class="ff-card-header"><div class="ff-card-toolbar w-100"><div><h3 class="ff-card-title">Agenda</h3><p class="ff-card-subtitle">Filtra por fecha y abre la sesion desde la fila.</p></div><form class="d-flex gap-2" th:action="@{/sesiones}" method="get" data-filter-memory-key="sesiones-list"><input type="date" name="fecha" class="form-control form-control-sm" th:value="${fechaFiltro}"><select name="estado" class="form-select form-select-sm"><option value="">Todos</option><option th:each="est : ${estadosSesion}" th:value="${est.name()}" th:text="${est.name()}" th:selected="${estadoFiltro != null and estadoFiltro.name() == est.name()}"></option></select><button class="btn btn-outline-secondary btn-sm" type="submit">Filtrar</button><a class="btn btn-outline-secondary btn-sm" th:href="@{/sesiones}">Limpiar</a></form></div></div>
                     <div class="ff-card-body pt-0">
                         <div class="table-responsive">
                             <table id="sesionesTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-order-column="1" data-order-direction="desc" data-search-placeholder="Buscar sesion...">
@@ -35,7 +46,7 @@
                                     <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/sesiones/{id}/editar(id=${sesion.id})}">Editar</a></td>
                                 </tr>
                                 </tbody>
-                                <tbody th:if="${#lists.isEmpty(sesiones)}"><tr><td colspan="7" class="text-center ff-empty-state">No hay sesiones para el filtro actual.</td></tr></tbody>
+                                <tbody th:if="${#lists.isEmpty(sesiones)}"><tr><td colspan="7" class="text-center ff-empty-state">No hay sesiones para este filtro. Programa una para conectar agenda, reservas y asistencias reales. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/sesiones/nueva}">Crear sesion</a></td></tr></tbody>
                             </table>
                         </div>
                     </div>

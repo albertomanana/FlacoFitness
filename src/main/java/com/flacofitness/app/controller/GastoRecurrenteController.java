@@ -102,7 +102,9 @@ public class GastoRecurrenteController {
         }
 
         try {
-            gastoRecurrenteService.guardar(recurrente);
+            GastoRecurrente guardado = gastoRecurrenteService.guardar(recurrente);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Plantilla recurrente guardada correctamente.");
+            return "redirect:/gastos/recurrentes/" + guardado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("recurrenteError", ex.getMessage());
             prepararRelaciones(recurrente);
@@ -110,9 +112,6 @@ public class GastoRecurrenteController {
             model.addAttribute("modoEdicion", false);
             return "gastos/recurrentes/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Plantilla recurrente guardada correctamente.");
-        return "redirect:/gastos/recurrentes";
     }
 
     @GetMapping("/{id}")
@@ -145,7 +144,9 @@ public class GastoRecurrenteController {
         }
 
         try {
-            gastoRecurrenteService.actualizar(id, recurrente);
+            GastoRecurrente actualizado = gastoRecurrenteService.actualizar(id, recurrente);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Plantilla recurrente actualizada.");
+            return "redirect:/gastos/recurrentes/" + actualizado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("recurrenteError", ex.getMessage());
             prepararRelaciones(recurrente);
@@ -153,23 +154,24 @@ public class GastoRecurrenteController {
             model.addAttribute("modoEdicion", true);
             return "gastos/recurrentes/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Plantilla recurrente actualizada.");
-        return "redirect:/gastos/recurrentes";
     }
 
     @PostMapping("/{id}/activar")
-    public String activar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activar(@PathVariable Long id,
+                          RedirectAttributes redirectAttributes,
+                          @RequestParam(name = "returnTo", required = false) String returnTo) {
         gastoRecurrenteService.activar(id);
         redirectAttributes.addFlashAttribute("mensajeExito", "Plantilla recurrente activada.");
-        return "redirect:/gastos/recurrentes";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     @PostMapping("/{id}/desactivar")
-    public String desactivar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivar(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes,
+                             @RequestParam(name = "returnTo", required = false) String returnTo) {
         gastoRecurrenteService.desactivar(id);
         redirectAttributes.addFlashAttribute("mensajeExito", "Plantilla recurrente desactivada.");
-        return "redirect:/gastos/recurrentes";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     @PostMapping("/procesar")
@@ -219,5 +221,12 @@ public class GastoRecurrenteController {
         if (recurrente.getMaterial() == null) {
             recurrente.setMaterial(new com.flacofitness.app.model.entity.Material());
         }
+    }
+
+    private String resolveReturnPath(Long id, String returnTo) {
+        if ("detail".equalsIgnoreCase(returnTo)) {
+            return "/gastos/recurrentes/" + id;
+        }
+        return "/gastos/recurrentes";
     }
 }

@@ -18,11 +18,15 @@ public class AppConfig implements WebMvcConfigurer {
     private final String uploadDir;
     @NonNull
     private final AccessGuardInterceptor accessGuardInterceptor;
+    @NonNull
+    private final BrowserContextInterceptor browserContextInterceptor;
 
     public AppConfig(@Value("${upload.dir}") String uploadDir,
-                     @NonNull AccessGuardInterceptor accessGuardInterceptor) {
+                     @NonNull AccessGuardInterceptor accessGuardInterceptor,
+                     @NonNull BrowserContextInterceptor browserContextInterceptor) {
         this.uploadDir = uploadDir;
         this.accessGuardInterceptor = accessGuardInterceptor;
+        this.browserContextInterceptor = browserContextInterceptor;
     }
 
     @Override
@@ -34,6 +38,17 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
+        registry.addInterceptor(Objects.requireNonNull(browserContextInterceptor))
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/css/**",
+                        "/js/**",
+                        "/img/**",
+                        "/vendor/**",
+                        "/uploads/**",
+                        "/favicon.ico"
+                );
+
         registry.addInterceptor(Objects.requireNonNull(accessGuardInterceptor))
                 .addPathPatterns("/**")
                 .excludePathPatterns(

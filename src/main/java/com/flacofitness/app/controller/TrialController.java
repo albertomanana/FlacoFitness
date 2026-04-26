@@ -4,9 +4,12 @@ import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Trial;
 import com.flacofitness.app.model.enums.EstadoTrial;
+import com.flacofitness.app.service.ControllerActivityLogger;
 import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.TrialService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,13 +31,16 @@ public class TrialController {
     private final TrialService trialService;
     private final StaffService staffService;
     private final OperationalClockService operationalClockService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public TrialController(TrialService trialService,
                            StaffService staffService,
-                           OperationalClockService operationalClockService) {
+                           OperationalClockService operationalClockService,
+                           ControllerActivityLogger controllerActivityLogger) {
         this.trialService = trialService;
         this.staffService = staffService;
         this.operationalClockService = operationalClockService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -68,7 +74,9 @@ public class TrialController {
     public String guardar(@Valid @ModelAttribute("trial") Trial trial,
                           BindingResult bindingResult,
                           Model model,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          HttpServletRequest request,
+                          HttpSession session) {
         normalizarRelaciones(trial);
 
         if (bindingResult.hasErrors()) {
@@ -78,9 +86,22 @@ public class TrialController {
             return "trials/form";
         }
 
-        trialService.guardar(trial);
-        redirectAttributes.addFlashAttribute("mensajeExito", "Trial creado correctamente.");
-        return "redirect:/trials";
+        try {
+            Trial guardado = trialService.guardar(trial);
+            controllerActivityLogger.log(request, session,
+                    "trials", "trial_creado", "trial", guardado.getId(),
+                    "Trial creado",
+                    "Se registro un nuevo dia de prueba para " + guardado.getNombre() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Trial creado correctamente.");
+            return "redirect:/trials/" + guardado.getId();
+        } catch (BusinessValidationException ex) {
+            bindingResult.reject("trialError", ex.getMessage());
+            prepararRelaciones(trial);
+            cargarCatalogos(model);
+            model.addAttribute("modoEdicion", false);
+            model.addAttribute("mensajeError", ex.getMessage());
+            return "trials/form";
+        }
     }
 
     @GetMapping("/{id}")
@@ -104,7 +125,9 @@ public class TrialController {
                              @Valid @ModelAttribute("trial") Trial trial,
                              BindingResult bindingResult,
                              Model model,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request,
+                             HttpSession session) {
         normalizarRelaciones(trial);
 
         if (bindingResult.hasErrors()) {
@@ -114,25 +137,51 @@ public class TrialController {
             return "trials/form";
         }
 
-        trialService.actualizar(id, trial);
-        redirectAttributes.addFlashAttribute("mensajeExito", "Trial actualizado correctamente.");
-        return "redirect:/trials";
+        try {
+            Trial actualizado = trialService.actualizar(id, trial);
+            controllerActivityLogger.log(request, session,
+                    "trials", "trial_actualizado", "trial", actualizado.getId(),
+                    "Trial actualizado",
+                    "Se actualizo el seguimiento comercial de " + actualizado.getNombre() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Trial actualizado correctamente.");
+            return "redirect:/trials/" + id;
+        } catch (BusinessValidationException ex) {
+            bindingResult.reject("trialError", ex.getMessage());
+            prepararRelaciones(trial);
+            cargarCatalogos(model);
+            model.addAttribute("modoEdicion", true);
+            model.addAttribute("mensajeError", ex.getMessage());
+            return "trials/form";
+        }
     }
 
     @PostMapping("/{id}/estado")
     public String actualizarEstado(@PathVariable Long id,
                                    @RequestParam EstadoTrial estado,
-                                   RedirectAttributes redirectAttributes) {
+                                   RedirectAttributes redirectAttributes,
+                                   HttpServletRequest request,
+                                   HttpSession session) {
         trialService.actualizarEstado(id, estado);
+        controllerActivityLogger.log(request, session,
+                "trials", "trial_estado_actualizado", "trial", id,
+                "Estado de trial actualizado",
+                "El trial paso a " + estado.name().replace('_', ' ').toLowerCase() + ".");
         redirectAttributes.addFlashAttribute("mensajeExito", "Estado del trial actualizado.");
         return "redirect:/trials/" + id;
     }
 
     @PostMapping("/{id}/convertir")
-    public String convertir(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String convertir(@PathVariable Long id,
+                            RedirectAttributes redirectAttributes,
+                            HttpServletRequest request,
+                            HttpSession session) {
         try {
             Long usuarioId = trialService.convertirAUsuario(id).getId();
-            redirectAttributes.addFlashAttribute("mensajeExito", "Trial convertido a usuario.");
+            controllerActivityLogger.log(request, session,
+                    "trials", "trial_convertido", "trial", id,
+                    "Trial convertido",
+                    "El lead se convirtio en un nuevo usuario.");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Trial convertido a usuario. Verifica el perfil y la membresía asignada.");
             return "redirect:/usuarios/" + usuarioId;
         } catch (BusinessValidationException ex) {
             redirectAttributes.addFlashAttribute("mensajeError", ex.getMessage());

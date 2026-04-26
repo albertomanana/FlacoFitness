@@ -9,7 +9,7 @@
         <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Rutinas'}, ${subtituloListado ?: 'Biblioteca de entrenamiento.'})}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
                 <section class="ff-section-header">

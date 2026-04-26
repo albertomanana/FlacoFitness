@@ -1,13 +1,17 @@
 package com.flacofitness.app.security;
 
 import com.flacofitness.app.config.AccessSettings;
+import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @Service
 public class AccessSessionService {
@@ -17,18 +21,31 @@ public class AccessSessionService {
     public static final String ATTR_LOCKED_UNTIL = "ff.access.lockedUntil";
     public static final String ATTR_TARGET_URI = "ff.access.targetUri";
     public static final String ATTR_PROFILE = "ff.access.profile";
+    public static final String ATTR_USER_ID = "ff.access.userId";
 
-    private final AccessSettings accessSettings;
     private static final DateTimeFormatter LOCK_TIME_FORMATTER = DateTimeFormatter
             .ofPattern("HH:mm")
             .withZone(ZoneId.systemDefault());
 
-    public AccessSessionService(AccessSettings accessSettings) {
+    private final AccessSettings accessSettings;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AccessProfileResolver accessProfileResolver;
+
+    public AccessSessionService(AccessSettings accessSettings,
+                                UsuarioRepository usuarioRepository,
+                                PasswordEncoder passwordEncoder,
+                                AccessProfileResolver accessProfileResolver) {
         this.accessSettings = accessSettings;
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.accessProfileResolver = accessProfileResolver;
     }
 
     public boolean isGranted(HttpSession session) {
-        return session != null && Boolean.TRUE.equals(session.getAttribute(ATTR_GRANTED));
+        return session != null
+                && Boolean.TRUE.equals(session.getAttribute(ATTR_GRANTED))
+                && getCurrentUserId(session) != null;
     }
 
     public boolean isLocked(HttpSession session) {
@@ -54,7 +71,6 @@ public class AccessSessionService {
         if (isLocked(session)) {
             return 0;
         }
-
         int failedAttempts = getFailedAttempts(session);
         return Math.max(0, accessSettings.getMaxAttempts() - failedAttempts);
     }
@@ -63,25 +79,18 @@ public class AccessSessionService {
         if (session == null) {
             return null;
         }
-
         Object value = session.getAttribute(ATTR_LOCKED_UNTIL);
-        if (value instanceof Instant instant) {
-            return instant;
-        }
-
-        return null;
+        return value instanceof Instant instant ? instant : null;
     }
 
     public String resolveTarget(HttpSession session) {
         if (session == null) {
             return "/";
         }
-
         Object value = session.getAttribute(ATTR_TARGET_URI);
         if (value instanceof String target && !target.isBlank()) {
             return target;
         }
-
         return "/";
     }
 
@@ -116,11 +125,27 @@ public class AccessSessionService {
         return value instanceof String rawProfile ? AccessProfile.from(rawProfile) : AccessProfile.ADMIN;
     }
 
+    public Optional<Usuario> getCurrentUser(HttpSession session) {
+        Long userId = getCurrentUserId(session);
+        if (userId == null) {
+            return Optional.empty();
+        }
+        return usuarioRepository.findById(userId);
+    }
+
+    public Long getCurrentUserId(HttpSession session) {
+        if (session == null) {
+            return null;
+        }
+        Object value = session.getAttribute(ATTR_USER_ID);
+        return value instanceof Long userId ? userId : null;
+    }
+
     public boolean canAccess(HttpSession session, String path, String method) {
         return getCurrentProfile(session).canAccess(path, method);
     }
 
-    public AccessAttemptResult verifyPin(HttpSession session, String rawPin, AccessProfile profile) {
+    public AccessAttemptResult authenticate(HttpSession session, String rawLogin, String rawPassword) {
         if (session == null) {
             return new AccessAttemptResult(false, false, 0, null, "No se pudo abrir la sesion de acceso.");
         }
@@ -129,9 +154,12 @@ public class AccessSessionService {
             return new AccessAttemptResult(false, true, 0, getLockedUntil(session), buildLockMessage(session));
         }
 
-        String normalizedPin = rawPin == null ? "" : rawPin.trim();
-        if (accessSettings.getPin().equals(normalizedPin)) {
-            grantAccess(session, profile);
+        String login = rawLogin == null ? "" : rawLogin.trim();
+        String password = rawPassword == null ? "" : rawPassword.trim();
+        Optional<Usuario> usuarioOpt = findByLogin(login);
+
+        if (usuarioOpt.isPresent() && credentialsAreValid(usuarioOpt.get(), password)) {
+            grantAccess(session, usuarioOpt.get());
             return new AccessAttemptResult(true, false, accessSettings.getMaxAttempts(), null, "Acceso concedido.");
         }
 
@@ -146,26 +174,33 @@ public class AccessSessionService {
 
         int remainingAttempts = Math.max(0, accessSettings.getMaxAttempts() - failedAttempts);
         return new AccessAttemptResult(false, false, remainingAttempts, null,
-                "PIN incorrecto. Te quedan " + remainingAttempts + " intento(s).");
+                "Credenciales incorrectas. Quedan " + remainingAttempts + " intento(s).");
+    }
+
+    public void refreshSession(HttpSession session, Usuario usuario) {
+        if (session == null || usuario == null || usuario.getId() == null) {
+            return;
+        }
+        session.setAttribute(ATTR_GRANTED, Boolean.TRUE);
+        session.setAttribute(ATTR_PROFILE, accessProfileResolver.resolveFor(usuario).name());
+        session.setAttribute(ATTR_USER_ID, usuario.getId());
     }
 
     public void grantAccess(HttpSession session, AccessProfile profile) {
         if (session == null) {
             return;
         }
-
         session.setAttribute(ATTR_GRANTED, Boolean.TRUE);
         session.setAttribute(ATTR_PROFILE, (profile == null ? AccessProfile.ADMIN : profile).name());
+        session.setAttribute(ATTR_USER_ID, -1L);
         session.setAttribute(ATTR_FAILED_ATTEMPTS, 0);
         session.removeAttribute(ATTR_LOCKED_UNTIL);
     }
 
     public void clear(HttpSession session) {
-        if (session == null) {
-            return;
+        if (session != null) {
+            session.invalidate();
         }
-
-        session.invalidate();
     }
 
     public void clearTarget(HttpSession session) {
@@ -174,22 +209,42 @@ public class AccessSessionService {
         }
     }
 
+    private void grantAccess(HttpSession session, Usuario usuario) {
+        session.setAttribute(ATTR_GRANTED, Boolean.TRUE);
+        session.setAttribute(ATTR_PROFILE, accessProfileResolver.resolveFor(usuario).name());
+        session.setAttribute(ATTR_USER_ID, usuario.getId());
+        session.setAttribute(ATTR_FAILED_ATTEMPTS, 0);
+        session.removeAttribute(ATTR_LOCKED_UNTIL);
+    }
+
+    private boolean credentialsAreValid(Usuario usuario, String rawPassword) {
+        return Boolean.TRUE.equals(usuario.getActivo())
+                && usuario.getPasswordHash() != null
+                && !usuario.getPasswordHash().isBlank()
+                && rawPassword != null
+                && !rawPassword.isBlank()
+                && passwordEncoder.matches(rawPassword, usuario.getPasswordHash());
+    }
+
+    private Optional<Usuario> findByLogin(String login) {
+        if (login.isBlank()) {
+            return Optional.empty();
+        }
+
+        return usuarioRepository.findByEmailIgnoreCase(login)
+                .or(() -> usuarioRepository.findByUsernameIgnoreCase(login));
+    }
+
     private int getFailedAttempts(HttpSession session) {
         if (session == null) {
             return 0;
         }
-
         Object value = session.getAttribute(ATTR_FAILED_ATTEMPTS);
-        if (value instanceof Integer count) {
-            return Math.max(0, count);
-        }
-
-        return 0;
+        return value instanceof Integer count ? Math.max(0, count) : 0;
     }
 
     private String buildLockMessage(HttpSession session) {
-        Instant lockedUntil = getLockedUntil(session);
-        return buildLockMessage(lockedUntil);
+        return buildLockMessage(getLockedUntil(session));
     }
 
     private String buildLockMessage(Instant lockedUntil) {

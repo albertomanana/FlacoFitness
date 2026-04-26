@@ -1,49 +1,49 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head('N&oacute;minas')}"></head>
+<head th:replace="~{fragments/head :: head('Nominas')}"></head>
 <body class="ff-app">
 <div class="ff-app-shell">
     <div th:replace="~{fragments/sidebar :: sidebar('nominas')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('N&oacute;minas', 'Seguimiento interno de salarios experimentales.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Nominas', 'Seguimiento interno de salarios experimentales.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Finanzas</span>
-                        <h2 class="ff-section-title">N&oacute;minas</h2>
-                        <p class="ff-section-subtitle">Controla emisiones, cierres y exportaci&oacute;n documental.</p>
+                        <h2 class="ff-section-title">Nominas</h2>
+                        <p class="ff-section-subtitle">Controla emisiones, cierres y exportacion documental.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         <form th:action="@{/nominas/generar-automaticas}" method="post" class="m-0">
-                            <button type="submit" class="btn btn-outline-warning">Generar autom&aacute;ticas</button>
+                            <button type="submit" class="btn btn-outline-warning">Generar automaticas</button>
                         </form>
                         <a class="btn btn-outline-secondary" th:href="@{/nominas/export/pdf(staffId=${staffFiltro})}">Exportar PDF</a>
-                        <a class="btn btn-success" th:href="@{/nominas/nueva}">Nueva n&oacute;mina</a>
+                        <a class="btn btn-success" th:href="@{/nominas/nueva}">Nueva nomina</a>
                     </div>
                 </section>
 
                 <section class="row g-3 ff-animate-in">
                     <div class="col-sm-6 col-xl-4">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-warning">
                             <p class="ff-stat-label">Pendientes</p>
                             <p class="ff-stat-value" th:text="${nominasPendientes}">0</p>
                             <p class="ff-stat-note">Emitidas sin cierre</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-4">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-positive">
                             <p class="ff-stat-label">Total neto</p>
                             <p class="ff-stat-value" th:text="${totalNeto != null ? #numbers.formatDecimal(totalNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Acumulado del filtro</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-4">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-neutral">
                             <p class="ff-stat-label">Staff filtrado</p>
                             <p class="ff-stat-value" th:text="${staffFiltro != null ? 1 : staffActivos.size()}">0</p>
                             <p class="ff-stat-note">Vista operativa</p>
@@ -59,7 +59,7 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
-                        <form class="row g-3" th:action="@{/nominas}" method="get">
+                        <form class="row g-3" th:action="@{/nominas}" method="get" data-filter-memory-key="nominas-list">
                             <div class="col-12 col-md-8">
                                 <label class="form-label" for="staffId">Staff</label>
                                 <select id="staffId" name="staffId" class="form-select">
@@ -79,7 +79,7 @@
                     <div class="ff-card-header">
                         <div class="ff-card-toolbar w-100">
                             <div>
-                                <h3 class="ff-card-title">Listado de n&oacute;minas</h3>
+                                <h3 class="ff-card-title">Listado de nominas</h3>
                                 <p class="ff-card-subtitle">Periodo, importe y estado financiero.</p>
                             </div>
                             <span class="ff-card-toolbar-note">DataTable activo.</span>
@@ -114,16 +114,21 @@
                                     <td th:text="${nomina.bonus != null ? #numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
                                     <td th:text="${nomina.deducciones != null ? #numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
                                     <td th:text="${nomina.salarioNeto != null ? #numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
-                                    <td><span class="ff-status-badge" th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : ' ff-status-warning'" th:text="${nomina.estado}">EMITIDA</span></td>
+                                    <td><span class="ff-status-badge"
+                                              th:classappend="${nomina.estado != null and nomina.estado.name() == 'PAGADA'} ? ' ff-status-paid' : (${nomina.estado != null and nomina.estado.name() == 'CANCELADA'} ? ' ff-status-danger' : (${nomina.estado != null and nomina.estado.name() == 'BORRADOR'} ? ' ff-status-pending' : ' ff-status-warning'))"
+                                              th:text="${nomina.estado != null ? #strings.replace(nomina.estado.name(), '_', ' ') : '-'}">EMITIDA</span></td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a class="btn btn-outline-secondary btn-sm"
+                                               th:if="${nomina.estado != null and nomina.estado.name() == 'BORRADOR'}"
+                                               th:href="@{/nominas/{id}/editar(id=${nomina.id})}">Editar</a>
                                             <a class="btn btn-outline-secondary btn-sm" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
                                         </div>
                                     </td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(nominas)}">
-                                <tr><td colspan="8" class="text-center ff-empty-state">No hay n&oacute;minas para el filtro seleccionado.</td></tr>
+                                <tr><td colspan="8" class="text-center ff-empty-state">No hay nominas para el filtro seleccionado. Crea un borrador para preparar el cierre salarial y su gasto asociado. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/nominas/nueva}">Crear nomina</a></td></tr>
                                 </tbody>
                             </table>
                         </div>

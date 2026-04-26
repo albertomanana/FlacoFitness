@@ -63,16 +63,13 @@ public class Nomina {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal deducciones;
 
-    @NotNull
     @Column(name = "salario_neto", nullable = false, precision = 10, scale = 2)
     private BigDecimal salarioNeto;
 
-    @NotNull
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "fecha_emision", nullable = false)
     private LocalDate fechaEmision;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EstadoNomina estado;

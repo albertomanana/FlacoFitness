@@ -23,5 +23,7 @@ public interface NominaRepository extends JpaRepository<Nomina, Long> {
 
     boolean existsByStaffPerfilIdAndPeriodo(Long staffPerfilId, String periodo);
 
+    boolean existsByStaffPerfilIdAndPeriodoAndIdNot(Long staffPerfilId, String periodo, Long id);
+
     long countByEstado(EstadoNomina estado);
 }

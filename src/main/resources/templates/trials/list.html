@@ -7,8 +7,19 @@
     <div class="ff-main">
         <div th:replace="~{fragments/topbar :: topbar('Trials', 'Seguimiento comercial.')}"></div>
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack" data-module-key="trials">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="trials">
+                    <div>
+                        <span class="ff-section-eyebrow">Trials</span>
+                        <h3 class="ff-card-title mt-1">Convierte leads en flujo real</h3>
+                        <p class="ff-card-subtitle">Usa este pipeline para registrar pruebas, hacer seguimiento comercial y convertirlas en usuarios cuando haya cierre.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
                 <section class="ff-section-header ff-animate-in"><div><span class="ff-section-eyebrow">Comercial</span><h2 class="ff-section-title">Dias de prueba</h2><p class="ff-section-subtitle">Leads, pruebas y conversion a usuario.</p></div><a class="btn btn-success" th:href="@{/trials/nuevo}">Nuevo trial</a></section>
                 <section class="row g-3 ff-animate-in">
                     <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Trials</p><p class="ff-stat-value" th:text="${#lists.size(trials)}">0</p><p class="ff-stat-note">Total registrados</p></article></div>
@@ -16,7 +27,7 @@
                     <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Hoy</p><p class="ff-stat-value" th:text="${trialsHoy}">0</p><p class="ff-stat-note">Pruebas previstas</p></article></div>
                 </section>
                 <section class="ff-surface-card ff-animate-in">
-                    <div class="ff-card-header"><div class="ff-card-toolbar w-100"><div><h3 class="ff-card-title">Pipeline de pruebas</h3><p class="ff-card-subtitle">Estado comercial y responsable.</p></div><form class="d-flex gap-2 flex-wrap" th:action="@{/trials}" method="get"><input type="date" name="desde" class="form-control form-control-sm" th:value="${desdeFiltro}"><input type="date" name="hasta" class="form-control form-control-sm" th:value="${hastaFiltro}"><select name="estado" class="form-select form-select-sm"><option value="">Todos los estados</option><option th:each="est : ${estadosTrial}" th:value="${est.name()}" th:text="${est.name()}" th:selected="${estadoFiltro != null and estadoFiltro.name() == est.name()}"></option></select><button class="btn btn-outline-secondary btn-sm" type="submit">Filtrar</button><a class="btn btn-outline-secondary btn-sm" th:href="@{/trials}">Limpiar</a></form></div></div>
+                    <div class="ff-card-header"><div class="ff-card-toolbar w-100"><div><h3 class="ff-card-title">Pipeline de pruebas</h3><p class="ff-card-subtitle">Estado comercial y responsable.</p></div><form class="d-flex gap-2 flex-wrap" th:action="@{/trials}" method="get" data-filter-memory-key="trials-list"><input type="date" name="desde" class="form-control form-control-sm" th:value="${desdeFiltro}"><input type="date" name="hasta" class="form-control form-control-sm" th:value="${hastaFiltro}"><select name="estado" class="form-select form-select-sm"><option value="">Todos los estados</option><option th:each="est : ${estadosTrial}" th:value="${est.name()}" th:text="${est.name()}" th:selected="${estadoFiltro != null and estadoFiltro.name() == est.name()}"></option></select><button class="btn btn-outline-secondary btn-sm" type="submit">Filtrar</button><a class="btn btn-outline-secondary btn-sm" th:href="@{/trials}">Limpiar</a></form></div></div>
                     <div class="ff-card-body pt-0">
                         <div class="table-responsive">
                             <table id="trialsTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar trial...">
@@ -31,7 +42,7 @@
                                     <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/trials/{id}/editar(id=${trial.id})}">Editar</a></td>
                                 </tr>
                                 </tbody>
-                                <tbody th:if="${#lists.isEmpty(trials)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay trials registrados.</td></tr></tbody>
+                                <tbody th:if="${#lists.isEmpty(trials)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay trials registrados. Crea el primero para empezar a medir captacion y conversion comercial. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/trials/nuevo}">Crear trial</a></td></tr></tbody>
                             </table>
                         </div>
                     </div>

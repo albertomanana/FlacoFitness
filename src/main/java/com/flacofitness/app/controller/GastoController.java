@@ -11,6 +11,9 @@ import com.flacofitness.app.service.MaquinaService;
 import com.flacofitness.app.service.MaterialService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.StaffService;
+import com.flacofitness.app.service.ControllerActivityLogger;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -42,19 +45,22 @@ public class GastoController {
     private final MaterialService materialService;
     private final PagoService pagoService;
     private final FinancePdfService financePdfService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public GastoController(GastoService gastoService,
                            StaffService staffService,
                            MaquinaService maquinaService,
                            MaterialService materialService,
                            PagoService pagoService,
-                           FinancePdfService financePdfService) {
+                           FinancePdfService financePdfService,
+                           ControllerActivityLogger controllerActivityLogger) {
         this.gastoService = gastoService;
         this.staffService = staffService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
         this.pagoService = pagoService;
         this.financePdfService = financePdfService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -126,7 +132,9 @@ public class GastoController {
     public String guardar(@Valid @ModelAttribute("gasto") Gasto gasto,
                           BindingResult bindingResult,
                           Model model,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          HttpServletRequest request,
+                          HttpSession session) {
         if (bindingResult.hasErrors()) {
             prepararRelaciones(gasto);
             cargarCatalogos(model);
@@ -135,7 +143,13 @@ public class GastoController {
         }
 
         try {
-            gastoService.guardar(gasto);
+            Gasto guardado = gastoService.guardar(gasto);
+            controllerActivityLogger.log(request, session,
+                    "gastos", "gasto_creado", "gasto", guardado.getId(),
+                    "Gasto registrado",
+                    "Se registro un nuevo gasto operativo.");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Gasto registrado correctamente.");
+            return "redirect:/gastos/" + guardado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("gastoError", ex.getMessage());
             prepararRelaciones(gasto);
@@ -143,9 +157,6 @@ public class GastoController {
             model.addAttribute("modoEdicion", false);
             return "gastos/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Gasto registrado correctamente.");
-        return "redirect:/gastos";
     }
 
     @GetMapping("/{id}")
@@ -155,9 +166,20 @@ public class GastoController {
     }
 
     @PostMapping("/{id}/pagado")
-    public String marcarPagado(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String marcarPagado(@PathVariable Long id,
+                               RedirectAttributes redirectAttributes,
+                               @org.springframework.web.bind.annotation.RequestParam(name = "returnTo", required = false) String returnTo,
+                               HttpServletRequest request,
+                               HttpSession session) {
         gastoService.marcarPagado(id);
+        controllerActivityLogger.log(request, session,
+                "gastos", "gasto_pagado", "gasto", id,
+                "Gasto pagado",
+                "Se marco el gasto como pagado.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Gasto marcado como pagado.");
+        if ("list".equalsIgnoreCase(returnTo)) {
+            return "redirect:/gastos";
+        }
         return "redirect:/gastos/" + id;
     }
 
@@ -176,7 +198,9 @@ public class GastoController {
                              @Valid @ModelAttribute("gasto") Gasto gasto,
                              BindingResult bindingResult,
                              Model model,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request,
+                             HttpSession session) {
         if (bindingResult.hasErrors()) {
             prepararRelaciones(gasto);
             cargarCatalogos(model);
@@ -185,7 +209,13 @@ public class GastoController {
         }
 
         try {
-            gastoService.actualizar(id, gasto);
+            Gasto actualizado = gastoService.actualizar(id, gasto);
+            controllerActivityLogger.log(request, session,
+                    "gastos", "gasto_actualizado", "gasto", actualizado.getId(),
+                    "Gasto actualizado",
+                    "Se actualizo la ficha financiera del gasto.");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Gasto actualizado correctamente.");
+            return "redirect:/gastos/" + actualizado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("gastoError", ex.getMessage());
             prepararRelaciones(gasto);
@@ -193,23 +223,24 @@ public class GastoController {
             model.addAttribute("modoEdicion", true);
             return "gastos/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Gasto actualizado correctamente.");
-        return "redirect:/gastos";
     }
 
     @PostMapping("/{id}/desactivar")
-    public String desactivar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivar(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes,
+                             @org.springframework.web.bind.annotation.RequestParam(name = "returnTo", required = false) String returnTo) {
         gastoService.desactivar(id);
         redirectAttributes.addFlashAttribute("mensajeExito", "Gasto desactivado.");
-        return "redirect:/gastos";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     @PostMapping("/{id}/activar")
-    public String activar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activar(@PathVariable Long id,
+                          RedirectAttributes redirectAttributes,
+                          @org.springframework.web.bind.annotation.RequestParam(name = "returnTo", required = false) String returnTo) {
         gastoService.activar(id);
         redirectAttributes.addFlashAttribute("mensajeExito", "Gasto activado.");
-        return "redirect:/gastos";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     @GetMapping(value = "/export/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
@@ -236,14 +267,17 @@ public class GastoController {
                 materialId,
                 recurrente,
                 normalizarFiltroTexto(proveedor));
+        BigDecimal gastoMesActual = gastoService.calcularGastoMesActual();
+        BigDecimal ingresoMesActual = pagoService.calcularIngresosMesActual();
+
         Map<String, Object> model = new HashMap<>();
         model.put("titulo", "Gastos operativos");
         model.put("subtitulo", "Listado filtrado de egresos, estados y relaciones operativas.");
         model.put("gastos", gastos);
         model.put("gastosTotales", gastoService.contarActivos());
-        model.put("gastoMesActual", gastoService.calcularGastoMesActual());
-        model.put("ingresoMesActual", pagoService.calcularIngresosMesActual());
-        model.put("balanceMesActual", pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()));
+        model.put("gastoMesActual", gastoMesActual);
+        model.put("ingresoMesActual", ingresoMesActual);
+        model.put("balanceMesActual", ingresoMesActual.subtract(gastoMesActual));
         byte[] pdf = financePdfService.render("reportes/gastos-listado", model);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=gastos-operativos.pdf")
@@ -290,5 +324,12 @@ public class GastoController {
         }
         String normalizado = value.trim();
         return normalizado.isEmpty() ? null : normalizado;
+    }
+
+    private String resolveReturnPath(Long id, String returnTo) {
+        if ("detail".equalsIgnoreCase(returnTo)) {
+            return "/gastos/" + id;
+        }
+        return "/gastos";
     }
 }

@@ -28,6 +28,13 @@ public class AccessGuardInterceptor implements HandlerInterceptor {
         if (accessSessionService.isGranted(session)) {
             String path = request.getRequestURI().substring(request.getContextPath().length());
             AccessProfile profile = accessSessionService.getCurrentProfile(session);
+            boolean mustChangePassword = accessSessionService.getCurrentUser(session)
+                    .map(usuario -> Boolean.TRUE.equals(usuario.getMustChangePassword()))
+                    .orElse(false);
+            if (mustChangePassword && !path.startsWith("/cuenta/password") && !path.equals("/salir")) {
+                response.sendRedirect(request.getContextPath() + "/cuenta/password");
+                return false;
+            }
             if (profile == AccessProfile.CLIENTE && "/".equals(path)) {
                 response.sendRedirect(request.getContextPath() + profile.entryPoint());
                 return false;

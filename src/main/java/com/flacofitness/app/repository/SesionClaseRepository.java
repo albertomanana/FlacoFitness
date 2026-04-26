@@ -42,6 +42,25 @@ public interface SesionClaseRepository extends JpaRepository<SesionClase, Long> 
     @EntityGraph(attributePaths = {"clase", "staffResponsable", "staffResponsable.usuario", "rutina"})
     List<SesionClase> findTop8ByFechaGreaterThanEqualAndEstadoOrderByFechaAscHoraInicioAscIdAsc(LocalDate fecha, EstadoSesion estado);
 
+    @EntityGraph(attributePaths = {"clase", "staffResponsable", "staffResponsable.usuario", "rutina"})
+    @Query("""
+            select sesion from SesionClase sesion
+            left join sesion.clase clase
+            left join sesion.staffResponsable staff
+            left join staff.usuario usuario
+            left join sesion.rutina rutina
+            where lower(concat(
+                coalesce(clase.nombre, ''), ' ',
+                coalesce(clase.descripcion, ''), ' ',
+                coalesce(usuario.nombre, ''), ' ',
+                coalesce(usuario.apellidos, ''), ' ',
+                coalesce(rutina.nombre, ''), ' ',
+                coalesce(cast(sesion.estado as string), '')
+            )) like lower(concat('%', :query, '%'))
+            order by sesion.fecha desc, sesion.horaInicio desc, sesion.id desc
+            """)
+    List<SesionClase> searchTopForGlobal(@Param("query") String query, org.springframework.data.domain.Pageable pageable);
+
     long countByFechaAndEstado(LocalDate fecha, EstadoSesion estado);
 
     @Query("select count(sesion) from SesionClase sesion where sesion.fecha >= :fecha and sesion.estado = :estado")

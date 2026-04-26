@@ -1,6 +1,6 @@
 # Module Status
 
-Fecha de referencia: 2026-04-22
+Fecha de referencia: 2026-04-24
 
 ## Resumen
 
@@ -11,7 +11,7 @@ La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, ca
 | Modulo | Estado | Backend | UI | Riesgo actual | Nota |
 | --- | --- | --- | --- | --- | --- |
 | Dashboard | Operativo | OK | OK | Bajo | Dashboard simplificado con rail de alertas y trio principal de charts; QA visual parcial |
-| Acceso PIN | Operativo | OK | OK | Bajo | PIN por defecto `2468` |
+| Acceso por cuenta | Operativo | OK | OK | Medio | Login con email/username, password hash, cambio de password y reset temporal por admin; falta smoke real con MySQL levantado |
 | Usuarios | Operativo | OK | OK | Bajo | Validado visualmente tras fix de pantalla en blanco |
 | Rutinas | Operativo | OK | Pendiente QA profunda | Medio | Many-to-many con usuarios y staff opcional |
 | Pagos | Operativo | OK | OK | Bajo | Validado visualmente; N+1 en KPIs de usuarios (academico, no critico) |
@@ -23,7 +23,7 @@ La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, ca
 | Sesiones | Operativo | OK | Pendiente QA profunda | Medio | Horario, cupo, staff, rutina opcional |
 | Gastos | Operativo | OK | OK | Bajo | Bug de `gasto.frecuencia` corregido y filtros financieros completos expuestos en UI (2026-04-22) |
 | Recurrentes | Operativo | OK | OK | Bajo | Plantillas de cargos; scheduler now configurable via properties |
-| Nominas | Operativo | OK | OK | Bajo | Detalle premium y PDF individual/listado validados |
+| Nominas | Operativo | OK | OK | Bajo | Builder premium, borrador/emision/pago/cancelacion y PDF individual/listado validados en codigo |
 | Maquinas | Operativo | OK | Pendiente QA profunda | Medio | Integrado con gastos |
 | Materiales | Operativo | OK | Pendiente QA profunda | Medio | Integrado con gastos |
 | Cliente | Operativo | OK | Pendiente QA profunda | Medio | Panel limitado con reservas activas e historial de asistencias |

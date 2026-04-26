@@ -161,7 +161,7 @@ function animateDashboardStat(key, rawValue, kind, utils, animate = true) {
         }
 
         const startTime = performance.now();
-        const duration = 980;
+        const duration = 1250;
 
         function step(timestamp) {
             const progress = Math.min((timestamp - startTime) / duration, 1);

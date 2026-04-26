@@ -9,8 +9,19 @@
         <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Pagos'}, ${subtituloListado ?: 'Control de cuotas.'})}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack" data-module-key="pagos">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="pagos">
+                    <div>
+                        <span class="ff-section-eyebrow">Pagos</span>
+                        <h3 class="ff-card-title mt-1">Cobra sin perder trazabilidad</h3>
+                        <p class="ff-card-subtitle">Filtra por usuario y estado para ver deuda real, registrar cobros y volver al detalle sin navegar a ciegas.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
@@ -30,53 +41,52 @@
 
                 <section class="row g-3 ff-animate-in">
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-primary">
-                            <p class="ff-stat-label text-primary fw-bold">Ingresos Mes Actual</p>
-                            <p class="ff-stat-value" th:text="${ingresosMesActual != null ? #numbers.formatDecimal(ingresosMesActual, 1, 'POINT', 2, 'COMMA') + ' €' : '0.00 €'}">0.00 €</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-positive">
+                            <p class="ff-stat-label">Ingresos mes actual</p>
+                            <p class="ff-stat-value" th:text="${ingresosMesActual != null ? #numbers.formatDecimal(ingresosMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Facturacion corriente</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-success">
-                            <p class="ff-stat-label text-success fw-bold">Ingresos Totales</p>
-                            <p class="ff-stat-value" th:text="${ingresosTotales != null ? #numbers.formatDecimal(ingresosTotales, 1, 'POINT', 2, 'COMMA') + ' €' : '0.00 €'}">0.00 €</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-positive">
+                            <p class="ff-stat-label">Ingresos totales</p>
+                            <p class="ff-stat-value" th:text="${ingresosTotales != null ? #numbers.formatDecimal(ingresosTotales, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Historico consolidado</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-warning">
-                            <p class="ff-stat-label text-warning fw-bold">Pagos Pendientes</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-warning">
+                            <p class="ff-stat-label">Pagos pendientes</p>
                             <p class="ff-stat-value" th:text="${pagosPendientes}">0</p>
                             <p class="ff-stat-note">Cuotas por devengar</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-danger">
-                            <p class="ff-stat-label text-danger fw-bold">Cuotas Vencidas</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-danger">
+                            <p class="ff-stat-label">Cuotas vencidas</p>
                             <p class="ff-stat-value" th:text="${pagosVencidos}">0</p>
                             <p class="ff-stat-note">Morosidad detectada</p>
                         </article>
                     </div>
-                    <!-- NUEVOS KPIs FINANCIEROS -->
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-success">
-                            <p class="ff-stat-label text-success fw-bold">Usuarios al Día</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-positive">
+                            <p class="ff-stat-label">Usuarios al dia</p>
                             <p class="ff-stat-value" th:text="${usuariosAlDia}">0</p>
                             <p class="ff-stat-note">Estado financiero OK</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-warning">
-                            <p class="ff-stat-label text-warning fw-bold">Con Deuda</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-warning">
+                            <p class="ff-stat-label">Con deuda</p>
                             <p class="ff-stat-value" th:text="${usuariosConDeuda}">0</p>
                             <p class="ff-stat-note">Pagos pendientes</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-danger">
-                            <p class="ff-stat-label text-danger fw-bold">Con Vencidos</p>
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-danger">
+                            <p class="ff-stat-label">Con vencidos</p>
                             <p class="ff-stat-value" th:text="${usuariosConVencidos}">0</p>
-                            <p class="ff-stat-note">Requiere acción inmediata</p>
+                            <p class="ff-stat-note">Requiere accion inmediata</p>
                         </article>
                     </div>
                 </section>
@@ -89,32 +99,34 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
-                        <form class="row g-3" th:action="@{/pagos}" method="get">
-                            <div class="col-12 col-lg-5">
-                                <label class="form-label" for="usuarioId">Usuario</label>
-                                <select id="usuarioId" name="usuarioId" class="form-select">
-                                    <option value="">Todos los usuarios</option>
-                                    <option th:each="usuario : ${usuariosFiltro}"
-                                            th:value="${usuario.id}"
-                                            th:selected="${usuarioFiltroId != null and usuarioFiltroId == usuario.id}"
-                                            th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</option>
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-4">
-                                <label class="form-label" for="estado">Estado</label>
-                                <select id="estado" name="estado" class="form-select">
-                                    <option value="">Todos los estados</option>
-                                    <option th:each="estado : ${estadosFiltro}"
-                                            th:value="${estado}"
-                                            th:selected="${estadoFiltro != null and estadoFiltro == estado}"
-                                            th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option>
-                                </select>
-                            </div>
-                            <div class="col-12 col-lg-3 d-flex align-items-end gap-2 flex-wrap">
-                                <button type="submit" class="btn btn-success">Aplicar</button>
-                                <a class="btn btn-outline-secondary" th:href="@{/pagos}">Limpiar</a>
-                            </div>
-                        </form>
+                        <div class="ff-filter-panel">
+                            <form class="row g-3" th:action="@{/pagos}" method="get" data-filter-memory-key="pagos-list">
+                                <div class="col-12 col-lg-5">
+                                    <label class="form-label" for="usuarioId">Usuario</label>
+                                    <select id="usuarioId" name="usuarioId" class="form-select">
+                                        <option value="">Todos los usuarios</option>
+                                        <option th:each="usuario : ${usuariosFiltro}"
+                                                th:value="${usuario.id}"
+                                                th:selected="${usuarioFiltroId != null and usuarioFiltroId == usuario.id}"
+                                                th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <label class="form-label" for="estado">Estado</label>
+                                    <select id="estado" name="estado" class="form-select">
+                                        <option value="">Todos los estados</option>
+                                        <option th:each="estado : ${estadosFiltro}"
+                                                th:value="${estado}"
+                                                th:selected="${estadoFiltro != null and estadoFiltro == estado}"
+                                                th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-lg-3 d-flex align-items-end gap-2 flex-wrap">
+                                    <button type="submit" class="btn btn-success">Aplicar</button>
+                                    <a class="btn btn-outline-secondary" th:href="@{/pagos}">Limpiar</a>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </section>
 
@@ -138,7 +150,7 @@
                                    data-search-placeholder="Buscar pago, usuario o referencia...">
                                 <thead>
                                 <tr>
-                                    <th>F. Vencimiento</th>
+                                    <th>F. vencimiento</th>
                                     <th>Usuario</th>
                                     <th>Plan</th>
                                     <th>Monto</th>
@@ -175,10 +187,10 @@
                                         </div>
                                     </td>
                                     <td th:text="${pago.plan != null ? pago.plan.nombre : '-'}">Plan</td>
-                                    <td th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' €' : '-'}">0.00 €</td>
+                                    <td th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
                                     <td>
-                                        <span class="ff-status-badge d-inline-block px-3 py-1 fw-bold"
-                                              th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' bg-success-subtle text-success border border-success' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' bg-danger-subtle text-danger border border-danger' : ' bg-warning-subtle text-warning border border-warning')"
+                                        <span class="ff-status-badge"
+                                              th:classappend="${pago.estado != null and pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null and pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
                                               th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">Estado</span>
                                     </td>
                                     <td class="font-monospace text-muted small" th:text="${#strings.defaultString(pago.referencia, '-')}">Referencia</td>
@@ -186,20 +198,21 @@
                                         <div class="d-inline-flex gap-2 justify-content-end align-items-center">
                                             <form th:if="${pago.estado != null && pago.estado.name() != 'PAGADO'}"
                                                   th:action="@{/pagos/{id}/marcar-pagado(id=${pago.id})}" method="post">
-                                                <button type="submit" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1 shadow-sm transition-all" title="Registrar Cobro">
+                                                <input type="hidden" name="returnTo" value="list">
+                                                <button type="submit" class="btn btn-sm btn-success fw-bold d-flex align-items-center gap-1 shadow-sm transition-all" title="Registrar cobro">
                                                     <i class="fas fa-check-circle"></i> Cobrar
                                                 </button>
                                             </form>
-                                            <a class="btn btn-outline-primary btn-sm ff-btn-icon" th:href="@{/pagos/{id}/editar(id=${pago.id})}" title="Editar">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
                                         </div>
                                     </td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(pagos)}">
                                 <tr>
-                                    <td colspan="7" class="text-center ff-empty-state">No hay pagos para el filtro actual.</td>
+                                    <td colspan="7" class="text-center ff-empty-state">
+                                        No hay pagos para este filtro. Si estas arrancando el sistema, registra el primer cobro para activar caja, dashboard y alertas.
+                                        <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/pagos/nuevo}">Crear el primero</a>
+                                    </td>
                                 </tr>
                                 </tbody>
                             </table>

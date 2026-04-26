@@ -7,11 +7,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AccessProfileTest {
 
     @Test
-    void clienteSoloAccedeAPanelYDetallesPermitidos() {
+    void clienteSoloAccedeASuPortalYNoANavegacionGenerica() {
         assertThat(AccessProfile.CLIENTE.canAccess("/cliente", "GET")).isTrue();
+        assertThat(AccessProfile.CLIENTE.canAccess("/cliente/checkin", "POST")).isTrue();
         assertThat(AccessProfile.CLIENTE.canAccess("/", "GET")).isFalse();
         assertThat(AccessProfile.CLIENTE.canAccess("/usuarios", "GET")).isFalse();
-        assertThat(AccessProfile.CLIENTE.canAccess("/rutinas/12", "GET")).isTrue();
+        assertThat(AccessProfile.CLIENTE.canAccess("/rutinas/12", "GET")).isFalse();
         assertThat(AccessProfile.CLIENTE.canAccess("/rutinas/nueva", "GET")).isFalse();
         assertThat(AccessProfile.CLIENTE.canAccess("/pagos/4", "POST")).isFalse();
     }

@@ -8,14 +8,14 @@
             <div class="ff-app-splash-loader" aria-hidden="true">
                 <span></span>
             </div>
-            <p class="ff-app-splash-copy">Preparando workspace</p>
+            <p class="ff-app-splash-copy">Preparando panel</p>
         </div>
     </div>
 
     <div class="ff-app-loading-overlay" data-app-loading-overlay aria-hidden="true">
         <div class="ff-app-loading-panel" role="status" aria-live="polite">
             <div class="ff-app-loading-spinner" aria-hidden="true"></div>
-            <p class="ff-app-loading-title">Cargando modulo</p>
+            <p class="ff-app-loading-title">Cargando panel</p>
             <p class="ff-app-loading-copy">Estamos preparando la pantalla solicitada...</p>
         </div>
     </div>
@@ -26,6 +26,59 @@
             <p class="mb-0"><span data-current-year>2026</span> - Gestion operativa del gimnasio</p>
         </div>
     </footer>
+
+    <div class="ff-fab" th:if="${accessProfile.name() != 'CLIENTE'}" data-fab>
+        <button class="ff-fab-trigger" type="button" aria-label="Abrir acciones rapidas" data-fab-trigger>
+            <i class="fa-solid fa-plus"></i>
+        </button>
+        <div class="ff-fab-menu" data-fab-menu>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_RECEPCION'}"
+               th:href="@{/usuarios/nuevo}">
+                <i class="fa-solid fa-user-plus"></i><span>Crear usuario</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_RECEPCION'}"
+               th:href="@{/pagos/nuevo}">
+                <i class="fa-solid fa-credit-card"></i><span>Registrar pago</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_RECEPCION' or accessProfile.name() == 'STAFF_ENTRENADOR'}"
+               th:href="@{/asistencias/nueva}">
+                <i class="fa-solid fa-door-open"></i><span>Check-in</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_ENTRENADOR'}"
+               th:href="@{/sesiones/nueva}">
+                <i class="fa-solid fa-calendar-plus"></i><span>Crear sesion</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_RECEPCION'}"
+               th:href="@{/trials/nuevo}">
+                <i class="fa-solid fa-bolt"></i><span>Crear trial</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_ENTRENADOR'}"
+               th:href="@{/clases/nueva}">
+                <i class="fa-solid fa-dumbbell"></i><span>Crear clase</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_ENTRENADOR'}"
+               th:href="@{/rutinas/nueva}">
+                <i class="fa-solid fa-list-check"></i><span>Asignar rutina</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_GERENTE'}"
+               th:href="@{/gastos/nuevo}">
+                <i class="fa-solid fa-wallet"></i><span>Crear gasto</span>
+            </a>
+            <a class="ff-fab-item"
+               th:if="${accessProfile.name() == 'ADMIN' or accessProfile.name() == 'STAFF_GERENTE'}"
+               th:href="@{/nominas/nueva}">
+                <i class="fa-solid fa-file-invoice-dollar"></i><span>Generar nomina</span>
+            </a>
+        </div>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
@@ -38,7 +91,9 @@
     <script src="https://cdn.datatables.net/responsive/3.0.7/js/responsive.bootstrap5.min.js"></script>
     <script th:src="@{/vendor/chartjs/chart.umd.min.js}"></script>
     <script th:src="@{/vendor/sortablejs/Sortable.min.js}"></script>
+    <script th:src="@{/vendor/animejs/anime.umd.min.js}"></script>
     <script th:src="@{/js/app.js}"></script>
+    <script th:src="@{/js/hud-motion.js}"></script>
     <script th:src="@{/js/tables.js}"></script>
     <script th:src="@{/js/dashboard.js}"></script>
     <script th:src="@{/js/asistencias.js}"></script>

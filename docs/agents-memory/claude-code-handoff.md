@@ -1,6 +1,6 @@
 # Claude Code Handoff
 
-Fecha de referencia: 2026-04-22
+Fecha de referencia: 2026-04-24
 
 Este documento existe para que Claude Code o cualquier otro agente pueda continuar el trabajo sin perder contexto ni romper el sistema.
 
@@ -94,8 +94,10 @@ mysql -h localhost -P 3306 -u flaco_user -pflaco_pass -D flacofitness
 ## 7. Acceso funcional de la app
 
 - URL local: `http://localhost:8080`
-- Acceso por PIN:
-  - PIN por defecto: `2468`
+- Acceso por cuenta:
+  - login con `email` o `username`
+  - password temporal bootstrap para usuarios legacy: `FlacoTemp2026!`
+  - `mustChangePassword=true` fuerza cambio de password al primer acceso bootstrap
 - Perfiles disponibles:
   - `ADMIN`
   - `STAFF_ENTRENADOR`
@@ -130,6 +132,8 @@ Servicios clave:
 - `OperationalClockService`
 - `FinancialAutomationService`
 - `RecurrenceService`
+- `AccessSessionService`
+- `AccessProfileResolver`
 - `PagoService`
 - `GastoService`
 - `GastoRecurrenteService`
@@ -137,7 +141,17 @@ Servicios clave:
 - `ShellNotificationService`
 - `UsuarioControlCenterService`
 
-## 9. Estado de tiempo y automatizacion
+## 9. Estado de autenticacion, tiempo y automatizacion
+
+### Autenticacion
+
+- Ya no existe acceso compartido por PIN.
+- `Usuario` tiene `username`, `passwordHash` y `mustChangePassword`.
+- `PasswordConfig` expone BCrypt.
+- `AccessSessionService` autentica por email o username.
+- `CuentaController` gestiona cambio de password.
+- `UsuarioController` permite reset temporal por admin.
+- `AuthBootstrapRunner` backfillea credenciales para usuarios legacy sin password hash.
 
 ### Estado actual
 
@@ -231,7 +245,19 @@ No duplicar esta logica en:
 - **Bug critico corregido:** `gastos/detail.html` accedia a `gasto.frecuencia` que no existe en `Gasto`; causaba `EL1008E PropertyAccessException` (500) en cualquier `/gastos/{id}`. Corregido a `gasto.gastoRecurrente.frecuencia` con null-guards correctos. Se anadio ademas `tipoGasto`, `fechaVencimiento` y badge de estado con colores semanticos.
 - **`SaaSSchedulerService` corregido:** el scheduler ignoraba `app.pagos.scheduler.enabled` y `app.pagos.scheduler.cron` de `application.properties`. Se inyectaron via `@Value` y el cron ahora usa SpEL `${app.pagos.scheduler.cron:0 0 0 * * *}`.
 - Auditoria completa sin bugs adicionales: `GastoService`, `PagoService`, `NominaService`, `GastoRecurrenteService`, `FinancialAutomationService`, `RecurrenceService`, `ShellNotificationService`, `StatsController`, `AccessProfile`, templates de nominas/ y gastos/recurrentes/.
-- N+1 en `PagoService.contarUsuarios*` documentado en backlog (academico, no critico).
+- N+1 en `PagoService.contarUsuarios*` documentado en backlog — resuelto en 2026-04-23 (ver bloque siguiente).
+
+### 2026-04-23 (cierre profesional SaaS)
+
+- **Dead code eliminado:** `fragments/navbar.html` borrado (confirmado huerfano con grep).
+- **Regresion test:** `ViewControllerTest` ampliado con `adminPuedeVerListadoGastos()` y `adminPuedeVerDetalleGasto()` para cubrir el bug `EL1008E` de `gastos/detail`.
+- **KPI cards unificadas:** `pagos/list.html`, `gastos/list.html` y `nominas/list.html` migrados al sistema `.ff-kpi-card` con variantes semanticas `ff-kpi-positive/warning/danger/neutral`. CSS ampliado en `styles.css` con las variantes y dark mode overrides. `.ff-filter-panel` como wrapper de filtros.
+- **Status badges normalizados:** `pagos/list.html` usa `.ff-status-badge`; corregido `ff-status-warning` → `ff-status-pending` en `nominas/list.html`.
+- **Beneficio estimado dinamico:** `data-kpi-profit` con `th:attr` en `home/index.html`; `updateProfitCardColor()` en `dashboard.js`.
+- **Dark mode Chart.js:** `getChartColors()` en `dashboard.js`; los tres charts usan colores del tema en tiempo de render.
+- **N+1 eliminado:** Tres queries JPQL de agregacion en `PagoRepository`; `contarUsuariosAlDia/ConDeuda/ConPagosVencidos` ya no hacen `findAll()`.
+- **Trial→MembresiaUsuario:** `TrialService.convertirAUsuario()` auto-crea `MembresiaUsuario` al convertir trial nuevo con plan, sin membresia activa previa.
+- **Tests:** 21 en verde.
 
 ## 12. Problemas ya conocidos y resueltos
 
@@ -241,6 +267,9 @@ No duplicar esta logica en:
 - Error por `CURDATE()` en reparacion financiera: resuelto.
 - `gasto.frecuencia` en `gastos/detail.html` causando 500: resuelto (2026-04-22).
 - `SaaSSchedulerService` ignorando properties configurables: resuelto (2026-04-22).
+- N+1 en `PagoService.contarUsuarios*`: resuelto (2026-04-23).
+- `ViewControllerTest` sin cobertura de `/gastos/{id}`: resuelto (2026-04-23).
+- Trial convertido sin MembresiaUsuario: resuelto (2026-04-23).
 
 ## 13. Riesgos actuales que Claude debe vigilar
 
@@ -248,8 +277,6 @@ No duplicar esta logica en:
 - QA visual profunda pendiente en: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales`, `/cliente`.
 - Parte del proyecto fue recuperado desde una rama avanzada; no mezclar sin revisar con trabajo legacy.
 - Hay docs antiguas que ya fueron corregidas, pero cualquier nueva contradiccion debe corregirse enseguida.
-- N+1 en `PagoService.contarUsuariosAlDia/ConDeuda/ConPagosVencidos`: carga todos los usuarios y hace 2 queries por usuario; aceptable en academico, no en produccion real.
-- `ViewControllerTest` no cubre `/gastos/{id}` (fue exactamente donde vivia el bug de `gasto.frecuencia`). Anadir test de render para ese endpoint.
 
 ## 14. Flujo recomendado para continuar
 
@@ -273,10 +300,10 @@ No duplicar esta logica en:
 
 Orden recomendado:
 
-1. Ejecutar `.\mvnw.cmd clean -DskipTests compile` y `.\mvnw.cmd test` para confirmar que los cambios de `gastos/detail.html` y `SaaSSchedulerService` compilan y los 16 tests siguen en verde.
-2. QA visual profunda modulo por modulo: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales`, `/cliente`.
-3. Verificar smoke por perfiles reales (ADMIN, STAFF_ENTRENADOR, STAFF_RECEPCION, STAFF_GERENTE, CLIENTE): accesos denegados, redirecciones y sidebar contextual.
-4. Anadir `ViewControllerTest` para `/gastos/{id}` para prevenir regresiones del tipo `EL1008E`.
-5. Cierre de inconsistencias menores del shell y acciones secundarias.
-6. Optimizar N+1 en `PagoService.contarUsuarios*` con JPQL de agregacion si el proyecto va a produccion.
-7. Hacer commit limpio de los cambios actuales o crear rama de estabilizacion.
+1. Arrancar la app con `.\mvnw.cmd spring-boot:run` y hacer smoke real en navegador.
+2. Verificar dashboard: KPI cards con colores semanticos, beneficio estimado verde/rojo, charts con dark mode correcto al toglear tema.
+3. Verificar `/pagos`, `/gastos`, `/nominas`: KPI cards con variantes semanticas, filtros con `.ff-filter-panel`.
+4. Crear un trial con email nuevo → convertir → verificar tabla `membresias_usuario` tiene nueva fila si el usuario tiene plan.
+5. QA visual profunda modulo por modulo: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales`, `/cliente`.
+6. Verificar smoke por perfiles reales (ADMIN, STAFF_ENTRENADOR, STAFF_RECEPCION, STAFF_GERENTE, CLIENTE): accesos denegados, redirecciones y sidebar contextual.
+7. Hacer commit limpio de los cambios actuales.

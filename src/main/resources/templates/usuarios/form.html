@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario', 'Datos del miembro.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario', 'Datos personales, cuenta y contexto operativo.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -14,31 +14,39 @@
 
                 <section class="ff-section-header">
                     <div>
-                        <span class="ff-section-eyebrow">Formulario</span>
-                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar usuario' : 'Alta de usuario'">Formulario de usuario</h2>
-                        <p class="ff-section-subtitle">Datos del miembro.</p>
+                        <span class="ff-section-eyebrow">Usuarios</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar usuario' : 'Alta de usuario'}">Alta de usuario</h2>
+                        <p class="ff-section-subtitle">Unifica identidad, acceso, plan y foto en un solo flujo coherente.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
                 </section>
 
-                <section class="row g-4 ff-form-layout">
-                    <div class="col-12 col-xl-8">
-                        <div class="ff-surface-card">
-                            <div class="ff-card-header">
-                                <div>
-                                    <h3 class="ff-card-title">Ficha del usuario</h3>
-                                    <p class="ff-card-subtitle">Campos principales del perfil.</p>
+                <form th:object="${usuario}"
+                      th:action="${modoEdicion} ? @{/usuarios/{id}(id=${usuario.id})} : @{/usuarios}"
+                      method="post"
+                      enctype="multipart/form-data"
+                      data-ff-user-form>
+                    <section class="row g-4 ff-form-layout">
+                        <div class="col-12 col-xl-8">
+                            <div class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Ficha del usuario</h3>
+                                        <p class="ff-card-subtitle">La cuenta, la foto y el plan quedan resueltos desde este mismo formulario.</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="ff-card-body">
-                                <form th:object="${usuario}"
-                                      th:action="${modoEdicion} ? @{/usuarios/{id}(id=${usuario.id})} : @{/usuarios}"
-                                      method="post">
+                                <div class="ff-card-body">
+                                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-4" role="alert">
+                                        <ul class="mb-0">
+                                            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                                        </ul>
+                                    </div>
+
                                     <div class="d-flex flex-column gap-4">
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Identidad</h4>
-                                                <p class="ff-form-section-text">Identificacion y contacto.</p>
+                                                <p class="ff-form-section-text">Informacion personal y de contacto del miembro.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
@@ -58,7 +66,7 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label for="email" class="form-label">Email</label>
-                                                    <input id="email" type="email" class="form-control" th:field="*{email}" placeholder="correo@ejemplo.com">
+                                                    <input id="email" type="email" class="form-control" th:field="*{email}" placeholder="correo@ejemplo.com" data-ff-username-source>
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Error</div>
                                                 </div>
                                                 <div class="col-md-6">
@@ -71,13 +79,18 @@
                                                     <input id="telefono" type="text" class="form-control" th:field="*{telefono}" placeholder="600123123">
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}">Error</div>
                                                 </div>
+                                                <div class="col-12">
+                                                    <label for="direccion" class="form-label">Direccion</label>
+                                                    <textarea id="direccion" class="form-control" rows="3" th:field="*{direccion}" placeholder="Direccion del usuario"></textarea>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}">Error</div>
+                                                </div>
                                             </div>
                                         </section>
 
                                         <section class="ff-form-section">
                                             <div class="ff-form-section-header">
                                                 <h4 class="ff-form-section-title">Relacion operativa</h4>
-                                                <p class="ff-form-section-text">Rol, plan y estado.</p>
+                                                <p class="ff-form-section-text">Rol, plan actual y estado general del miembro.</p>
                                             </div>
                                             <div class="row g-3">
                                                 <div class="col-md-6">
@@ -96,13 +109,8 @@
                                                     </select>
                                                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('plan')}" th:errors="*{plan}">Error</div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    <label for="direccion" class="form-label">Direccion</label>
-                                                    <textarea id="direccion" class="form-control" rows="3" th:field="*{direccion}" placeholder="Direccion del usuario"></textarea>
-                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}">Error</div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="form-check form-switch mt-md-4 pt-md-2">
+                                                <div class="col-12">
+                                                    <div class="form-check form-switch">
                                                         <input id="activo" class="form-check-input" type="checkbox" th:field="*{activo}">
                                                         <label for="activo" class="form-check-label">Usuario activo</label>
                                                     </div>
@@ -110,89 +118,136 @@
                                                 </div>
                                             </div>
                                         </section>
-                                    </div>
 
-                                    <div class="ff-form-actions">
-                                        <p class="ff-form-actions-note">Revisa rol y plan antes de guardar.</p>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-success">Guardar</button>
-                                            <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
-                                        </div>
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Cuenta de acceso</h4>
+                                                <p class="ff-form-section-text">Username, credenciales y control de cambio de password en el siguiente acceso.</p>
+                                            </div>
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label for="username" class="form-label">Username</label>
+                                                    <input id="username"
+                                                           type="text"
+                                                           class="form-control"
+                                                           th:field="*{username}"
+                                                           placeholder="usuario123"
+                                                           data-ff-username-input>
+                                                    <div class="form-text">Si lo dejas vacio se genera desde el email, pero puedes personalizarlo.</div>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('username')}" th:errors="*{username}">Error</div>
+                                                </div>
+                                                <div class="col-md-6 d-flex align-items-end">
+                                                    <div class="form-check form-switch">
+                                                        <input id="mustChangePassword" class="form-check-input" type="checkbox" th:field="*{mustChangePassword}">
+                                                        <label for="mustChangePassword" class="form-check-label">Forzar cambio de contraseña en el siguiente acceso</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="rawPassword" class="form-label" th:text="${modoEdicion} ? 'Nueva contraseña (opcional)' : 'Contraseña inicial'}">Contraseña inicial</label>
+                                                    <input id="rawPassword" type="password" class="form-control" th:field="*{rawPassword}" autocomplete="new-password" placeholder="Minimo 8 caracteres">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="confirmPassword" class="form-label" th:text="${modoEdicion} ? 'Confirmar nueva contraseña' : 'Confirmar contraseña'}">Confirmar contraseña</label>
+                                                    <input id="confirmPassword" type="password" class="form-control" th:field="*{confirmPassword}" autocomplete="new-password" placeholder="Repite la contraseña">
+                                                </div>
+                                            </div>
+                                        </section>
+
+                                        <section class="ff-form-section">
+                                            <div class="ff-form-section-header">
+                                                <h4 class="ff-form-section-title">Foto del perfil</h4>
+                                                <p class="ff-form-section-text">La imagen se guarda junto con el resto del formulario, sin pasos extra.</p>
+                                            </div>
+                                            <div class="row g-3 align-items-center">
+                                                <div class="col-md-4">
+                                                    <div class="ff-form-photo-preview">
+                                                        <img class="ff-avatar ff-avatar-xxl"
+                                                             th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                             alt="Preview de usuario"
+                                                             data-ff-photo-preview>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-8">
+                                                    <label for="fotoFile" class="form-label">Imagen</label>
+                                                    <input id="fotoFile"
+                                                           name="fotoFile"
+                                                           type="file"
+                                                           class="form-control"
+                                                           accept="image/png,image/jpeg,image/gif,image/webp"
+                                                           data-ff-photo-input>
+                                                    <div class="form-text">JPG, PNG, GIF o WEBP. Maximo 5 MB.</div>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fotoPath')}" th:errors="*{fotoPath}">Error</div>
+                                                </div>
+                                            </div>
+                                        </section>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="col-12 col-xl-4">
-                        <div class="ff-side-stack ff-side-stack-sticky">
-                            <div id="foto-panel">
+                        <div class="col-12 col-xl-4">
+                            <div class="ff-side-stack ff-side-stack-sticky">
                                 <aside class="ff-surface-card">
                                     <div class="ff-card-header">
                                         <div>
-                                            <h3 class="ff-card-title">Foto del perfil</h3>
-                                            <p class="ff-card-subtitle">Carga o reemplazo de imagen.</p>
+                                            <h3 class="ff-card-title">Preview de cuenta</h3>
+                                            <p class="ff-card-subtitle">Lectura rapida de como quedara el usuario al guardar.</p>
                                         </div>
                                     </div>
-                                    <div class="ff-card-body d-flex flex-column gap-3">
-                                        <div class="ff-inline-note"
-                                             th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'El usuario tiene una foto personalizada guardada.' : 'El usuario usa el avatar por defecto del sistema.'">
-                                            El usuario usa el avatar por defecto del sistema.
+                                    <div class="ff-card-body">
+                                        <div class="ff-user-preview-card">
+                                            <img class="ff-avatar ff-avatar-xl"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                 alt="Preview del avatar"
+                                                 data-ff-photo-preview-secondary>
+                                            <strong data-ff-name-preview
+                                                    th:text="${usuario.nombre != null and !usuario.nombre.isBlank() ? usuario.nombre + (usuario.apellidos != null and !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '') : 'Nuevo usuario'}">Nuevo usuario</strong>
+                                            <span class="ff-table-secondary" data-ff-email-preview th:text="${usuario.email != null and !usuario.email.isBlank() ? usuario.email : 'correo@ejemplo.com'}">correo@ejemplo.com</span>
+                                            <span class="ff-soft-badge" data-ff-username-preview th:text="${usuario.username != null and !usuario.username.isBlank() ? '@' + usuario.username : '@username'}">@username</span>
                                         </div>
+                                    </div>
+                                </aside>
 
-                                        <form th:if="${modoEdicion}"
-                                              class="d-flex flex-column gap-3"
-                                              th:action="@{/usuarios/{id}/foto(id=${usuario.id})}"
-                                              method="post"
-                                              enctype="multipart/form-data">
-                                            <input type="hidden" name="redirectTo" value="editar">
-                                            <div>
-                                                <label for="foto" class="form-label">Cambiar foto</label>
-                                                 <input id="foto"
-                                                        name="foto"
-                                                        type="file"
-                                                        class="form-control"
-                                                        accept="image/png,image/jpeg,image/gif,image/webp">
+                                <aside class="ff-surface-card">
+                                    <div class="ff-card-header">
+                                        <div>
+                                            <h3 class="ff-card-title">Resumen</h3>
+                                            <p class="ff-card-subtitle">Estado del registro y ayudas clave antes de guardar.</p>
+                                        </div>
+                                    </div>
+                                    <div class="ff-card-body">
+                                        <div class="ff-side-list">
+                                            <div class="ff-side-item">
+                                                <span class="ff-side-label">Modo</span>
+                                                <span class="ff-side-value" th:text="${modoEdicion} ? 'Edicion' : 'Alta inicial'}">Alta inicial</span>
                                             </div>
-                                            <p class="ff-form-actions-note">JPG, PNG, GIF o WEBP. Maximo 5 MB.</p>
-                                            <button type="submit" class="btn btn-success w-100 justify-content-center">Actualizar foto</button>
-                                        </form>
-
-                                        <div th:unless="${modoEdicion}" class="ff-inline-note">
-                                            Guarda el usuario primero para habilitar la subida de foto.
+                                            <div class="ff-side-item">
+                                                <span class="ff-side-label">Foto</span>
+                                                <span class="ff-side-value" th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Personalizada' : 'Avatar por defecto'}">Avatar por defecto</span>
+                                            </div>
+                                            <div class="ff-side-item">
+                                                <span class="ff-side-label">Acceso</span>
+                                                <span class="ff-side-value" th:text="${modoEdicion} ? 'Password opcional al editar' : 'Se crea con contraseña inicial'}">Cuenta activa</span>
+                                            </div>
+                                            <div class="ff-side-item">
+                                                <span class="ff-side-label">Siguiente paso</span>
+                                                <span class="ff-side-value">Pagos, membresias, rutinas y asistencias desde la ficha</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </aside>
                             </div>
+                        </div>
+                    </section>
 
-                            <aside class="ff-surface-card">
-                                <div class="ff-card-header">
-                                    <div>
-                                        <h3 class="ff-card-title">Resumen</h3>
-                                        <p class="ff-card-subtitle">Estado del registro.</p>
-                                    </div>
-                                </div>
-                                <div class="ff-card-body">
-                                    <div class="ff-side-list">
-                                        <div class="ff-side-item">
-                                            <span class="ff-side-label">Modo</span>
-                                            <span class="ff-side-value" th:text="${modoEdicion} ? 'Edicion' : 'Alta inicial'">Alta inicial</span>
-                                        </div>
-                                        <div class="ff-side-item">
-                                            <span class="ff-side-label">Estado por defecto</span>
-                                            <span class="ff-side-value">Activo</span>
-                                        </div>
-                                        <div class="ff-side-item">
-                                            <span class="ff-side-label">Foto del perfil</span>
-                                            <span class="ff-side-value"
-                                                  th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Imagen personalizada detectada' : 'Avatar por defecto del sistema'">Avatar por defecto del sistema</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </aside>
+                    <div class="ff-form-actions ff-form-actions-sticky">
+                        <p class="ff-form-actions-note">Revisa identidad, acceso y plan antes de guardar. La foto se procesa en este mismo flujo.</p>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Guardar</button>
+                            <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Cancelar</a>
                         </div>
                     </div>
-                </section>
+                </form>
 
                 <div th:replace="~{fragments/footer :: footer}"></div>
             </div>

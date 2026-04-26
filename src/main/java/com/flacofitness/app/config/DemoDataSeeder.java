@@ -60,11 +60,11 @@ public class DemoDataSeeder implements ApplicationRunner {
     private static final long RANDOM_SEED = 20260414L;
 
     private static final List<PlanSpec> PLAN_SPECS = List.of(
-            new PlanSpec("Basico", "Plan base para acceso estable y frecuente al gimnasio.", new BigDecimal("29.90"), 30, true),
-            new PlanSpec("Premium", "Plan completo con mayor cobertura y prioridad operativa.", new BigDecimal("49.90"), 30, true),
-            new PlanSpec("Plus", "Plan intermedio para usuarios con mayor frecuencia de uso.", new BigDecimal("59.90"), 30, true),
-            new PlanSpec("Estudiante", "Cuota reducida pensada para perfiles jovenes.", new BigDecimal("19.90"), 30, true),
-            new PlanSpec("Trimestral", "Pago anticipado para tres meses de servicio.", new BigDecimal("129.90"), 90, true)
+            new PlanSpec("Basico", "Plan base para acceso estable y frecuente al gimnasio.", new BigDecimal("29.00"), 30, true),
+            new PlanSpec("Premium", "Plan historico completo mantenido solo para compatibilidad.", new BigDecimal("49.90"), 30, false),
+            new PlanSpec("Plus", "Plan historico intermedio mantenido solo para compatibilidad.", new BigDecimal("59.90"), 30, false),
+            new PlanSpec("Estudiante", "Cuota reducida pensada para perfiles jovenes.", new BigDecimal("19.00"), 30, true),
+            new PlanSpec("Trimestral", "Plan historico trimestral mantenido solo para compatibilidad.", new BigDecimal("129.90"), 90, false)
     );
 
     private static final List<RoutineSpec> GENERAL_ROUTINES = List.of(
@@ -751,10 +751,10 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private void updatePlanCatalogMetadata() {
         updatePlanCatalog("Basico", TipoMembresia.MENSUAL, "Acceso general, registro de asistencias y rutinas base.");
-        updatePlanCatalog("Premium", TipoMembresia.PREMIUM, "Incluye rutinas personalizadas, prioridad en clases y seguimiento ampliado.");
-        updatePlanCatalog("Plus", TipoMembresia.PREMIUM, "Plan avanzado con mayor flexibilidad y acceso a sesiones especiales.");
+        updatePlanCatalog("Premium", TipoMembresia.PREMIUM, "Plan historico, ya no se ofrece como alta nueva.");
+        updatePlanCatalog("Plus", TipoMembresia.PREMIUM, "Plan historico, mantenido para contratos antiguos.");
         updatePlanCatalog("Estudiante", TipoMembresia.ESTUDIANTE, "Tarifa reducida para perfiles jovenes con acceso completo.");
-        updatePlanCatalog("Trimestral", TipoMembresia.TRIMESTRAL, "Contrato de tres meses con precio cerrado y renovacion planificada.");
+        updatePlanCatalog("Trimestral", TipoMembresia.TRIMESTRAL, "Plan historico de larga duracion mantenido para compatibilidad.");
     }
 
     private void updatePlanCatalog(String nombre, TipoMembresia tipo, String beneficios) {
@@ -1206,11 +1206,9 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private String selectPlanByActivity(ActivityProfile activity, int index) {
         return switch (activity) {
-            case VERY_ACTIVE -> List.of("Premium", "Plus", "Trimestral").get(index % 3);
-            case ACTIVE -> List.of("Basico", "Premium", "Plus").get(index % 3);
-            case MODERATE -> List.of("Basico", "Estudiante", "Premium").get(index % 3);
+            case VERY_ACTIVE, ACTIVE, MODERATE -> List.of("Basico", "Estudiante").get(index % 2);
             case LOW -> List.of("Basico", "Estudiante").get(index % 2);
-            case INACTIVE -> List.of("Basico", "Estudiante", "Trimestral").get(index % 3);
+            case INACTIVE -> List.of("Basico", "Estudiante").get(index % 2);
         };
     }
 

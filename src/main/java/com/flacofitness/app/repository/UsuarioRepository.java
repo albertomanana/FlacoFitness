@@ -22,7 +22,16 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @EntityGraph(attributePaths = {"rol", "plan"})
     Optional<Usuario> findById(Long id);
 
+    @EntityGraph(attributePaths = {"rol", "plan"})
     Optional<Usuario> findByEmail(String email);
+
+    @EntityGraph(attributePaths = {"rol", "plan"})
+    Optional<Usuario> findByEmailIgnoreCase(String email);
+
+    @EntityGraph(attributePaths = {"rol", "plan"})
+    Optional<Usuario> findByUsernameIgnoreCase(String username);
+
+    boolean existsByUsernameIgnoreCase(String username);
 
     @EntityGraph(attributePaths = {"rol", "plan"})
     Optional<Usuario> findFirstByActivoTrueAndRolNombreOrderByIdAsc(String rolNombre);
@@ -32,6 +41,19 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     @EntityGraph(attributePaths = {"rol", "plan"})
     List<Usuario> findTop8ByOrderByFechaRegistroDescIdDesc();
+
+    @EntityGraph(attributePaths = {"rol", "plan"})
+    @Query("""
+            select usuario from Usuario usuario
+            where lower(concat(
+                coalesce(usuario.nombre, ''), ' ',
+                coalesce(usuario.apellidos, ''), ' ',
+                coalesce(usuario.email, ''), ' ',
+                coalesce(usuario.username, '')
+            )) like lower(concat('%', :query, '%'))
+            order by usuario.activo desc, usuario.nombre asc, usuario.apellidos asc, usuario.id asc
+            """)
+    List<Usuario> searchTopForGlobal(@Param("query") String query, org.springframework.data.domain.Pageable pageable);
 
     @EntityGraph(attributePaths = {"rol", "plan"})
     @Query("select usuario from Usuario usuario " +

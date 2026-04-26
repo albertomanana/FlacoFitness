@@ -2,7 +2,7 @@
 
 ## Descripcion general
 
-FlacoFitness mantiene una arquitectura monolitica MVC con Spring Boot. La aplicacion renderiza vistas en servidor con Thymeleaf, usa Bootstrap 5 para interfaz y JavaScript ligero para interacciones concretas como dashboard, tablas, transiciones y filtros.
+FlacoFitness mantiene una arquitectura monolitica MVC con Spring Boot. La aplicacion renderiza vistas en servidor con Thymeleaf, usa Bootstrap 5 para interfaz y JavaScript ligero para interacciones concretas como dashboard, tablas, transiciones, filtros y feedback visual.
 
 La decision principal es conservar un monolito claro: es suficiente para el alcance academico, evita sobreingenieria y permite explicar facilmente el recorrido completo desde vista, controlador, servicio, repositorio y base de datos.
 
@@ -17,25 +17,35 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - JavaScript ligero en `static/js/`.
 - Chart.js para dashboard.
 - DataTables para listados interactivos.
-- La shell premium usa splash y transiciones, pero desde 2026-04-22 `.ff-main` queda visible por defecto y existe fail-safe para que un fallo visual no deje modulos en blanco.
+- La shell premium usa splash y transiciones, pero desde 2026-04-22 `.ff-main` queda visible por defecto y existe fail-safe para que un fallo visual no deje modulos en blanco. Esta regla es inviolable en cualquier bloque de UI futuro.
+- Desde 2026-04-24 la shell sigue el sistema "Operations Deck" (ver Design system v4 mas abajo): dark-first con glassmorphism, acento cian HUD `#38BDF8`, verde `#22C55E` para marca/CTAs, tokens CSS en `--ff-*`, todas las recetas en `styles.css`.
+- La navegacion visible prioriza fila clicable en listados y reduce botones redundantes cuando abrir detalle y pulsar "ver" aportan exactamente lo mismo.
+- `topbar` incorpora buscador global v1, centro de alertas y accesos recientes por perfil.
+- `footer` aloja un FAB global por perfil para acciones de alta frecuencia sin introducir SPA.
 
 ### Controladores
 
 - Reciben peticiones HTTP MVC.
 - Preparan modelos para Thymeleaf.
 - Delegan reglas de negocio a servicios.
-- Mantienen rutas de modulos como usuarios, rutinas, pagos, asistencias, staff, membresias, trials, clases y sesiones.
+- Mantienen rutas de modulos como usuarios, rutinas, pagos, asistencias, staff, membresias, trials, clases, sesiones, gastos, nominas, maquinas y materiales.
+- La regla actual de flujo es: tras crear o editar, volver al detalle de la entidad; tras activar, desactivar o marcar pagado, volver al detalle si la accion nace alli y al listado si nace desde una tabla.
+- `ShellViewAdvice` es el punto comun de shell: inyecta perfil, usuario actual, reloj, notificaciones, browser token, memoria UX y ultimos visitados.
 
 ### Servicios
 
 - Centralizan reglas de negocio.
 - Validan consistencia de relaciones.
 - Evitan duplicidades funcionales.
-- Orquestan casos de uso como alta de membresia, conversion de trial, reservas de sesion, pagos y check-in.
+- Orquestan casos de uso como alta de membresia, conversion de trial, reservas de sesion, pagos, check-in y nominas.
 - Usan `OperationalClockService` como fuente temporal de negocio cuando una regla depende de "hoy" o "ahora".
-- El cambio del reloj operativo persiste primero la fecha y ejecuta `FinancialAutomationService`; si una automatizacion falla, no se revierte el reloj.
 - `FinancialAutomationService` es la unica fachada para automatizacion financiera: actualiza pagos/gastos vencidos y genera pagos, gastos recurrentes y nominas.
 - `RecurrenceService` centraliza calculos de siguiente ciclo por duracion de plan o frecuencia recurrente.
+- `ProductIntelligenceService` centraliza clasificaciones de producto y construye el panel `Requiere atencion`.
+- `GlobalSearchService` resuelve la busqueda global agrupada de usuarios, staff y sesiones.
+- `RecentVisitService` guarda y limita las ultimas fichas visitadas por `browserToken + accessProfile`.
+- `UxMemoryStateService` persiste tooltips first-use y estados de onboarding por modulo.
+- `ActivityLogService` y `ControllerActivityLogger` registran actividad de producto usando principalmente el perfil de sesion; la autenticacion ya es individual por cuenta, pero la auditoria ligera sigue priorizando el perfil para mantener trazabilidad simple y defendible.
 
 ### Repositorios
 
@@ -48,15 +58,23 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - Enums en `model.enums`.
 - DTOs de respuesta o agregados en `model.dto`.
 - El modelo evita duplicar personas: `StaffPerfil` extiende operativamente a `Usuario`.
+- La capa de UX persistente se modela tambien en base de datos con:
+  - `ux_memory_state`
+  - `recent_visit`
+  - `activity_log`
 
-## Seguridad MVP
+## Autenticacion y autorizacion
 
-No se usa Spring Security en esta fase. El acceso esta protegido por un interceptor MVC y un PIN global configurable:
+No se usa Spring Security web en esta fase, pero ya no existe acceso compartido por PIN. La autenticacion es por cuenta y la autorizacion sigue resolviendose con interceptor MVC y perfiles derivados:
 
-- `AccessSettings`: lee PIN, intentos maximos y bloqueo temporal.
-- `AccessSessionService`: guarda acceso concedido, perfil de sesion y bloqueo.
-- `AccessGuardInterceptor`: protege rutas y aplica permisos por perfil.
+- `PasswordConfig`: expone `PasswordEncoder` BCrypt.
+- `AccessSettings`: lee intentos maximos, bloqueo temporal y password bootstrap de recuperacion.
+- `AccessSessionService`: autentica por `email/username + password`, mantiene sesion, bloqueo temporal e identidad actual.
+- `AccessProfileResolver`: deriva el `AccessProfile` desde `Usuario` y `StaffPerfil`.
+- `AccessGuardInterceptor`: protege rutas, aplica permisos por perfil y fuerza cambio de password cuando `mustChangePassword = true`.
 - `AccessProfile`: define perfiles y permisos de navegacion.
+- `CuentaController`: cambio de password del usuario autenticado.
+- `AuthBootstrapRunner`: backfill de credenciales para usuarios legacy sin password hash.
 
 Perfiles actuales:
 
@@ -64,14 +82,24 @@ Perfiles actuales:
 - `STAFF_ENTRENADOR`: rutinas, clases, sesiones y asistencias; lectura limitada de usuarios.
 - `STAFF_RECEPCION`: usuarios, trials, pagos operativos, asistencias y reservas.
 - `STAFF_GERENTE`: vision de gestion, finanzas e inventario; no imparte clases por defecto.
-- `CLIENTE`: panel personal limitado.
+- `CLIENTE`: panel personal limitado a `/cliente` y sus acciones propias.
 
-Esta capa es intencionadamente simple y defendible. Spring Security queda como evolucion futura.
+Esta capa sigue siendo intencionadamente simple y defendible: autenticacion por cuenta, hash seguro y permisos claros sin introducir todavia la complejidad completa de Spring Security web.
+
+## Contexto de navegador y memoria UX
+
+- `BrowserContextInterceptor` garantiza que cada peticion shell tenga un `browser_token` persistido en cookie.
+- Ese token se espeja en `localStorage` solo para continuidad de UI y se sincroniza con MySQL.
+- La persistencia UX se separa en dos niveles:
+  - filtros de tabla y formularios: locales en navegador
+  - memoria UX de onboarding/tooltips y visitas recientes: persistida en MySQL por `browser_token + access_profile`
+
+Esto evita acoplar demasiado la UI efimera a la base, pero permite que la app recuerde contexto y se sienta mas producto.
 
 ## Modulos funcionales actuales
 
 - `usuarios`: centro operativo del cliente, con foto, datos, pagos, asistencias, rutinas y resumen inteligente.
-- `cliente`: panel limitado para perfil cliente.
+- `cliente`: panel limitado para perfil cliente autenticado.
 - `staff`: perfiles internos ligados a usuarios.
 - `membresias`: catalogo comercial basado en `Plan` y contratos mediante `MembresiaUsuario`.
 - `trials`: gestion de leads y dias de prueba.
@@ -81,7 +109,9 @@ Esta capa es intencionadamente simple y defendible. Spring Security queda como e
 - `pagos`: cobros asociados a usuario, plan y contrato cuando existe.
 - `asistencias`: check-in libre o asistencia asociada a sesion.
 - `gastos`: control financiero basico.
+- `nominas`: salarios experimentales internos con gasto asociado y PDF.
 - `maquinas` y `materiales`: inventario operativo.
+- `busqueda`: pagina agrupada y endpoint JSON para busqueda global.
 
 ## Criterio de dominio
 
@@ -93,6 +123,7 @@ Esta capa es intencionadamente simple y defendible. Spring Security queda como e
 - `ReservaSesion` conecta usuarios con sesiones.
 - `Asistencia` conserva check-in libre y puede asociarse opcionalmente a una sesion.
 - `StaffPerfil` se liga a `Usuario` para no duplicar identidad.
+- `Nomina` ya no se trata como simple CRUD: soporta borrador, emision, pago, cancelacion y PDF profesional.
 
 ## Reloj operativo
 
@@ -100,7 +131,7 @@ El topbar muestra la fecha y hora operativa basada en el reloj real del sistema.
 
 No existe ruta de ajuste manual del reloj. `OperationalClockService` expone una abstraccion de tiempo unica para reglas de negocio, pero siempre delega en la fecha y hora reales del servidor.
 
-Al cambiar la fecha, la app ejecuta una automatizacion financiera central:
+Al evaluar la fecha, la app ejecuta automatizacion financiera central:
 
 - marca pagos no pagados como `VENCIDO` cuando `fecha_vencimiento` queda antes de la fecha operativa;
 - marca gastos abiertos como `VENCIDO` con la misma regla;
@@ -110,7 +141,7 @@ Al cambiar la fecha, la app ejecuta una automatizacion financiera central:
 
 Excepciones permitidas de fecha real:
 
-- bloqueo temporal del PIN en `AccessSessionService`, porque es seguridad de sesion y no tiempo de negocio;
+- bloqueo temporal del acceso por password en `AccessSessionService`, porque es seguridad de sesion y no tiempo de negocio;
 - metadatos tecnicos de actualizacion del propio reloj;
 - seeder demo desactivable, que no forma parte de la operacion real de MySQL.
 
@@ -118,17 +149,17 @@ Excepciones permitidas de fecha real:
 
 ```text
 com.flacofitness.app
-├── config
-├── controller
-├── exception
-├── model
-│   ├── dto
-│   ├── entity
-│   └── enums
-├── repository
-├── security
-├── service
-└── util
+|-- config
+|-- controller
+|-- exception
+|-- model
+|   |-- dto
+|   |-- entity
+|   `-- enums
+|-- repository
+|-- security
+|-- service
+`-- util
 ```
 
 ## Reglas de mantenimiento
@@ -139,3 +170,25 @@ com.flacofitness.app
 - Mantener controladores finos y servicios con reglas de negocio.
 - Mantener compatibilidad con datos legacy cuando una relacion nueva sea opcional.
 - Documentar decisiones relevantes en `docs/agents-memory/decisions-log.md`.
+
+## Nota 2026-04-24
+
+- No hubo reescritura de arquitectura ni cambio de stack.
+- La evolucion principal fue sustituir el acceso por PIN por autenticacion por cuenta con password hash BCrypt.
+- Se mantuvo la arquitectura MVC con interceptor propio y perfiles `AccessProfile`.
+- El flujo de nominas paso a un modelo mas profesional: borrador, emision, pago, cancelacion y PDF documental.
+
+## Nota 2026-04-26
+
+- La busqueda global sigue expuesta por `/api/busqueda/global` y `/busqueda`, pero ahora se apoya en queries limitadas de repositorio para `Usuario`, `StaffPerfil` y `SesionClase`.
+- No se cambio el contrato JSON, las rutas publicas ni el stack MVC.
+- Se redujeron calculos repetidos en dashboard, stats y exportacion PDF de gastos reutilizando las metricas mensuales en el controlador.
+- La mejora es de rendimiento y mantenibilidad, no de dominio: no se introdujeron entidades ni dependencias nuevas.
+
+## Nota 2026-04-26 (Command Center UI)
+
+- La capa visual principal sigue en Thymeleaf + Bootstrap + CSS propio, sin SPA.
+- `styles.css` contiene una capa final Command Center que gana en cascada sobre reglas legacy y evita reescribir templates completos.
+- El dark mode es el default si no hay preferencia guardada; el `head` aplica `data-theme` temprano para evitar flash claro.
+- Se añadio Anime.js como asset local UMD y `hud-motion.js` como inicializador progresivo: si la libreria no carga o el usuario reduce motion, la UI sigue funcional.
+- Los patrones `ff-command-stack`, `ff-hud-grid`, `ff-panel-grid`, `ff-command-hero`, `ff-hud-card`, `ff-table-shell` y `ff-empty-hud` son CSS-first y compatibles con Bootstrap.

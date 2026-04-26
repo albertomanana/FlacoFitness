@@ -77,8 +77,8 @@ public class ShellNotificationService {
             notifications.add(new ShellNotificationItem(
                     "Renovaciones proximas",
                     renovaciones + " socio(s) renuevan en los proximos 7 dias.",
-                    "Revisar membresias",
-                    "/membresias",
+                    "Abrir usuarios",
+                    "/usuarios",
                     "info"
             ));
         }
@@ -99,8 +99,8 @@ public class ShellNotificationService {
             notifications.add(new ShellNotificationItem(
                     "Usuarios inactivos",
                     usuariosInactivos + " socio(s) llevan mas de 14 dias sin check-in.",
-                    "Reactivar miembros",
-                    "/asistencias",
+                    "Abrir usuarios",
+                    "/usuarios",
                     "warning"
             ));
         }
@@ -165,7 +165,7 @@ public class ShellNotificationService {
                     "Gastos criticos",
                     gastosCriticos + " gasto(s) pendientes vencidos requieren seguimiento financiero.",
                     "Revisar gastos",
-                    "/gastos",
+                    "/gastos?estado=VENCIDO",
                     "danger"
             ));
         }
@@ -176,7 +176,7 @@ public class ShellNotificationService {
                     "Recurrentes proximos",
                     recurrentesProximos + " gasto(s) recurrentes vencen en los proximos 7 dias.",
                     "Abrir gastos",
-                    "/gastos",
+                    "/gastos?recurrente=true",
                     "warning"
             ));
         }
@@ -198,7 +198,7 @@ public class ShellNotificationService {
                     "Maquinas fuera de servicio",
                     maquinasFueraServicio + " equipo(s) requieren accion de mantenimiento.",
                     "Ver maquinas",
-                    "/maquinas",
+                    "/maquinas?estado=AVERIADA",
                     "warning"
             ));
         }

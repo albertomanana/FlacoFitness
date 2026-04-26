@@ -11,6 +11,11 @@
                 <section class="ff-section-header"><div><span class="ff-section-eyebrow">Trials</span><h2 class="ff-section-title" th:text="${modoEdicion} ? 'Editar prueba' : 'Nueva prueba'">Nueva prueba</h2><p class="ff-section-subtitle">Datos minimos para seguimiento comercial.</p></div><a class="btn btn-outline-secondary" th:href="@{/trials}">Volver</a></section>
                 <form class="ff-surface-card" th:object="${trial}" th:action="${modoEdicion} ? @{/trials/{id}(id=${trial.id})} : @{/trials}" method="post">
                     <div class="ff-card-body">
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-3" role="alert">
+                            <ul class="mb-0">
+                                <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                            </ul>
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6"><label class="form-label" for="nombre">Nombre</label><input id="nombre" class="form-control" th:field="*{nombre}"><div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div></div>
                             <div class="col-md-6"><label class="form-label" for="apellidos">Apellidos</label><input id="apellidos" class="form-control" th:field="*{apellidos}"></div>

@@ -9,8 +9,19 @@
         <div th:replace="~{fragments/topbar :: topbar('Maquinas', 'Inventario de equipamiento.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack" data-module-key="maquinas">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="maquinas">
+                    <div>
+                        <span class="ff-section-eyebrow">Maquinas</span>
+                        <h3 class="ff-card-title mt-1">No es solo inventario, es riesgo operativo</h3>
+                        <p class="ff-card-subtitle">Aqui controlas disponibilidad, revision y gastos asociados para que la operativa no dependa de memoria manual.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
@@ -35,7 +46,7 @@
 
                 <section class="ff-surface-card ff-animate-in">
                     <div class="ff-card-body">
-                        <form class="row g-3" th:action="@{/maquinas}" method="get">
+                        <form class="row g-3" th:action="@{/maquinas}" method="get" data-filter-memory-key="maquinas-list">
                             <div class="col-md-5">
                                 <label class="form-label" for="estado">Estado</label>
                                 <select id="estado" name="estado" class="form-select">
@@ -73,10 +84,19 @@
                                         <span class="ff-status-badge" th:classappend="${maquina.estado != null and maquina.estado.name() == 'OPERATIVA'} ? ' ff-status-active' : (${maquina.estado != null and maquina.estado.name() == 'MANTENIMIENTO'} ? ' ff-status-pending' : ' ff-status-overdue')" th:text="${maquina.estado != null ? #strings.replace(maquina.estado.name(), '_', ' ') : '-'}">Estado</span>
                                     </td>
                                     <td th:text="${maquina.proximaRevision != null ? #temporals.format(maquina.proximaRevision, 'dd/MM/yyyy') : 'Sin fecha'}">Sin fecha</td>
-                                    <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/maquinas/{id}/editar(id=${maquina.id})}">Editar</a></td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form th:if="${maquina.activo}" th:action="@{/maquinas/{id}/desactivar(id=${maquina.id})}" method="post" class="m-0">
+                                                <button class="btn btn-outline-danger btn-sm" type="submit">Desactivar</button>
+                                            </form>
+                                            <form th:unless="${maquina.activo}" th:action="@{/maquinas/{id}/activar(id=${maquina.id})}" method="post" class="m-0">
+                                                <button class="btn btn-outline-success btn-sm" type="submit">Activar</button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 </tr>
                                 </tbody>
-                                <tbody th:if="${#lists.isEmpty(maquinas)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay maquinas para el filtro actual.</td></tr></tbody>
+                                <tbody th:if="${#lists.isEmpty(maquinas)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay maquinas para este filtro. Registra una para empezar a controlar revisiones, averias y costes asociados. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/maquinas/nuevo}">Crear maquina</a></td></tr></tbody>
                             </table>
                         </div>
                     </div>

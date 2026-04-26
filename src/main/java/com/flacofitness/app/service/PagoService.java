@@ -459,23 +459,16 @@ public class PagoService {
     }
 
     public long contarUsuariosAlDia() {
-        return usuarioRepository.findAll().stream()
-                .mapToLong(Usuario::getId)
-                .filter(id -> determinarEstadoFinanciero(id) == EstadoFinanciero.AL_DIA)
-                .count();
+        return pagoRepository.countUsuariosSinPagosMorosos(
+                List.of(EstadoPago.PENDIENTE, EstadoPago.VENCIDO));
     }
 
     public long contarUsuariosConDeuda() {
-        return usuarioRepository.findAll().stream()
-                .mapToLong(Usuario::getId)
-                .filter(id -> determinarEstadoFinanciero(id) == EstadoFinanciero.CON_DEUDA)
-                .count();
+        return pagoRepository.countUsuariosConSoloPendiente(
+                EstadoPago.PENDIENTE, EstadoPago.VENCIDO);
     }
 
     public long contarUsuariosConPagosVencidos() {
-        return usuarioRepository.findAll().stream()
-                .mapToLong(Usuario::getId)
-                .filter(id -> determinarEstadoFinanciero(id) == EstadoFinanciero.CON_PAGOS_VENCIDOS)
-                .count();
+        return pagoRepository.countUsuariosConPagosVencidos(EstadoPago.VENCIDO);
     }
 }

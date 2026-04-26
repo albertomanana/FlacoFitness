@@ -5,10 +5,11 @@ import com.flacofitness.app.model.entity.ReservaSesion;
 import com.flacofitness.app.model.entity.Usuario;
 import com.flacofitness.app.model.enums.EstadoReservaSesion;
 import com.flacofitness.app.repository.ReservaSesionRepository;
-import com.flacofitness.app.repository.UsuarioRepository;
+import com.flacofitness.app.security.AccessSessionService;
 import com.flacofitness.app.service.AsistenciaService;
 import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.UsuarioControlCenterService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,18 +23,18 @@ import java.util.List;
 @RequestMapping("/cliente")
 public class ClientePortalController {
 
-    private final UsuarioRepository usuarioRepository;
+    private final AccessSessionService accessSessionService;
     private final UsuarioControlCenterService usuarioControlCenterService;
     private final PagoService pagoService;
     private final AsistenciaService asistenciaService;
     private final ReservaSesionRepository reservaSesionRepository;
 
-    public ClientePortalController(UsuarioRepository usuarioRepository,
+    public ClientePortalController(AccessSessionService accessSessionService,
                                    UsuarioControlCenterService usuarioControlCenterService,
                                    PagoService pagoService,
                                    AsistenciaService asistenciaService,
                                    ReservaSesionRepository reservaSesionRepository) {
-        this.usuarioRepository = usuarioRepository;
+        this.accessSessionService = accessSessionService;
         this.usuarioControlCenterService = usuarioControlCenterService;
         this.pagoService = pagoService;
         this.asistenciaService = asistenciaService;
@@ -41,8 +42,8 @@ public class ClientePortalController {
     }
 
     @GetMapping
-    public String panel(Model model) {
-        Usuario usuario = obtenerUsuarioDemo();
+    public String panel(Model model, HttpSession session) {
+        Usuario usuario = obtenerUsuarioAutenticado(session);
         List<ReservaSesion> reservasActivas = reservaSesionRepository
                 .findByUsuarioIdOrderByFechaReservaDescIdDesc(usuario.getId())
                 .stream()
@@ -58,8 +59,8 @@ public class ClientePortalController {
     }
 
     @PostMapping("/checkin")
-    public String checkIn(RedirectAttributes redirectAttributes) {
-        Usuario usuario = obtenerUsuarioDemo();
+    public String checkIn(RedirectAttributes redirectAttributes, HttpSession session) {
+        Usuario usuario = obtenerUsuarioAutenticado(session);
         try {
             asistenciaService.registrarCheckInRapido(List.of(usuario.getId()), "Check-in manual desde portal cliente");
             redirectAttributes.addFlashAttribute("mensajeExito", "Check-in registrado correctamente. ¡Buen entrenamiento!");
@@ -69,9 +70,8 @@ public class ClientePortalController {
         return "redirect:/cliente";
     }
 
-    private Usuario obtenerUsuarioDemo() {
-        return usuarioRepository.findFirstByActivoTrueAndRolNombreOrderByIdAsc("CLIENTE")
-                .or(() -> usuarioRepository.findByActivoTrue().stream().findFirst())
-                .orElseThrow(() -> new ResourceNotFoundException("No hay un usuario cliente disponible para el panel"));
+    private Usuario obtenerUsuarioAutenticado(HttpSession session) {
+        return accessSessionService.getCurrentUser(session)
+                .orElseThrow(() -> new ResourceNotFoundException("No hay un usuario cliente autenticado para el panel"));
     }
 }

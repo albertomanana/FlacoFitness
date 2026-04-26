@@ -8,11 +8,14 @@ import com.flacofitness.app.model.entity.SesionClase;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.enums.EstadoSesion;
 import com.flacofitness.app.service.ClaseService;
+import com.flacofitness.app.service.ControllerActivityLogger;
 import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.RutinaService;
 import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.UsuarioService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -40,19 +43,22 @@ public class SesionClaseController {
     private final RutinaService rutinaService;
     private final UsuarioService usuarioService;
     private final OperationalClockService operationalClockService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public SesionClaseController(SesionClaseService sesionClaseService,
                                  ClaseService claseService,
                                  StaffService staffService,
                                  RutinaService rutinaService,
                                  UsuarioService usuarioService,
-                                 OperationalClockService operationalClockService) {
+                                 OperationalClockService operationalClockService,
+                                 ControllerActivityLogger controllerActivityLogger) {
         this.sesionClaseService = sesionClaseService;
         this.claseService = claseService;
         this.staffService = staffService;
         this.rutinaService = rutinaService;
         this.usuarioService = usuarioService;
         this.operationalClockService = operationalClockService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -89,7 +95,9 @@ public class SesionClaseController {
     public String guardar(@Valid @ModelAttribute("sesionClase") SesionClase sesionClase,
                           BindingResult bindingResult,
                           Model model,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          HttpServletRequest request,
+                          HttpSession session) {
         normalizarRelaciones(sesionClase);
 
         if (bindingResult.hasErrors()) {
@@ -100,7 +108,13 @@ public class SesionClaseController {
         }
 
         try {
-            sesionClaseService.guardar(sesionClase);
+            SesionClase guardada = sesionClaseService.guardar(sesionClase);
+            controllerActivityLogger.log(request, session,
+                    "sesiones", "sesion_creada", "sesion", guardada.getId(),
+                    "Sesion creada",
+                    "Se programo una nueva sesion para " + (guardada.getClase() != null ? guardada.getClase().getNombre() : "una clase") + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Sesion creada correctamente.");
+            return "redirect:/sesiones/" + guardada.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("sesionError", ex.getMessage());
             prepararRelaciones(sesionClase);
@@ -109,8 +123,6 @@ public class SesionClaseController {
             return "sesiones/form";
         }
 
-        redirectAttributes.addFlashAttribute("mensajeExito", "Sesion creada correctamente.");
-        return "redirect:/sesiones";
     }
 
     @GetMapping("/{id}")
@@ -139,7 +151,9 @@ public class SesionClaseController {
                              @Valid @ModelAttribute("sesionClase") SesionClase sesionClase,
                              BindingResult bindingResult,
                              Model model,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request,
+                             HttpSession session) {
         normalizarRelaciones(sesionClase);
 
         if (bindingResult.hasErrors()) {
@@ -150,7 +164,11 @@ public class SesionClaseController {
         }
 
         try {
-            sesionClaseService.actualizar(id, sesionClase);
+            SesionClase actualizada = sesionClaseService.actualizar(id, sesionClase);
+            controllerActivityLogger.log(request, session,
+                    "sesiones", "sesion_actualizada", "sesion", actualizada.getId(),
+                    "Sesion actualizada",
+                    "Se ajusto la planificacion de la sesion " + (actualizada.getClase() != null ? actualizada.getClase().getNombre() : "#" + actualizada.getId()) + ".");
         } catch (BusinessValidationException ex) {
             bindingResult.reject("sesionError", ex.getMessage());
             prepararRelaciones(sesionClase);
@@ -160,12 +178,19 @@ public class SesionClaseController {
         }
 
         redirectAttributes.addFlashAttribute("mensajeExito", "Sesion actualizada correctamente.");
-        return "redirect:/sesiones";
+        return "redirect:/sesiones/" + id;
     }
 
     @PostMapping("/{id}/cancelar")
-    public String cancelar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String cancelar(@PathVariable Long id,
+                           RedirectAttributes redirectAttributes,
+                           HttpServletRequest request,
+                           HttpSession session) {
         sesionClaseService.cancelar(id);
+        controllerActivityLogger.log(request, session,
+                "sesiones", "sesion_cancelada", "sesion", id,
+                "Sesion cancelada",
+                "Se cancelo una sesion programada.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Sesion cancelada.");
         return "redirect:/sesiones/" + id;
     }
@@ -173,7 +198,9 @@ public class SesionClaseController {
     @PostMapping("/{id}/reservas")
     public String reservar(@PathVariable Long id,
                            @RequestParam(name = "usuarioIds", required = false) List<Long> usuarioIds,
-                           RedirectAttributes redirectAttributes) {
+                           RedirectAttributes redirectAttributes,
+                           HttpServletRequest request,
+                           HttpSession session) {
         try {
             int creadas = 0;
             if (usuarioIds != null) {
@@ -183,6 +210,12 @@ public class SesionClaseController {
                         creadas++;
                     }
                 }
+            }
+            if (creadas > 0) {
+                controllerActivityLogger.log(request, session,
+                        "sesiones", "reserva_creada", "sesion", id,
+                        "Reservas actualizadas",
+                        "Se reservaron " + creadas + " plazas en la sesion.");
             }
             redirectAttributes.addFlashAttribute("mensajeExito", "Reservas procesadas: " + creadas + ".");
         } catch (BusinessValidationException ex) {
@@ -194,8 +227,14 @@ public class SesionClaseController {
     @PostMapping("/{id}/reservas/{usuarioId}/quitar")
     public String quitarReserva(@PathVariable Long id,
                                 @PathVariable Long usuarioId,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                HttpServletRequest request,
+                                HttpSession session) {
         sesionClaseService.quitarReserva(id, usuarioId);
+        controllerActivityLogger.log(request, session,
+                "sesiones", "reserva_cancelada", "sesion", id,
+                "Reserva retirada",
+                "Se libero una plaza reservada en la sesion.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Reserva cancelada.");
         return "redirect:/sesiones/" + id;
     }
@@ -204,9 +243,17 @@ public class SesionClaseController {
     public String registrarAsistencia(@PathVariable Long id,
                                       @RequestParam(name = "usuarioIds", required = false) List<Long> usuarioIds,
                                       @RequestParam(name = "observaciones", required = false) String observaciones,
-                                      RedirectAttributes redirectAttributes) {
+                                      RedirectAttributes redirectAttributes,
+                                      HttpServletRequest request,
+                                      HttpSession session) {
         try {
             AsistenciaCheckInBatchResult resultado = sesionClaseService.registrarAsistenciaSesion(id, usuarioIds, observaciones);
+            if (resultado.registrosCreados() > 0) {
+                controllerActivityLogger.log(request, session,
+                        "sesiones", "asistencia_registrada", "sesion", id,
+                        "Asistencia registrada",
+                        "Se registraron " + resultado.registrosCreados() + " asistencias en la sesion.");
+            }
             redirectAttributes.addFlashAttribute(
                     "mensajeExito",
                     "Asistencias registradas: " + resultado.registrosCreados() +

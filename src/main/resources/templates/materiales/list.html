@@ -9,8 +9,19 @@
         <div th:replace="~{fragments/topbar :: topbar('Material', 'Stock operativo del gimnasio.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack" data-module-key="materiales">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="materiales">
+                    <div>
+                        <span class="ff-section-eyebrow">Materiales</span>
+                        <h3 class="ff-card-title mt-1">Controla stock antes de que moleste</h3>
+                        <p class="ff-card-subtitle">Este modulo sirve para detectar reposicion, enlazar compras y evitar que una clase falle por falta de material.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
@@ -28,7 +39,7 @@
 
                 <section class="ff-surface-card ff-animate-in">
                     <div class="ff-card-body">
-                        <form class="row g-3" th:action="@{/materiales}" method="get">
+                        <form class="row g-3" th:action="@{/materiales}" method="get" data-filter-memory-key="materiales-list">
                             <div class="col-md-5">
                                 <label class="form-label" for="estado">Estado</label>
                                 <select id="estado" name="estado" class="form-select">
@@ -64,10 +75,19 @@
                                     <td th:text="${material.stock + ' / min ' + material.stockMinimo}">0 / min 0</td>
                                     <td><span class="ff-status-badge" th:classappend="${material.estado != null and material.estado.name() == 'DISPONIBLE'} ? ' ff-status-active' : (${material.estado != null and material.estado.name() == 'BAJO_STOCK'} ? ' ff-status-pending' : ' ff-status-overdue')" th:text="${material.estado != null ? #strings.replace(material.estado.name(), '_', ' ') : '-'}">Estado</span></td>
                                     <td th:text="${material.costeUnitario != null ? #numbers.formatDecimal(material.costeUnitario, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
-                                    <td class="text-end"><a class="btn btn-outline-success btn-sm" th:href="@{/materiales/{id}/editar(id=${material.id})}">Editar</a></td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form th:if="${material.activo}" th:action="@{/materiales/{id}/desactivar(id=${material.id})}" method="post" class="m-0">
+                                                <button class="btn btn-outline-danger btn-sm" type="submit">Desactivar</button>
+                                            </form>
+                                            <form th:unless="${material.activo}" th:action="@{/materiales/{id}/activar(id=${material.id})}" method="post" class="m-0">
+                                                <button class="btn btn-outline-success btn-sm" type="submit">Activar</button>
+                                            </form>
+                                        </div>
+                                    </td>
                                 </tr>
                                 </tbody>
-                                <tbody th:if="${#lists.isEmpty(materiales)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay material para el filtro actual.</td></tr></tbody>
+                                <tbody th:if="${#lists.isEmpty(materiales)}"><tr><td colspan="6" class="text-center ff-empty-state">No hay material para este filtro. Registra el primero para empezar a controlar stock, reposicion y coste unitario. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/materiales/nuevo}">Crear material</a></td></tr></tbody>
                             </table>
                         </div>
                     </div>

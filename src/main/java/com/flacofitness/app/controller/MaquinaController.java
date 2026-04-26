@@ -16,10 +16,13 @@ import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.model.entity.Maquina;
 import com.flacofitness.app.model.enums.CategoriaMaquina;
 import com.flacofitness.app.model.enums.EstadoMaquina;
+import com.flacofitness.app.service.ControllerActivityLogger;
 import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaquinaPhotoStorageService;
 import com.flacofitness.app.service.MaquinaService;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
@@ -29,13 +32,16 @@ public class MaquinaController {
     private final MaquinaService maquinaService;
     private final MaquinaPhotoStorageService maquinaPhotoStorageService;
     private final GastoService gastoService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public MaquinaController(MaquinaService maquinaService,
                              MaquinaPhotoStorageService maquinaPhotoStorageService,
-                             GastoService gastoService) {
+                             GastoService gastoService,
+                             ControllerActivityLogger controllerActivityLogger) {
         this.maquinaService = maquinaService;
         this.maquinaPhotoStorageService = maquinaPhotoStorageService;
         this.gastoService = gastoService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -66,7 +72,9 @@ public class MaquinaController {
     public String guardar(@Valid @ModelAttribute("maquina") Maquina maquina,
                           BindingResult bindingResult,
                           Model model,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          HttpServletRequest request,
+                          HttpSession session) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("modoEdicion", false);
             cargarCatalogos(model);
@@ -74,16 +82,19 @@ public class MaquinaController {
         }
 
         try {
-            maquinaService.guardar(maquina);
+            Maquina guardada = maquinaService.guardar(maquina);
+            controllerActivityLogger.log(request, session,
+                    "maquinas", "maquina_creada", "maquina", guardada.getId(),
+                    "Maquina creada",
+                    "Se registro la maquina " + guardada.getNombre() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Maquina creada correctamente.");
+            return "redirect:/maquinas/" + guardada.getId();
         } catch (BusinessValidationException | com.flacofitness.app.exception.DuplicateResourceException ex) {
             bindingResult.reject("maquinaError", ex.getMessage());
             model.addAttribute("modoEdicion", false);
             cargarCatalogos(model);
             return "maquinas/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Maquina creada correctamente.");
-        return "redirect:/maquinas";
     }
 
     @GetMapping("/{id}")
@@ -106,7 +117,9 @@ public class MaquinaController {
                              @Valid @ModelAttribute("maquina") Maquina maquina,
                              BindingResult bindingResult,
                              Model model,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request,
+                             HttpSession session) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("modoEdicion", true);
             cargarCatalogos(model);
@@ -114,16 +127,19 @@ public class MaquinaController {
         }
 
         try {
-            maquinaService.actualizar(id, maquina);
+            Maquina actualizada = maquinaService.actualizar(id, maquina);
+            controllerActivityLogger.log(request, session,
+                    "maquinas", "maquina_actualizada", "maquina", actualizada.getId(),
+                    "Maquina actualizada",
+                    "Se actualizo la ficha de la maquina " + actualizada.getNombre() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Maquina actualizada correctamente.");
+            return "redirect:/maquinas/" + actualizada.getId();
         } catch (BusinessValidationException | com.flacofitness.app.exception.DuplicateResourceException ex) {
             bindingResult.reject("maquinaError", ex.getMessage());
             model.addAttribute("modoEdicion", true);
             cargarCatalogos(model);
             return "maquinas/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Maquina actualizada correctamente.");
-        return "redirect:/maquinas";
     }
 
     @PostMapping("/{id}/foto")
@@ -149,21 +165,44 @@ public class MaquinaController {
     }
 
     @PostMapping("/{id}/desactivar")
-    public String desactivar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String desactivar(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes,
+                             @RequestParam(name = "returnTo", required = false) String returnTo,
+                             HttpServletRequest request,
+                             HttpSession session) {
         maquinaService.desactivar(id);
+        controllerActivityLogger.log(request, session,
+                "maquinas", "maquina_desactivada", "maquina", id,
+                "Maquina desactivada",
+                "Se saco temporalmente una maquina de servicio.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Maquina desactivada.");
-        return "redirect:/maquinas";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     @PostMapping("/{id}/activar")
-    public String activar(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String activar(@PathVariable Long id,
+                          RedirectAttributes redirectAttributes,
+                          @RequestParam(name = "returnTo", required = false) String returnTo,
+                          HttpServletRequest request,
+                          HttpSession session) {
         maquinaService.activar(id);
+        controllerActivityLogger.log(request, session,
+                "maquinas", "maquina_activada", "maquina", id,
+                "Maquina activada",
+                "Se devolvio una maquina al inventario operativo.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Maquina activada.");
-        return "redirect:/maquinas";
+        return "redirect:" + resolveReturnPath(id, returnTo);
     }
 
     private void cargarCatalogos(Model model) {
         model.addAttribute("estadosMaquina", EstadoMaquina.values());
         model.addAttribute("categoriasMaquina", CategoriaMaquina.values());
+    }
+
+    private String resolveReturnPath(Long id, String returnTo) {
+        if ("detail".equalsIgnoreCase(returnTo)) {
+            return "/maquinas/" + id;
+        }
+        return "/maquinas";
     }
 }

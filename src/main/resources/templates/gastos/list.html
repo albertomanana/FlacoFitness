@@ -9,8 +9,19 @@
         <div th:replace="~{fragments/topbar :: topbar('Gastos', 'Control financiero interno.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack" data-module-key="gastos">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="gastos">
+                    <div>
+                        <span class="ff-section-eyebrow">Gastos</span>
+                        <h3 class="ff-card-title mt-1">Mide salida de caja con contexto real</h3>
+                        <p class="ff-card-subtitle">Filtra por origen, recurrencia y proveedor para entender si el gasto viene de staff, maquinaria, material o infraestructura.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
@@ -32,56 +43,57 @@
                                 recurrente=${recurrenteFiltro},
                                 proveedor=${proveedorFiltro})}">Exportar PDF</a>
                         <a class="btn btn-outline-secondary" th:href="@{/gastos/recurrentes}">Recurrentes</a>
-                        <a class="btn btn-outline-secondary" th:href="@{/nominas}">N&oacute;minas</a>
+                        <a class="btn btn-outline-secondary" th:href="@{/nominas}">Nominas</a>
                         <a class="btn btn-success" th:href="@{/gastos/nuevo}">Nuevo gasto</a>
                     </div>
                 </section>
 
                 <section class="row g-3 ff-animate-in">
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-neutral">
                             <p class="ff-stat-label">Gastos totales</p>
                             <p class="ff-stat-value" th:text="${gastosTotales}">0</p>
                             <p class="ff-stat-note">Registros activos</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-warning">
                             <p class="ff-stat-label">Gasto mes actual</p>
                             <p class="ff-stat-value" th:text="${gastoMesActual != null ? #numbers.formatDecimal(gastoMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Ejecucion mensual</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card"
+                                 th:classappend="${balanceMesActual != null and balanceMesActual.signum() >= 0} ? ' ff-kpi-positive' : ' ff-kpi-danger'">
                             <p class="ff-stat-label">Balance del mes</p>
                             <p class="ff-stat-value" th:text="${balanceMesActual != null ? #numbers.formatDecimal(balanceMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
-                            <p class="ff-stat-note">Ingresos - gastos</p>
+                            <p class="ff-stat-note">Ingresos menos gastos</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-warning">
                             <p class="ff-stat-label">Vencimientos proximo 7d</p>
                             <p class="ff-stat-value" th:text="${vencimientosProximos}">0</p>
                             <p class="ff-stat-note">Pendientes, programados o vencidos</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-neutral">
                             <p class="ff-stat-label">Gasto fijo del mes</p>
                             <p class="ff-stat-value" th:text="${gastoFijoMesActual != null ? #numbers.formatDecimal(gastoFijoMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Carga estructural</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-neutral">
                             <p class="ff-stat-label">Gasto variable del mes</p>
                             <p class="ff-stat-value" th:text="${gastoVariableMesActual != null ? #numbers.formatDecimal(gastoVariableMesActual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0.00 EUR'}">0.00 EUR</p>
                             <p class="ff-stat-note">Operativa flexible</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card">
+                        <article class="ff-surface-card ff-stat-card ff-kpi-card ff-kpi-danger">
                             <p class="ff-stat-label">Alertas</p>
                             <p class="ff-stat-value" th:text="${gastosCriticos + recurrentesProximos}">0</p>
                             <p class="ff-stat-note">Criticos y recurrentes proximos</p>
@@ -97,7 +109,8 @@
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
-                        <form class="row g-3" th:action="@{/gastos}" method="get">
+                        <div class="ff-filter-panel">
+                        <form class="row g-3" th:action="@{/gastos}" method="get" data-filter-memory-key="gastos-list">
                             <div class="col-12 col-md-3">
                                 <label class="form-label" for="desde">Desde</label>
                                 <input id="desde" name="desde" type="date" class="form-control" th:value="${desdeFiltro}">
@@ -166,6 +179,7 @@
                                 <a class="btn btn-outline-secondary" th:href="@{/gastos}">Limpiar</a>
                             </div>
                         </form>
+                        </div>
                     </div>
                 </section>
 
@@ -238,8 +252,8 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/gastos/{id}/editar(id=${gasto.id})}">Editar</a>
                                             <form th:if="${!gasto.pagado}" th:action="@{/gastos/{id}/pagado(id=${gasto.id})}" method="post" class="m-0">
+                                                <input type="hidden" name="returnTo" value="list">
                                                 <button type="submit" class="btn btn-outline-primary btn-sm">Marcar pagado</button>
                                             </form>
                                         </div>
@@ -247,7 +261,7 @@
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(gastos)}">
-                                <tr><td colspan="8" class="text-center ff-empty-state">No hay gastos registrados para el filtro actual.</td></tr>
+                                <tr><td colspan="8" class="text-center ff-empty-state">No hay gastos para este filtro. Registra el primero para alimentar el balance, los vencimientos y la lectura financiera del dashboard. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/gastos/nuevo}">Registrar gasto</a></td></tr>
                                 </tbody>
                             </table>
                         </div>

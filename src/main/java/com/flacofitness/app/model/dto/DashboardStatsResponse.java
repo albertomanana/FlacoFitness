@@ -37,6 +37,10 @@ public record DashboardStatsResponse(
         long membresiasVencidas,
         long maquinasFueraServicio,
         long maquinasRevisionProxima,
-        long materialesBajoStock
+        long materialesBajoStock,
+        long usuariosEnRiesgo,
+        long membresiasPorCaducar,
+        long gastosAnomalos,
+        List<AttentionItemView> attentionItems
 ) {
 }

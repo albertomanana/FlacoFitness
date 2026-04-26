@@ -80,6 +80,18 @@ public enum AccessProfile {
             return true;
         }
 
+        if (path.startsWith("/cuenta/password")) {
+            return true;
+        }
+
+        if (path.contains("/reset-password")) {
+            return this == ADMIN;
+        }
+
+        if (path.startsWith("/busqueda") || path.startsWith("/api/busqueda/global")) {
+            return this != CLIENTE;
+        }
+
         if (this == ADMIN) {
             return true;
         }
@@ -147,17 +159,7 @@ public enum AccessProfile {
     }
 
     private boolean canAccessAsClient(String path, boolean write) {
-        if (path.startsWith("/cliente")) {
-            return true;
-        }
-
-        if (write) {
-            return false;
-        }
-
-        return path.matches("/rutinas/\\d+")
-                || path.matches("/pagos/\\d+")
-                || path.matches("/asistencias/\\d+");
+        return path.startsWith("/cliente");
     }
 
     private boolean isCreateOrEditRoute(String path) {

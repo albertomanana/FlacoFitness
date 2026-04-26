@@ -384,3 +384,164 @@ Con reglas explicitas:
   - `.\mvnw.cmd test`
   - smoke HTTP real de `/`, `/nominas` y `/nominas/{id}/pdf`
 - Se actualizo el contexto vivo para que Claude continúe desde este punto.
+
+## Entrada 2026-04-23 (Coherencia global premium)
+
+### Fecha
+
+2026-04-23
+
+### Contexto
+
+Mejora transversal de calidad global, navegacion, detalles, tablas y continuidad UX sin reabrir el dominio ni la arquitectura.
+
+### Prompt
+
+Implementar la auditoria y plan de mejora global para FlacoFitness, priorizando coherencia sobre expansion, mejor navegacion, menos botones redundantes, detalles secundarios mas ricos, notificaciones mas utiles, limpieza de copy y validacion con compile y test.
+
+### Resultado
+
+- Se mejoraron redirects y retornos contextuales en modulos operativos clave.
+- Se enriquecieron fichas de `staff`, `maquinas`, `materiales`, `membresias` y `pagos`.
+- Se limpiaron listados con fila clicable y acciones mas claras.
+- Se hicieron mas utiles varias notificaciones del shell.
+- Se ampliaron pruebas MVC para validar nuevas fichas.
+- Se cerraron `compile` y `test` con 21 pruebas en verde.
+
+## Entrada 2026-04-23 (Producto premium, engagement y continuidad)
+
+### Fecha
+
+2026-04-23
+
+### Contexto
+
+Subir FlacoFitness de panel administrativo solido a producto SaaS con sensacion de pago, centrandose en inteligencia de producto, onboarding, productividad, continuidad de uso y trazabilidad.
+
+### Prompt
+
+Implementar el "Plan Maestro De Producto Premium Para FlacoFitness" con estos bloques:
+
+- `ProductIntelligenceService` para usuarios en riesgo, membresias por caducar y gastos anomalos
+- dashboard accionable con `Requiere atencion`, `Hoy`, `Actividad reciente` y `Ultimos visitados`
+- FAB global por perfil y acciones contextuales
+- memoria UX persistente con `browser_token + access_profile`
+- busqueda global agrupada para usuarios, staff y sesiones
+- auditoria ligera `activity_log`
+- filtros persistentes en navegador
+- documentacion viva completa
+
+Restricciones: mantener MVC, Spring Boot, Thymeleaf, Bootstrap, JS ligero, MySQL `flacofitness`, fecha real del PC y sin reabrir el dominio central.
+
+### Resultado
+
+- Se crearon `ProductIntelligenceService`, `GlobalSearchService`, `RecentVisitService`, `UxMemoryStateService`, `ActivityLogService` y su soporte de cookie/interceptor para `browser_token`.
+- Se anadieron las entidades `ux_memory_state`, `recent_visit` y `activity_log`.
+- El dashboard ahora renderiza `attentionItems`, onboarding inicial, actividad reciente y ultimos visitados.
+- Topbar incorpora buscador global y dropdown de visitas recientes; footer incorpora FAB global por perfil.
+- Se anadieron tooltips first-use a modulos prioritarios y persistencia de filtros en navegador.
+- Se reforzo el logging de actividad en usuarios, staff, membresias, pagos, gastos, sesiones, trials, nominas, maquinas y materiales.
+- `.\mvnw.cmd clean -DskipTests compile` y `.\mvnw.cmd test` quedaron en verde.
+- El smoke HTTP real no se pudo cerrar en esta sesion porque MySQL local devolvia `Connection refused`; se dejo documentado en `setup-status.md`.
+
+## Entrada 2026-04-24 (Auth por cuenta + nominas profesionales)
+
+### Fecha
+
+2026-04-24
+
+### Contexto
+
+Subir el producto en cuatro frentes criticos sin romper el sistema: nominas exportables y profesionales, autenticacion seria por cuenta, rediseño fuerte de interfaz y dark mode premium.
+
+### Prompt
+
+Implementar:
+
+- autenticacion por cuenta para admin, staff y cliente
+- password hash segura
+- cambio de password y reset temporal
+- mejora fuerte del flujo de nominas con PDF y gasto asociado
+- refinamiento visual de login, shell y builder de nomina
+- actualizacion completa de `docs/agents-memory/*`
+
+Restricciones:
+
+- MySQL `flacofitness` como unica persistencia
+- fecha real del PC
+- MVC + Spring Boot + Thymeleaf + Bootstrap + JS ligero
+- sin H2 y sin SPA
+
+### Resultado
+
+- El acceso por PIN quedo retirado del flujo principal y sustituido por login con `email/username + password`.
+- `Usuario` incorpora `username`, `passwordHash` y `mustChangePassword`.
+- `AccessSessionService` autentica con BCrypt y mantiene bloqueo temporal por intentos.
+- `CuentaController` permite cambio de password y `UsuarioController` permite reset temporal por admin.
+- `AuthBootstrapRunner` backfillea credenciales para cuentas legacy.
+- `NominaService` ya soporta borrador, emision, pago, cancelacion y gasto de categoria `NOMINA` al emitir.
+- `nominas/form.html`, `nominas/detail.html` y `reportes/nomina-detalle.html` se elevaron visualmente.
+- `.\mvnw.cmd clean -DskipTests compile` y `.\mvnw.cmd test` quedaron en verde con 21 pruebas.
+- El smoke HTTP real quedo pendiente porque `localhost:3306` no respondia en esta sesion.
+
+## Entrada 2026-04-26 (Plan premium prioritario)
+
+### Fecha
+
+2026-04-26
+
+### Contexto
+
+Continuar el plan premium de FlacoFitness priorizando estabilidad, limpieza, rendimiento y pulido visible sin cambiar stack, rutas publicas ni contratos JSON.
+
+### Prompt
+
+Implementar el "Plan Premium Prioritario Para FlacoFitness" con foco en:
+
+- corregir detalles visibles y codificacion/copy;
+- optimizar calculos repetidos en dashboard, stats y PDFs;
+- convertir la busqueda global en version ligera basada en repositorios;
+- mantener MySQL `flacofitness`, MVC, Thymeleaf, Bootstrap y JS ligero;
+- validar compile, tests, MySQL y smoke HTTP;
+- actualizar documentacion viva.
+
+### Resultado
+
+- `/api/busqueda/global` conserva su contrato, pero ahora usa queries limitadas para usuarios, staff y sesiones.
+- Se anadio `GlobalSearchServiceTest` y la suite queda en 23 pruebas.
+- Se reutilizan calculos mensuales en `StatsController`, `ViewController` y PDF de gastos.
+- `StaffController` evita doble consulta de staff.
+- Se pulieron copy, filtros persistentes y empty state de nominas; los contadores del dashboard se suavizaron.
+- `cookies.txt` quedo ignorado como artefacto local.
+- Validacion: compile correcto, tests en verde, MySQL `localhost:3306` disponible y smoke HTTP basico en app temporal `8081`.
+
+## Entrada 2026-04-26 (Command Center UI)
+
+### Fecha
+
+2026-04-26
+
+### Contexto
+
+Reestructurar la interfaz para corregir huecos visuales, apilar mejor el contenido, reforzar dark mode y dar un salto de navegacion/animacion con una estetica tactica tipo command center.
+
+### Prompt
+
+Implementar el plan "FlacoFitness Command Center":
+
+- dark mode principal;
+- layout stack premium;
+- tarjetas HUD y glassmorphism sutil;
+- topbar/sidebar como consola operativa;
+- Anime.js local + motion ligero;
+- pantallas clave: dashboard, usuarios/cliente, finanzas, asistencias, staff, rutinas y nominas;
+- sin cambiar backend, rutas, JSON ni stack MVC.
+
+### Resultado
+
+- Se añadieron `Space Grotesk` e `IBM Plex Sans`.
+- Dark mode es default si no hay preferencia guardada.
+- `styles.css` incorpora capa Command Center con grids apilados, HUD cards, tablas, forms, empty states y contraste oscuro.
+- Se marco `ff-command-stack` en pantallas clave.
+- Se añadio Anime.js local y `hud-motion.js` con fallback seguro.
+- Validacion: compile y tests en verde, MySQL disponible, app temporal `8082`, assets nuevos 200 y rutas protegidas redirigiendo a `/acceso`.

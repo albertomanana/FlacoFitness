@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.flacofitness.app.model.dto.DashboardStatsResponse;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.ActivityLogService;
 import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaquinaService;
 import com.flacofitness.app.service.MaterialService;
@@ -20,6 +21,14 @@ import com.flacofitness.app.service.SesionClaseService;
 import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.TrialService;
 import com.flacofitness.app.service.UsuarioService;
+import com.flacofitness.app.service.ProductIntelligenceService;
+import com.flacofitness.app.service.UxMemoryStateService;
+import com.flacofitness.app.security.AccessProfile;
+import com.flacofitness.app.security.AccessSessionService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import java.math.BigDecimal;
 
 @Controller
 public class ViewController {
@@ -36,6 +45,10 @@ public class ViewController {
     private final GastoService gastoService;
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
+    private final ProductIntelligenceService productIntelligenceService;
+    private final ActivityLogService activityLogService;
+    private final UxMemoryStateService uxMemoryStateService;
+    private final AccessSessionService accessSessionService;
     private final ObjectMapper objectMapper;
 
     public ViewController(UsuarioService usuarioService,
@@ -50,6 +63,10 @@ public class ViewController {
                           GastoService gastoService,
                           MaquinaService maquinaService,
                           MaterialService materialService,
+                          ProductIntelligenceService productIntelligenceService,
+                          ActivityLogService activityLogService,
+                          UxMemoryStateService uxMemoryStateService,
+                          AccessSessionService accessSessionService,
                           ObjectMapper objectMapper) {
         this.usuarioService = usuarioService;
         this.planService = planService;
@@ -63,13 +80,23 @@ public class ViewController {
         this.gastoService = gastoService;
         this.maquinaService = maquinaService;
         this.materialService = materialService;
+        this.productIntelligenceService = productIntelligenceService;
+        this.activityLogService = activityLogService;
+        this.uxMemoryStateService = uxMemoryStateService;
+        this.accessSessionService = accessSessionService;
         this.objectMapper = objectMapper;
     }
 
     @GetMapping("/")
     public String home(@RequestParam(name = "rangoDias", defaultValue = "30") int rangoDias,
-                       Model model) {
+                       Model model,
+                       HttpSession session,
+                       HttpServletRequest request,
+                       HttpServletResponse response) {
         int rangoNormalizado = Math.max(7, Math.min(rangoDias, 365));
+        AccessProfile profile = accessSessionService.getCurrentProfile(session);
+        BigDecimal ingresosMesActual = pagoService.calcularIngresosMesActual();
+        BigDecimal gastoMesActual = gastoService.calcularGastoMesActual();
 
         model.addAttribute("usuariosTotales", usuarioService.contarTotal());
         model.addAttribute("usuariosActivos", usuarioService.contarActivos());
@@ -81,7 +108,7 @@ public class ViewController {
         model.addAttribute("asistenciasRegistradas", asistenciaService.contarTodas());
         model.addAttribute("asistenciasHoy", asistenciaService.contarHoy());
         model.addAttribute("ingresosRegistrados", pagoService.calcularIngresosTotales());
-        model.addAttribute("ingresosMensuales", pagoService.calcularIngresosMesActual());
+        model.addAttribute("ingresosMensuales", ingresosMesActual);
         model.addAttribute("renovacionesProximas", usuarioService.contarRenovacionesProximas(7));
         model.addAttribute("dashboardRangoDias", rangoNormalizado);
         model.addAttribute("ultimosUsuarios", usuarioService.listarRecientes());
@@ -100,8 +127,8 @@ public class ViewController {
         model.addAttribute("sesionesHoy", sesionClaseService.contarSesionesHoy());
         model.addAttribute("membresiasActivas", membresiaService.contarActivas());
         model.addAttribute("membresiasVencidas", membresiaService.contarVencidas());
-        model.addAttribute("gastoMesActual", gastoService.calcularGastoMesActual());
-        model.addAttribute("beneficioEstimado", pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()));
+        model.addAttribute("gastoMesActual", gastoMesActual);
+        model.addAttribute("beneficioEstimado", ingresosMesActual.subtract(gastoMesActual));
         model.addAttribute("gastosCriticos", gastoService.contarCriticos());
         model.addAttribute("gastosRecurrentesProximos", gastoService.contarRecurrentesProximos(7));
         model.addAttribute("maquinasFueraServicio", maquinaService.contarFueraDeServicio());
@@ -110,6 +137,10 @@ public class ViewController {
         model.addAttribute("trialsSemana", trialService.contarSemanaActual());
         model.addAttribute("proximasSesiones", sesionClaseService.listarProximas());
         model.addAttribute("proximosTrials", trialService.listarProximos());
+        model.addAttribute("attentionItems", productIntelligenceService.buildAttentionItems());
+        model.addAttribute("dashboardGuide", uxMemoryStateService.buildDashboardGuide(
+                (String) request.getAttribute(com.flacofitness.app.service.BrowserTokenService.REQUEST_ATTR), profile));
+        model.addAttribute("recentActivity", activityLogService.recentActivity());
         DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado);
         model.addAttribute("dashboardStats", dashboardStats);
         model.addAttribute("dashboardStatsJson", serializarDashboardStats(dashboardStats));
@@ -117,6 +148,9 @@ public class ViewController {
     }
 
     private DashboardStatsResponse construirDashboardStats(int rangoDias) {
+        BigDecimal ingresosMesActual = pagoService.calcularIngresosMesActual();
+        BigDecimal gastoMesActual = gastoService.calcularGastoMesActual();
+
         return new DashboardStatsResponse(
                 usuarioService.contarTotal(),
                 usuarioService.contarActivos(),
@@ -125,9 +159,9 @@ public class ViewController {
                 pagoService.contarPagosVencidos(),
                 usuarioService.contarRenovacionesProximas(7),
                 pagoService.calcularIngresosTotales(),
-                pagoService.calcularIngresosMesActual(),
-                gastoService.calcularGastoMesActual(),
-                pagoService.calcularIngresosMesActual().subtract(gastoService.calcularGastoMesActual()),
+                ingresosMesActual,
+                gastoMesActual,
+                ingresosMesActual.subtract(gastoMesActual),
                 asistenciaService.contarHoy(),
                 rutinaService.contarActivas(),
                 rangoDias,
@@ -151,7 +185,11 @@ public class ViewController {
                 membresiaService.contarVencidas(),
                 maquinaService.contarFueraDeServicio(),
                 maquinaService.contarRevisionProxima(7),
-                materialService.contarBajoStock()
+                materialService.contarBajoStock(),
+                productIntelligenceService.countUsuariosEnRiesgo(),
+                productIntelligenceService.countMembresiasPorCaducar(),
+                productIntelligenceService.countGastosAnomalos(),
+                productIntelligenceService.buildAttentionItems()
         );
     }
 

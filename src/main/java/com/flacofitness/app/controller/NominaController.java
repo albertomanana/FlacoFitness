@@ -13,6 +13,9 @@ import com.flacofitness.app.service.FinancialAutomationService;
 import com.flacofitness.app.service.NominaService;
 import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.StaffService;
+import com.flacofitness.app.service.ControllerActivityLogger;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,17 +40,20 @@ public class NominaController {
     private final FinancePdfService financePdfService;
     private final OperationalClockService operationalClockService;
     private final FinancialAutomationService financialAutomationService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public NominaController(NominaService nominaService,
                             StaffService staffService,
                             FinancePdfService financePdfService,
                             OperationalClockService operationalClockService,
-                            FinancialAutomationService financialAutomationService) {
+                            FinancialAutomationService financialAutomationService,
+                            ControllerActivityLogger controllerActivityLogger) {
         this.nominaService = nominaService;
         this.staffService = staffService;
         this.financePdfService = financePdfService;
         this.operationalClockService = operationalClockService;
         this.financialAutomationService = financialAutomationService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -65,9 +71,16 @@ public class NominaController {
     }
 
     @GetMapping("/nueva")
-    public String nueva(Model model) {
+    public String nueva(@RequestParam(name = "staffId", required = false) Long staffId, Model model) {
         Nomina nomina = new Nomina();
         nomina.setPeriodo(YearMonth.from(operationalClockService.today()).toString());
+        if (staffId != null) {
+            StaffPerfil staffPerfil = staffService.buscarPorId(staffId);
+            nomina.setStaffPerfil(staffPerfil);
+            nomina.setSalarioBase(staffPerfil.getSalarioBaseMensual());
+            nomina.setBonus(staffPerfil.getBonusMensual());
+            nomina.setDeducciones(staffPerfil.getDeduccionesMensuales());
+        }
         prepararNomina(nomina);
         model.addAttribute("nomina", nomina);
         model.addAttribute("modoEdicion", false);
@@ -77,9 +90,12 @@ public class NominaController {
 
     @PostMapping
     public String generar(@Valid @ModelAttribute("nomina") Nomina nomina,
+                          @RequestParam(name = "action", defaultValue = "emitir") String action,
                           BindingResult bindingResult,
                           Model model,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          HttpServletRequest request,
+                          HttpSession session) {
         if (bindingResult.hasErrors()) {
             prepararNomina(nomina);
             model.addAttribute("modoEdicion", false);
@@ -90,19 +106,35 @@ public class NominaController {
         try {
             Long staffPerfilId = nomina.getStaffPerfil() != null ? nomina.getStaffPerfil().getId() : null;
             if (staffPerfilId == null) {
-                bindingResult.rejectValue("staffPerfil.id", "staffPerfil.id", "Debes seleccionar un staff para la nómina");
+                bindingResult.rejectValue("staffPerfil.id", "staffPerfil.id", "Debes seleccionar un staff para la nomina");
                 prepararNomina(nomina);
                 model.addAttribute("modoEdicion", false);
                 cargarCatalogos(model);
                 return "nominas/form";
             }
 
-            nominaService.generar(
+            Nomina generada = "borrador".equalsIgnoreCase(action)
+                    ? nominaService.guardarBorrador(
+                    staffPerfilId,
+                    nomina.getPeriodo(),
+                    nomina.getSalarioBase(),
+                    nomina.getBonus(),
+                    nomina.getDeducciones())
+                    : nominaService.generar(
                     staffPerfilId,
                     nomina.getPeriodo(),
                     nomina.getSalarioBase(),
                     nomina.getBonus(),
                     nomina.getDeducciones());
+            controllerActivityLogger.log(request, session,
+                    "nominas", "nomina_generada", "nomina", generada.getId(),
+                    "Nomina generada",
+                    "Se genero la nomina del periodo " + generada.getPeriodo() + ".");
+            redirectAttributes.addFlashAttribute("mensajeExito",
+                    "borrador".equalsIgnoreCase(action)
+                            ? "Nomina guardada como borrador."
+                            : "Nomina emitida correctamente.");
+            return "redirect:/nominas/" + generada.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("nominaError", ex.getMessage());
             prepararNomina(nomina);
@@ -111,9 +143,82 @@ public class NominaController {
             cargarCatalogos(model);
             return "nominas/form";
         }
+    }
 
-        redirectAttributes.addFlashAttribute("mensajeExito", "Nomina generada correctamente.");
-        return "redirect:/nominas";
+    @GetMapping("/{id}/editar")
+    public String editar(@PathVariable Long id,
+                         RedirectAttributes redirectAttributes,
+                         Model model) {
+        Nomina nomina = nominaService.buscarPorId(id);
+        if (nomina.getEstado() != null && nomina.getEstado().name().equals("BORRADOR")) {
+            prepararNomina(nomina);
+            model.addAttribute("nomina", nomina);
+            model.addAttribute("modoEdicion", true);
+            cargarCatalogos(model);
+            return "nominas/form";
+        }
+        redirectAttributes.addFlashAttribute("mensajeError", "Solo puedes editar nominas en borrador.");
+        return "redirect:/nominas/" + id;
+    }
+
+    @PostMapping("/{id}")
+    public String actualizar(@PathVariable Long id,
+                             @Valid @ModelAttribute("nomina") Nomina nomina,
+                             @RequestParam(name = "action", defaultValue = "borrador") String action,
+                             BindingResult bindingResult,
+                             Model model,
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request,
+                             HttpSession session) {
+        if (bindingResult.hasErrors()) {
+            prepararNomina(nomina);
+            model.addAttribute("modoEdicion", true);
+            cargarCatalogos(model);
+            return "nominas/form";
+        }
+
+        try {
+            Long staffPerfilId = nomina.getStaffPerfil() != null ? nomina.getStaffPerfil().getId() : null;
+            if (staffPerfilId == null) {
+                bindingResult.rejectValue("staffPerfil.id", "staffPerfil.id", "Debes seleccionar un staff para la nomina");
+                prepararNomina(nomina);
+                model.addAttribute("modoEdicion", true);
+                cargarCatalogos(model);
+                return "nominas/form";
+            }
+
+            Nomina actualizada = nominaService.actualizarBorrador(
+                    id,
+                    staffPerfilId,
+                    nomina.getPeriodo(),
+                    nomina.getSalarioBase(),
+                    nomina.getBonus(),
+                    nomina.getDeducciones());
+
+            if ("emitir".equalsIgnoreCase(action)) {
+                actualizada = nominaService.emitir(actualizada.getId());
+                controllerActivityLogger.log(request, session,
+                        "nominas", "nomina_emitida", "nomina", actualizada.getId(),
+                        "Nomina emitida",
+                        "Se emitio la nomina del periodo " + actualizada.getPeriodo() + ".");
+                redirectAttributes.addFlashAttribute("mensajeExito", "Nomina emitida correctamente.");
+            } else {
+                controllerActivityLogger.log(request, session,
+                        "nominas", "nomina_actualizada", "nomina", actualizada.getId(),
+                        "Nomina actualizada",
+                        "Se actualizo el borrador de la nomina del periodo " + actualizada.getPeriodo() + ".");
+                redirectAttributes.addFlashAttribute("mensajeExito", "Nomina actualizada correctamente.");
+            }
+
+            return "redirect:/nominas/" + actualizada.getId();
+        } catch (BusinessValidationException ex) {
+            bindingResult.reject("nominaError", ex.getMessage());
+            prepararNomina(nomina);
+            model.addAttribute("modoEdicion", true);
+            model.addAttribute("mensajeError", ex.getMessage());
+            cargarCatalogos(model);
+            return "nominas/form";
+        }
     }
 
     @GetMapping("/{id}")
@@ -122,10 +227,45 @@ public class NominaController {
         return "nominas/detail";
     }
 
+    @PostMapping("/{id}/emitir")
+    public String emitir(@PathVariable Long id,
+                         RedirectAttributes redirectAttributes,
+                         HttpServletRequest request,
+                         HttpSession session) {
+        Nomina nomina = nominaService.emitir(id);
+        controllerActivityLogger.log(request, session,
+                "nominas", "nomina_emitida", "nomina", id,
+                "Nomina emitida",
+                "Se emitio la nomina del periodo " + nomina.getPeriodo() + ".");
+        redirectAttributes.addFlashAttribute("mensajeExito", "Nomina emitida correctamente.");
+        return "redirect:/nominas/" + id;
+    }
+
     @PostMapping("/{id}/pagada")
-    public String marcarPagada(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String marcarPagada(@PathVariable Long id,
+                               RedirectAttributes redirectAttributes,
+                               HttpServletRequest request,
+                               HttpSession session) {
         nominaService.marcarPagada(id);
+        controllerActivityLogger.log(request, session,
+                "nominas", "nomina_pagada", "nomina", id,
+                "Nomina pagada",
+                "Se marco la nomina como pagada.");
         redirectAttributes.addFlashAttribute("mensajeExito", "Nomina marcada como pagada.");
+        return "redirect:/nominas/" + id;
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public String cancelar(@PathVariable Long id,
+                           RedirectAttributes redirectAttributes,
+                           HttpServletRequest request,
+                           HttpSession session) {
+        Nomina nomina = nominaService.cancelar(id);
+        controllerActivityLogger.log(request, session,
+                "nominas", "nomina_cancelada", "nomina", id,
+                "Nomina cancelada",
+                "Se cancelo la nomina del periodo " + nomina.getPeriodo() + ".");
+        redirectAttributes.addFlashAttribute("mensajeExito", "Nomina cancelada.");
         return "redirect:/nominas/" + id;
     }
 

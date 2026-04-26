@@ -8,20 +8,18 @@ import java.time.Duration;
 @Configuration
 public class AccessSettings {
 
-    private final String pin;
     private final int maxAttempts;
     private final Duration lockDuration;
+    private final String bootstrapPassword;
 
-    public AccessSettings(@Value("${app.access.pin:2468}") String pin,
-                          @Value("${app.access.max-attempts:3}") int maxAttempts,
-                          @Value("${app.access.lock-minutes:5}") long lockMinutes) {
-        this.pin = pin == null || pin.isBlank() ? "2468" : pin.trim();
+    public AccessSettings(@Value("${app.auth.max-attempts:5}") int maxAttempts,
+                          @Value("${app.auth.lock-minutes:1}") long lockMinutes,
+                          @Value("${app.auth.bootstrap-password:FlacoTemp2026!}") String bootstrapPassword) {
         this.maxAttempts = Math.max(1, maxAttempts);
         this.lockDuration = Duration.ofMinutes(Math.max(1L, lockMinutes));
-    }
-
-    public String getPin() {
-        return pin;
+        this.bootstrapPassword = bootstrapPassword == null || bootstrapPassword.isBlank()
+                ? "FlacoTemp2026!"
+                : bootstrapPassword.trim();
     }
 
     public int getMaxAttempts() {
@@ -30,5 +28,9 @@ public class AccessSettings {
 
     public Duration getLockDuration() {
         return lockDuration;
+    }
+
+    public String getBootstrapPassword() {
+        return bootstrapPassword;
     }
 }

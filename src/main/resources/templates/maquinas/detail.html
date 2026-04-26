@@ -5,39 +5,173 @@
 <div class="ff-app-shell">
     <div th:replace="~{fragments/sidebar :: sidebar('maquinas')}"></div>
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de maquina', 'Estado operativo y mantenimiento.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de maquina', 'Estado operativo, revision y costes.')}"></div>
         <main class="ff-content">
             <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
                 <section class="ff-section-header ff-animate-in">
-                    <div><span class="ff-section-eyebrow">Operacion</span><h2 class="ff-section-title" th:text="${maquina.nombre}">Detalle</h2></div>
-                    <div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/maquinas}">Volver</a><a class="btn btn-success" th:href="@{/maquinas/{id}/editar(id=${maquina.id})}">Editar</a></div>
-                </section>
-                <section class="row g-3 ff-animate-in">
-                    <div class="col-xl-4"><article class="ff-surface-card h-100"><div class="ff-card-body"><img class="img-fluid rounded border" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(maquina.fotoPath)}" alt="Foto maquina"></div></article></div>
-                    <div class="col-xl-8"><article class="ff-surface-card h-100"><div class="ff-card-body"><div class="row g-3"><div class="col-md-6"><strong>Categoria:</strong> <span th:text="${maquina.categoria != null ? #strings.replace(maquina.categoria.name(), '_', ' ') : '-'}">-</span></div><div class="col-md-6"><strong>Estado:</strong> <span th:text="${maquina.estado != null ? #strings.replace(maquina.estado.name(), '_', ' ') : '-'}">-</span></div><div class="col-md-6"><strong>Marca:</strong> <span th:text="${#strings.defaultString(maquina.marca, '-')}">-</span></div><div class="col-md-6"><strong>Modelo:</strong> <span th:text="${#strings.defaultString(maquina.modelo, '-')}">-</span></div><div class="col-md-6"><strong>Serie:</strong> <span th:text="${#strings.defaultString(maquina.numeroSerie, '-')}">-</span></div><div class="col-md-6"><strong>Ubicacion:</strong> <span th:text="${#strings.defaultString(maquina.ubicacion, '-')}">-</span></div><div class="col-md-6"><strong>Fecha compra:</strong> <span th:text="${maquina.fechaCompra != null ? #temporals.format(maquina.fechaCompra, 'dd/MM/yyyy') : '-'}">-</span></div><div class="col-md-6"><strong>Ultima revision:</strong> <span th:text="${maquina.ultimaRevision != null ? #temporals.format(maquina.ultimaRevision, 'dd/MM/yyyy') : '-'}">-</span></div><div class="col-md-6"><strong>Proxima revision:</strong> <span th:text="${maquina.proximaRevision != null ? #temporals.format(maquina.proximaRevision, 'dd/MM/yyyy') : '-'}">-</span></div><div class="col-12"><strong>Observaciones:</strong><p class="mb-0" th:text="${#strings.defaultString(maquina.observaciones, 'Sin observaciones')}">Sin observaciones</p></div></div></div></article></div>
-                </section>
-                <section class="ff-surface-card ff-animate-in" th:if="${not #lists.isEmpty(gastosRelacionados)}">
-                    <div class="ff-card-header">
-                        <div>
-                            <h3 class="ff-card-title">Gastos asociados</h3>
-                            <p class="ff-card-subtitle">Mantenimiento y costes vinculados a esta máquina.</p>
-                        </div>
+                    <div>
+                        <span class="ff-section-eyebrow">Operacion</span>
+                        <h2 class="ff-section-title" th:text="${maquina.nombre}">Detalle</h2>
+                        <p class="ff-section-subtitle">Ficha operativa de la maquina con mantenimiento y trazabilidad de gasto.</p>
                     </div>
-                    <div class="ff-card-body">
-                        <div class="ff-action-list">
-                            <a class="ff-action-link" th:each="gasto : ${gastosRelacionados}" th:href="@{/gastos/{id}(id=${gasto.id})}">
-                                <div>
-                                    <strong th:text="${gasto.concepto}">Gasto</strong>
-                                    <span th:text="${gasto.fecha != null ? #temporals.format(gasto.fecha, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-success" th:href="@{/maquinas/{id}/editar(id=${maquina.id})}">Editar</a>
+                        <form th:if="${maquina.activo}" th:action="@{/maquinas/{id}/desactivar(id=${maquina.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
+                            <button class="btn btn-outline-danger" type="submit">Desactivar</button>
+                        </form>
+                        <form th:unless="${maquina.activo}" th:action="@{/maquinas/{id}/activar(id=${maquina.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
+                            <button class="btn btn-outline-success" type="submit">Activar</button>
+                        </form>
+                        <a class="btn btn-outline-secondary" th:href="@{/maquinas}">Volver</a>
+                    </div>
+                </section>
+
+                <section class="row g-4 ff-detail-layout">
+                    <div class="col-12 col-xl-8">
+                        <div class="d-flex flex-column gap-4">
+                            <article class="ff-surface-card">
+                                <div class="ff-card-body d-flex flex-column gap-4">
+                                    <div class="ff-detail-hero">
+                                        <div class="ff-photo-inline">
+                                            <span class="ff-avatar-ring">
+                                                <img class="ff-avatar ff-avatar-xl"
+                                                     th:src="${@userPhotoUrlResolver.resolvePhotoUrl(maquina.fotoPath)}"
+                                                     alt="Foto de la maquina">
+                                            </span>
+                                            <div class="ff-photo-inline-body">
+                                                <h3 class="ff-detail-hero-title">Panel tecnico del equipo</h3>
+                                                <p class="ff-detail-hero-text">Revisa estado, proximas revisiones y costes asociados sin salir de la ficha.</p>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-xl-end">
+                                            <span class="ff-status-badge"
+                                                  th:classappend="${maquina.activo} ? ' ff-status-active' : ' ff-status-inactive'"
+                                                  th:text="${maquina.activo ? 'Activa' : 'Inactiva'}">Activa</span>
+                                            <span class="ff-status-badge"
+                                                  th:classappend="${maquina.estado != null and maquina.estado.name() == 'OPERATIVA'} ? ' ff-status-active' : (${maquina.estado != null and maquina.estado.name() == 'MANTENIMIENTO'} ? ' ff-status-pending' : ' ff-status-overdue')"
+                                                  th:text="${maquina.estado != null ? #strings.replace(maquina.estado.name(), '_', ' ') : 'Sin estado'}">OPERATIVA</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Revision proxima</span>
+                                                <strong class="ff-user-kpi-value" th:text="${maquina.proximaRevision != null ? #temporals.format(maquina.proximaRevision, 'dd/MM') : '-'}">-</strong>
+                                                <span class="ff-user-kpi-meta">Agenda tecnica</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Gastos ligados</span>
+                                                <strong class="ff-user-kpi-value" th:text="${#lists.size(gastosRelacionados)}">0</strong>
+                                                <span class="ff-user-kpi-meta">Ultimos registros</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Categoria</span>
+                                                <strong class="ff-user-kpi-value fs-5" th:text="${maquina.categoria != null ? #strings.replace(maquina.categoria.name(), '_', ' ') : '-'}">-</strong>
+                                                <span class="ff-user-kpi-meta">Tipo de equipo</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Ubicacion</span>
+                                                <strong class="ff-user-kpi-value fs-5" th:text="${#strings.defaultString(maquina.ubicacion, '-')}">-</strong>
+                                                <span class="ff-user-kpi-meta">Zona operativa</span>
+                                            </article>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="ff-kpi-highlight" th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span>
-                            </a>
+                            </article>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Ficha tecnica</h3>
+                                        <p class="ff-card-subtitle">Datos base y calendario de mantenimiento.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-detail-grid">
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Marca</span><span class="ff-detail-value" th:text="${#strings.defaultString(maquina.marca, '-')}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Modelo</span><span class="ff-detail-value" th:text="${#strings.defaultString(maquina.modelo, '-')}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Numero de serie</span><span class="ff-detail-value" th:text="${#strings.defaultString(maquina.numeroSerie, '-')}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Fecha de compra</span><span class="ff-detail-value" th:text="${maquina.fechaCompra != null ? #temporals.format(maquina.fechaCompra, 'dd/MM/yyyy') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Ultima revision</span><span class="ff-detail-value" th:text="${maquina.ultimaRevision != null ? #temporals.format(maquina.ultimaRevision, 'dd/MM/yyyy') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Proxima revision</span><span class="ff-detail-value" th:text="${maquina.proximaRevision != null ? #temporals.format(maquina.proximaRevision, 'dd/MM/yyyy') : '-'}">-</span></div>
+                                        <div class="ff-detail-item ff-detail-full"><span class="ff-detail-label">Observaciones</span><span class="ff-detail-value ff-detail-value-muted" th:text="${#strings.defaultString(maquina.observaciones, 'Sin observaciones registradas')}">Sin observaciones registradas</span></div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card" th:if="${not #lists.isEmpty(gastosRelacionados)}">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Gastos asociados</h3>
+                                        <p class="ff-card-subtitle">Mantenimiento, compra o reparacion vinculada al equipo.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-compact-list">
+                                        <article class="ff-compact-list-item ff-clickable-row"
+                                                 th:each="gasto : ${gastosRelacionados}"
+                                                 tabindex="0"
+                                                 th:attr="data-row-href=@{/gastos/{id}(id=${gasto.id})}">
+                                            <div>
+                                                <strong th:text="${gasto.concepto}">Gasto</strong>
+                                                <p th:text="${gasto.fecha != null ? #temporals.format(gasto.fecha, 'dd/MM/yyyy') : '-'}">Fecha</p>
+                                            </div>
+                                            <strong th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</strong>
+                                        </article>
+                                    </div>
+                                </div>
+                            </article>
                         </div>
-                        <div class="mt-3">
-                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/gastos}">Ver todos los gastos</a>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Accesos rapidos</h3>
+                                        <p class="ff-card-subtitle">Saltos directos a la operativa relacionada.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-quick-links d-flex flex-column gap-2">
+                                        <a class="btn btn-success w-100" th:href="@{/maquinas/{id}/editar(id=${maquina.id})}">Editar maquina</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/gastos(maquinaId=${maquina.id})}">Ver gastos filtrados</a>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Resumen de riesgo</h3>
+                                        <p class="ff-card-subtitle">Lectura rapida para decidir si requiere atencion.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Estado</span><span class="ff-side-value" th:text="${maquina.estado != null ? #strings.replace(maquina.estado.name(), '_', ' ') : '-'}">-</span></div></div>
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Activa</span><span class="ff-side-value" th:text="${maquina.activo ? 'Si' : 'No'}">Si</span></div></div>
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Revision</span><span class="ff-side-value" th:text="${maquina.proximaRevision != null ? #temporals.format(maquina.proximaRevision, 'dd/MM') : '-'}">-</span></div></div>
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Gastos</span><span class="ff-side-value" th:text="${#lists.size(gastosRelacionados)}">0</span></div></div>
+                                    </div>
+                                </div>
+                            </aside>
                         </div>
                     </div>
                 </section>
+
                 <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
         </main>

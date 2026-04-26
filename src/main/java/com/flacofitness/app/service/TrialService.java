@@ -9,11 +9,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.entity.MembresiaUsuario;
+import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Rol;
 import com.flacofitness.app.model.entity.StaffPerfil;
 import com.flacofitness.app.model.entity.Trial;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoMembresia;
 import com.flacofitness.app.model.enums.EstadoTrial;
+import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.RolRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
 import com.flacofitness.app.repository.TrialRepository;
@@ -24,22 +28,27 @@ import com.flacofitness.app.repository.UsuarioRepository;
 public class TrialService {
 
     private static final String ROL_CLIENTE = "CLIENTE";
+    private static final List<EstadoMembresia> MEMBRESIAS_ACTIVAS = List.of(
+            EstadoMembresia.ACTIVA, EstadoMembresia.PENDIENTE, EstadoMembresia.PRUEBA);
 
     private final TrialRepository trialRepository;
     private final StaffPerfilRepository staffPerfilRepository;
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final MembresiaUsuarioRepository membresiaUsuarioRepository;
     private final OperationalClockService operationalClockService;
 
     public TrialService(TrialRepository trialRepository,
                         StaffPerfilRepository staffPerfilRepository,
                         UsuarioRepository usuarioRepository,
                         RolRepository rolRepository,
+                        MembresiaUsuarioRepository membresiaUsuarioRepository,
                         OperationalClockService operationalClockService) {
         this.trialRepository = trialRepository;
         this.staffPerfilRepository = staffPerfilRepository;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
+        this.membresiaUsuarioRepository = membresiaUsuarioRepository;
         this.operationalClockService = operationalClockService;
     }
 
@@ -138,13 +147,34 @@ public class TrialService {
             throw new BusinessValidationException("Para convertir un trial a usuario debe tener email");
         }
 
+        boolean usuarioExistente = usuarioRepository.findByEmail(trial.getEmail()).isPresent();
         Usuario usuario = usuarioRepository.findByEmail(trial.getEmail())
                 .orElseGet(() -> crearUsuarioDesdeTrial(trial));
+
+        if (!usuarioExistente && usuario.getPlan() != null) {
+            boolean tieneMembresia = membresiaUsuarioRepository
+                    .findTopByUsuarioIdAndEstadoInOrderByFechaInicioDescIdDesc(usuario.getId(), MEMBRESIAS_ACTIVAS)
+                    .isPresent();
+            if (!tieneMembresia) {
+                crearMembresiaDesdeConversion(usuario, usuario.getPlan());
+            }
+        }
 
         trial.setUsuarioConvertido(usuario);
         trial.setEstado(EstadoTrial.CONVERTIDO);
         trialRepository.save(trial);
         return usuario;
+    }
+
+    private void crearMembresiaDesdeConversion(Usuario usuario, Plan plan) {
+        MembresiaUsuario m = new MembresiaUsuario();
+        m.setUsuario(usuario);
+        m.setPlan(plan);
+        m.setFechaInicio(operationalClockService.today());
+        m.setEstado(EstadoMembresia.ACTIVA);
+        m.setOrigen("CONVERSION_TRIAL");
+        // @PrePersist calculates precioSnapshot and fechaFin automatically
+        membresiaUsuarioRepository.save(m);
     }
 
     private Usuario crearUsuarioDesdeTrial(Trial trial) {

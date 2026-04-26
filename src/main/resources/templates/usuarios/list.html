@@ -9,8 +9,19 @@
         <div th:replace="~{fragments/topbar :: topbar('Usuarios', 'Gestion de miembros.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack" data-module-key="usuarios">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="usuarios">
+                    <div>
+                        <span class="ff-section-eyebrow">Usuarios</span>
+                        <h3 class="ff-card-title mt-1">Aqui empieza casi todo</h3>
+                        <p class="ff-card-subtitle">Crea clientes completos y desde su ficha podras enlazar pagos, membresias, rutinas y asistencias sin cambiar de contexto.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
@@ -179,7 +190,8 @@
                                 <tbody th:if="${#lists.isEmpty(usuarios)}">
                                 <tr>
                                     <td colspan="6" class="text-center ff-empty-state">
-                                        Todavia no hay usuarios registrados.
+                                        Aun no hay clientes registrados. Crea el primero para activar el flujo de membresias, pagos y seguimiento.
+                                        <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/usuarios/nuevo}">Crear cliente</a>
                                     </td>
                                 </tr>
                                 </tbody>

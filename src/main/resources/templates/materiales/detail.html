@@ -5,49 +5,166 @@
 <div class="ff-app-shell">
     <div th:replace="~{fragments/sidebar :: sidebar('materiales')}"></div>
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar('Detalle de material', 'Estado de stock.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Detalle de material', 'Stock, reposicion y costes asociados.')}"></div>
         <main class="ff-content">
             <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
                 <section class="ff-section-header ff-animate-in">
-                    <div><span class="ff-section-eyebrow">Inventario</span><h2 class="ff-section-title" th:text="${material.nombre}">Detalle</h2></div>
-                    <div class="d-flex gap-2"><a class="btn btn-outline-secondary" th:href="@{/materiales}">Volver</a><a class="btn btn-success" th:href="@{/materiales/{id}/editar(id=${material.id})}">Editar</a></div>
-                </section>
-                <section class="ff-surface-card ff-animate-in">
-                    <div class="ff-card-body">
-                        <div class="row g-3">
-                            <div class="col-md-6"><strong>Categoria:</strong> <span th:text="${material.categoria != null ? #strings.replace(material.categoria.name(), '_', ' ') : '-'}">-</span></div>
-                            <div class="col-md-6"><strong>Estado:</strong> <span th:text="${material.estado != null ? #strings.replace(material.estado.name(), '_', ' ') : '-'}">-</span></div>
-                            <div class="col-md-6"><strong>Stock:</strong> <span th:text="${material.stock}">0</span></div>
-                            <div class="col-md-6"><strong>Stock minimo:</strong> <span th:text="${material.stockMinimo}">0</span></div>
-                            <div class="col-md-6"><strong>Ubicacion:</strong> <span th:text="${#strings.defaultString(material.ubicacion, '-')}">-</span></div>
-                            <div class="col-md-6"><strong>Proveedor:</strong> <span th:text="${#strings.defaultString(material.proveedor, '-')}">-</span></div>
-                            <div class="col-md-6"><strong>Coste unitario:</strong> <span th:text="${material.costeUnitario != null ? #numbers.formatDecimal(material.costeUnitario, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span></div>
-                            <div class="col-12"><strong>Observaciones:</strong><p class="mb-0" th:text="${#strings.defaultString(material.observaciones, 'Sin observaciones')}">Sin observaciones</p></div>
-                        </div>
+                    <div>
+                        <span class="ff-section-eyebrow">Inventario</span>
+                        <h2 class="ff-section-title" th:text="${material.nombre}">Detalle</h2>
+                        <p class="ff-section-subtitle">Panel de stock con semaforo operativo y acceso rapido a gastos vinculados.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-success" th:href="@{/materiales/{id}/editar(id=${material.id})}">Editar</a>
+                        <form th:if="${material.activo}" th:action="@{/materiales/{id}/desactivar(id=${material.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
+                            <button class="btn btn-outline-danger" type="submit">Desactivar</button>
+                        </form>
+                        <form th:unless="${material.activo}" th:action="@{/materiales/{id}/activar(id=${material.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
+                            <button class="btn btn-outline-success" type="submit">Activar</button>
+                        </form>
+                        <a class="btn btn-outline-secondary" th:href="@{/materiales}">Volver</a>
                     </div>
                 </section>
-                <section class="ff-surface-card ff-animate-in" th:if="${not #lists.isEmpty(gastosRelacionados)}">
-                    <div class="ff-card-header">
-                        <div>
-                            <h3 class="ff-card-title">Gastos de reposición</h3>
-                            <p class="ff-card-subtitle">Compras y costes asociados a este material.</p>
-                        </div>
-                    </div>
-                    <div class="ff-card-body">
-                        <div class="ff-action-list">
-                            <a class="ff-action-link" th:each="gasto : ${gastosRelacionados}" th:href="@{/gastos/{id}(id=${gasto.id})}">
-                                <div>
-                                    <strong th:text="${gasto.concepto}">Gasto</strong>
-                                    <span th:text="${gasto.fecha != null ? #temporals.format(gasto.fecha, 'dd/MM/yyyy') : '-'}">Fecha</span>
+
+                <section class="row g-4 ff-detail-layout">
+                    <div class="col-12 col-xl-8">
+                        <div class="d-flex flex-column gap-4">
+                            <article class="ff-surface-card">
+                                <div class="ff-card-body d-flex flex-column gap-4">
+                                    <div class="ff-detail-hero">
+                                        <div>
+                                            <h3 class="ff-detail-hero-title">Control de stock y reposicion</h3>
+                                            <p class="ff-detail-hero-text">Consulta disponibilidad, semaforo de stock y costes sin salir de la ficha del material.</p>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-xl-end">
+                                            <span class="ff-status-badge"
+                                                  th:classappend="${material.activo} ? ' ff-status-active' : ' ff-status-inactive'"
+                                                  th:text="${material.activo ? 'Activo' : 'Inactivo'}">Activo</span>
+                                            <span class="ff-status-badge"
+                                                  th:classappend="${material.estado != null and material.estado.name() == 'DISPONIBLE'} ? ' ff-status-active' : (${material.estado != null and material.estado.name() == 'BAJO_STOCK'} ? ' ff-status-pending' : ' ff-status-overdue')"
+                                                  th:text="${material.estado != null ? #strings.replace(material.estado.name(), '_', ' ') : 'Sin estado'}">DISPONIBLE</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Stock actual</span>
+                                                <strong class="ff-user-kpi-value" th:text="${material.stock}">0</strong>
+                                                <span class="ff-user-kpi-meta">Unidades registradas</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Stock minimo</span>
+                                                <strong class="ff-user-kpi-value" th:text="${material.stockMinimo}">0</strong>
+                                                <span class="ff-user-kpi-meta">Umbral recomendado</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Gastos ligados</span>
+                                                <strong class="ff-user-kpi-value" th:text="${#lists.size(gastosRelacionados)}">0</strong>
+                                                <span class="ff-user-kpi-meta">Compras registradas</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Coste unitario</span>
+                                                <strong class="ff-user-kpi-value fs-5" th:text="${material.costeUnitario != null ? #numbers.formatDecimal(material.costeUnitario, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</strong>
+                                                <span class="ff-user-kpi-meta">Ultima referencia</span>
+                                            </article>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="ff-kpi-highlight" th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</span>
-                            </a>
+                            </article>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Ficha operativa</h3>
+                                        <p class="ff-card-subtitle">Datos de compra, ubicacion y seguimiento.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-detail-grid">
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Categoria</span><span class="ff-detail-value" th:text="${material.categoria != null ? #strings.replace(material.categoria.name(), '_', ' ') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Estado</span><span class="ff-detail-value" th:text="${material.estado != null ? #strings.replace(material.estado.name(), '_', ' ') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Ubicacion</span><span class="ff-detail-value" th:text="${#strings.defaultString(material.ubicacion, '-')}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Proveedor</span><span class="ff-detail-value" th:text="${#strings.defaultString(material.proveedor, '-')}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Stock</span><span class="ff-detail-value" th:text="${material.stock + ' / min ' + material.stockMinimo}">0 / min 0</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Activo</span><span class="ff-detail-value" th:text="${material.activo ? 'Si' : 'No'}">Si</span></div>
+                                        <div class="ff-detail-item ff-detail-full"><span class="ff-detail-label">Observaciones</span><span class="ff-detail-value ff-detail-value-muted" th:text="${#strings.defaultString(material.observaciones, 'Sin observaciones registradas')}">Sin observaciones registradas</span></div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card" th:if="${not #lists.isEmpty(gastosRelacionados)}">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Gastos de reposicion</h3>
+                                        <p class="ff-card-subtitle">Compras y costes asociados a este material.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-compact-list">
+                                        <article class="ff-compact-list-item ff-clickable-row"
+                                                 th:each="gasto : ${gastosRelacionados}"
+                                                 tabindex="0"
+                                                 th:attr="data-row-href=@{/gastos/{id}(id=${gasto.id})}">
+                                            <div>
+                                                <strong th:text="${gasto.concepto}">Gasto</strong>
+                                                <p th:text="${gasto.fecha != null ? #temporals.format(gasto.fecha, 'dd/MM/yyyy') : '-'}">Fecha</p>
+                                            </div>
+                                            <strong th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</strong>
+                                        </article>
+                                    </div>
+                                </div>
+                            </article>
                         </div>
-                        <div class="mt-3">
-                            <a class="btn btn-outline-secondary btn-sm" th:href="@{/gastos}">Ver todos los gastos</a>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Accesos rapidos</h3>
+                                        <p class="ff-card-subtitle">Saltos directos al modulo financiero y de stock.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-quick-links d-flex flex-column gap-2">
+                                        <a class="btn btn-success w-100" th:href="@{/materiales/{id}/editar(id=${material.id})}">Editar material</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/gastos(materialId=${material.id})}">Ver gastos filtrados</a>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Semaforo operativo</h3>
+                                        <p class="ff-card-subtitle">Lectura rapida para accion diaria.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="row g-3">
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Estado</span><span class="ff-side-value" th:text="${material.estado != null ? #strings.replace(material.estado.name(), '_', ' ') : '-'}">-</span></div></div>
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Activo</span><span class="ff-side-value" th:text="${material.activo ? 'Si' : 'No'}">Si</span></div></div>
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Stock</span><span class="ff-side-value" th:text="${material.stock}">0</span></div></div>
+                                        <div class="col-6"><div class="ff-side-item h-100"><span class="ff-side-label">Minimo</span><span class="ff-side-value" th:text="${material.stockMinimo}">0</span></div></div>
+                                    </div>
+                                </div>
+                            </aside>
                         </div>
                     </div>
                 </section>
+
                 <div th:replace="~{fragments/footer :: footer}"></div>
             </div>
         </main>

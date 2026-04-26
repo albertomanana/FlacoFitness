@@ -22,13 +22,19 @@ WHERE NOT EXISTS (
 );
 
 INSERT INTO planes (nombre, descripcion, precio_mensual, duracion_dias, activo)
-SELECT 'Basico', 'Plan mensual base para acceso general', 29.90, 30, true
+SELECT 'Basico', 'Plan mensual base para acceso general', 29.00, 30, true
 WHERE NOT EXISTS (
     SELECT 1 FROM planes WHERE nombre = 'Basico'
 );
 
 INSERT INTO planes (nombre, descripcion, precio_mensual, duracion_dias, activo)
-SELECT 'Premium', 'Plan mensual completo con mayor cobertura de servicios', 49.90, 30, true
+SELECT 'Estudiante', 'Plan mensual reducido para perfiles jovenes', 19.00, 30, true
+WHERE NOT EXISTS (
+    SELECT 1 FROM planes WHERE nombre = 'Estudiante'
+);
+
+INSERT INTO planes (nombre, descripcion, precio_mensual, duracion_dias, activo)
+SELECT 'Premium', 'Plan historico completo mantenido solo para compatibilidad', 49.90, 30, false
 WHERE NOT EXISTS (
     SELECT 1 FROM planes WHERE nombre = 'Premium'
 );

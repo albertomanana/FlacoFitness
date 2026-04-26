@@ -6,7 +6,7 @@
 <div class="ff-main">
     <div th:replace="~{fragments/topbar :: topbar('Mi panel', 'Resumen personal de actividad, rutinas y cuotas.')}"></div>
     <main class="ff-content">
-        <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack">
             <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
 

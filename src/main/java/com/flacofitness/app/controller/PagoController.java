@@ -10,6 +10,9 @@ import com.flacofitness.app.service.PagoService;
 import com.flacofitness.app.service.PlanService;
 import com.flacofitness.app.service.OperationalClockService;
 import com.flacofitness.app.service.UsuarioService;
+import com.flacofitness.app.service.ControllerActivityLogger;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,15 +33,18 @@ public class PagoController {
     private final UsuarioService usuarioService;
     private final PlanService planService;
     private final OperationalClockService operationalClockService;
+    private final ControllerActivityLogger controllerActivityLogger;
 
     public PagoController(PagoService pagoService,
                           UsuarioService usuarioService,
                           PlanService planService,
-                          OperationalClockService operationalClockService) {
+                          OperationalClockService operationalClockService,
+                          ControllerActivityLogger controllerActivityLogger) {
         this.pagoService = pagoService;
         this.usuarioService = usuarioService;
         this.planService = planService;
         this.operationalClockService = operationalClockService;
+        this.controllerActivityLogger = controllerActivityLogger;
     }
 
     @GetMapping
@@ -73,7 +79,9 @@ public class PagoController {
     public String guardarPago(@Valid @ModelAttribute("pago") Pago pago,
                               BindingResult bindingResult,
                               Model model,
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes,
+                              HttpServletRequest request,
+                              HttpSession session) {
         normalizarRelaciones(pago);
         validarUsuarioSeleccionado(pago, bindingResult);
 
@@ -85,7 +93,13 @@ public class PagoController {
         }
 
         try {
-            pagoService.guardar(pago);
+            Pago guardado = pagoService.guardar(pago);
+            controllerActivityLogger.log(request, session,
+                    "pagos", "pago_creado", "pago", guardado.getId(),
+                    "Pago registrado",
+                    "Se registro un nuevo cobro para el usuario.");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Pago creado correctamente.");
+            return "redirect:/pagos/" + guardado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("businessError", ex.getMessage());
             prepararRelaciones(pago);
@@ -93,9 +107,6 @@ public class PagoController {
             model.addAttribute("modoEdicion", false);
             return "pagos/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Pago creado correctamente.");
-        return "redirect:/pagos";
     }
 
     @GetMapping("/{id}")
@@ -119,7 +130,9 @@ public class PagoController {
                                  @Valid @ModelAttribute("pago") Pago pago,
                                  BindingResult bindingResult,
                                  Model model,
-                                 RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes,
+                                 HttpServletRequest request,
+                                 HttpSession session) {
         normalizarRelaciones(pago);
         validarUsuarioSeleccionado(pago, bindingResult);
 
@@ -131,7 +144,13 @@ public class PagoController {
         }
 
         try {
-            pagoService.actualizar(id, pago);
+            Pago actualizado = pagoService.actualizar(id, pago);
+            controllerActivityLogger.log(request, session,
+                    "pagos", "pago_actualizado", "pago", actualizado.getId(),
+                    "Pago actualizado",
+                    "Se actualizo un cobro existente.");
+            redirectAttributes.addFlashAttribute("mensajeExito", "Pago actualizado correctamente.");
+            return "redirect:/pagos/" + actualizado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("businessError", ex.getMessage());
             prepararRelaciones(pago);
@@ -139,18 +158,26 @@ public class PagoController {
             model.addAttribute("modoEdicion", true);
             return "pagos/form";
         }
-
-        redirectAttributes.addFlashAttribute("mensajeExito", "Pago actualizado correctamente.");
-        return "redirect:/pagos";
     }
 
     @PostMapping("/{id}/marcar-pagado")
-    public String marcarComoPagado(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String marcarComoPagado(@PathVariable Long id,
+                                   RedirectAttributes redirectAttributes,
+                                   @RequestParam(name = "returnTo", required = false) String returnTo,
+                                   HttpServletRequest request,
+                                   HttpSession session) {
         try {
             pagoService.marcarComoPagado(id);
+            controllerActivityLogger.log(request, session,
+                    "pagos", "pago_pagado", "pago", id,
+                    "Pago marcado como pagado",
+                    "Se confirmo el cobro y quedo marcado como pagado.");
             redirectAttributes.addFlashAttribute("mensajeExito", "El cobro se ha registrado exitosamente. Estado actualizado a PAGADO.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al procesar el pago: " + e.getMessage());
+        }
+        if ("detail".equalsIgnoreCase(returnTo)) {
+            return "redirect:/pagos/" + id;
         }
         return "redirect:/pagos";
     }

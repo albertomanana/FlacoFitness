@@ -15,6 +15,7 @@
                         <a class="btn btn-outline-secondary" th:href="@{/gastos/{id}/pdf(id=${gasto.id})}">PDF</a>
                         <a class="btn btn-success" th:href="@{/gastos/{id}/editar(id=${gasto.id})}">Editar</a>
                         <form th:if="${!gasto.pagado}" th:action="@{/gastos/{id}/pagado(id=${gasto.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
                             <button type="submit" class="btn btn-primary">Marcar pagado</button>
                         </form>
                     </div>
