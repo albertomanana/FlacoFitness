@@ -75,6 +75,11 @@ Campos clave:
 - beneficios
 - activo
 
+Catalogo activo tras la limpieza 2026-04-26:
+- `Basico`: activo, 29 EUR, mensual.
+- `Estudiante`: activo, 19 EUR, mensual.
+- `Premium`, `Plus` y `Trimestral`: historicos inactivos; no se eliminan para conservar trazabilidad.
+
 ### MembresiaUsuario
 
 Contrato real entre usuario y plan.
@@ -180,7 +185,7 @@ Relacion entre usuario y sesion.
 
 Campos clave:
 - usuario
-- sesion clase
+- sesion clase mediante `reservas_sesion.sesion_id` apuntando a `sesiones_clase.id`
 - estado de reserva
 - fecha de reserva
 
@@ -319,6 +324,21 @@ Se limita a 10 registros por navegador/perfil para no inflar la tabla.
 
 ### ActivityLog
 
+Registro ligero de actividad de producto para continuidad operativa.
+
+Campos clave:
+- browser token
+- access profile
+- modulo
+- accion
+- entidad y entidadId opcionales
+- created at
+
+## Nota 2026-04-26 (Rebuild de dominio desde cero)
+
+- Se documento un blueprint integral de dominio para reconstruccion completa en `docs/agents-memory/rebuild-from-zero-modular-guide.md`.
+- El documento organiza el dominio por verticales (usuarios, staff, membresias, pagos, trials, clases, sesiones, asistencias, gastos, recurrentes, nominas, inventario, dashboard y UX memory) para rehacer la aplicacion sin arrastrar deuda tecnica.
+
 Auditoria ligera de experiencia y operacion.
 
 Campos clave:
@@ -359,6 +379,12 @@ Regla importante:
 - El tiempo de negocio se consulta mediante `OperationalClockService`, pero ya no existe entidad persistida de reloj simulado.
 - La memoria UX y los filtros persistentes no alteran el dominio central: son capas auxiliares de producto.
 
+Limpieza fisica aplicada en MySQL el 2026-04-26:
+- eliminadas tablas sin entidad vigente: `app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`;
+- eliminadas columnas legacy de `gastos`: `monto`, `descripcion`, `pagado`, `recurrente`, `frecuencia`, `staff_id`;
+- eliminadas columnas legacy de `reservas_sesion`: `sesion_clase_id`, `asistio`, `observaciones`;
+- migrados datos utiles de `gastos` a `importe`, `observaciones`, `estado`, `staff_responsable_id` y `gasto_recurrente_id` antes de eliminar columnas.
+
 Esta compatibilidad permite recuperar el proyecto sin romper datos ya creados.
 
 ## Nota 2026-04-24
@@ -377,3 +403,22 @@ No hubo cambios en entidades ni reglas de negocio centrales. El bloque fue de es
 - reutilizacion de calculos mensuales en controladores;
 - mejora ligera de experiencia en nominas/gastos y persistencia de filtros;
 - nuevo test unitario para proteger el contrato funcional de `GlobalSearchService`.
+
+## Nota 2026-04-26 (finanzas y nominas)
+
+No hubo migraciones destructivas ni entidades nuevas. La mejora fue de aplicacion y agregacion:
+
+- `NominaForm` representa la entrada editable del formulario y evita validar campos persistidos/generados por backend.
+- `Nomina` conserva su ciclo `BORRADOR -> EMITIDA -> PAGADA/CANCELADA`, unicidad `staff + periodo`, referencia unica y relacion opcional con `Gasto`.
+- `FinancialCenterStatsResponse` es un DTO de lectura para el centro financiero; no persiste estado ni modifica el dominio.
+- La deuda total se calcula desde pagos abiertos (`PROGRAMADO`, `PENDIENTE`, `VENCIDO`) y las nominas pendientes desde `EMITIDA`.
+
+## Nota 2026-04-26 (rescate funcional)
+
+- `TrialForm` es el DTO de formulario de trials; evita exponer `StaffPerfil` como objeto anidado en binding.
+- `TrialConversionResult` devuelve usuario convertido, password temporal y si se creo una cuenta nueva.
+- `Maquina` incorpora `costeCompra` nullable; `ddl-auto=update` anadira la columna `coste_compra` en MySQL si no existe.
+- Gasto automatico de inventario:
+  - maquina con `costeCompra > 0` al crear: `CategoriaGasto.MAQUINA`, `TipoGasto.VARIABLE`, `EstadoGasto.PAGADO`.
+  - material con `costeUnitario > 0` y `stock > 0` al crear: `CategoriaGasto.MATERIAL`, `TipoGasto.VARIABLE`, `EstadoGasto.PAGADO`.
+- Estos gastos no se generan en edicion para no duplicar costes historicos.

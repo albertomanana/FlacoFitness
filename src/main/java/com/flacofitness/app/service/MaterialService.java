@@ -19,9 +19,12 @@ import com.flacofitness.app.repository.MaterialRepository;
 public class MaterialService {
 
     private final MaterialRepository materialRepository;
+    private final GastoService gastoService;
 
-    public MaterialService(MaterialRepository materialRepository) {
+    public MaterialService(MaterialRepository materialRepository,
+                           GastoService gastoService) {
         this.materialRepository = materialRepository;
+        this.gastoService = gastoService;
     }
 
     public List<Material> listarFiltrados(EstadoMaterial estado, CategoriaMaterial categoria) {
@@ -81,7 +84,14 @@ public class MaterialService {
     @Transactional
     public Material guardar(Material material) {
         normalizar(material);
-        return materialRepository.save(material);
+        Material guardado = materialRepository.save(material);
+        if (guardado.getCosteUnitario() != null
+                && guardado.getCosteUnitario().compareTo(BigDecimal.ZERO) > 0
+                && guardado.getStock() != null
+                && guardado.getStock() > 0) {
+            gastoService.crearGastoCompraMaterial(guardado);
+        }
+        return guardado;
     }
 
     @Transactional

@@ -15,6 +15,7 @@ import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.model.entity.Gasto;
 import com.flacofitness.app.model.entity.Nomina;
 import com.flacofitness.app.model.entity.StaffPerfil;
+import com.flacofitness.app.model.dto.GastoCategoriaStatsItem;
 import com.flacofitness.app.model.enums.EstadoNomina;
 import com.flacofitness.app.repository.NominaRepository;
 import com.flacofitness.app.repository.StaffPerfilRepository;
@@ -59,6 +60,32 @@ public class NominaService {
         return nominaRepository.countByEstado(EstadoNomina.EMITIDA);
     }
 
+    public long contarBorradores() {
+        return nominaRepository.countByEstado(EstadoNomina.BORRADOR);
+    }
+
+    public long contarPagadas() {
+        return nominaRepository.countByEstado(EstadoNomina.PAGADA);
+    }
+
+    public long contarCanceladas() {
+        return nominaRepository.countByEstado(EstadoNomina.CANCELADA);
+    }
+
+    public BigDecimal calcularTotalPendiente() {
+        BigDecimal total = nominaRepository.sumSalarioNetoByEstado(EstadoNomina.EMITIDA);
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
+    public List<GastoCategoriaStatsItem> obtenerNominasPorEstado() {
+        return List.of(
+                new GastoCategoriaStatsItem(EstadoNomina.BORRADOR.name(), BigDecimal.valueOf(contarBorradores())),
+                new GastoCategoriaStatsItem(EstadoNomina.EMITIDA.name(), BigDecimal.valueOf(contarPendientes())),
+                new GastoCategoriaStatsItem(EstadoNomina.PAGADA.name(), BigDecimal.valueOf(contarPagadas())),
+                new GastoCategoriaStatsItem(EstadoNomina.CANCELADA.name(), BigDecimal.valueOf(contarCanceladas()))
+        );
+    }
+
     @Transactional
     public Nomina guardarBorrador(Long staffPerfilId, String periodo, BigDecimal salarioBase, BigDecimal bonus, BigDecimal deducciones) {
         return crearNomina(staffPerfilId, periodo, salarioBase, bonus, deducciones, EstadoNomina.BORRADOR, false);
@@ -78,7 +105,7 @@ public class NominaService {
                                      BigDecimal deducciones) {
         Nomina nomina = buscarPorId(id);
         if (nomina.getEstado() != EstadoNomina.BORRADOR) {
-            throw new BusinessValidationException("Solo puedes editar nominas en estado borrador.");
+            throw new BusinessValidationException("Solo puedes editar nóminas en estado borrador.");
         }
 
         StaffPerfil staffPerfil = staffPerfilRepository.findById(staffPerfilId)
@@ -86,8 +113,8 @@ public class NominaService {
 
         String periodoNormalizado = normalizarPeriodo(periodo);
         if (nominaRepository.existsByStaffPerfilIdAndPeriodoAndIdNot(staffPerfilId, periodoNormalizado, id)) {
-            throw new BusinessValidationException("Ya existe una nomina para este staff en el periodo "
-                    + periodoNormalizado + ". Selecciona otro periodo o revisa el historico.");
+            throw new BusinessValidationException("Ya existe una nómina para este staff en el periodo "
+                    + periodoNormalizado + ". Selecciona otro periodo o revisa el histórico.");
         }
 
         BigDecimal base = normalizarImporte(salarioBase, staffPerfil.getSalarioBaseMensual());
@@ -95,7 +122,7 @@ public class NominaService {
             if (salarioBase != null && salarioBase.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BusinessValidationException("El salario base indicado en el formulario debe ser mayor que 0.");
             }
-            throw new BusinessValidationException("No se puede guardar el borrador porque el salario base no es valido.");
+            throw new BusinessValidationException("No se puede guardar el borrador porque el salario base no es válido.");
         }
 
         BigDecimal bonusNormalizado = normalizarImporte(bonus, staffPerfil.getBonusMensual());
@@ -120,15 +147,16 @@ public class NominaService {
     public Nomina emitir(Long id) {
         Nomina nomina = buscarPorId(id);
         if (nomina.getEstado() == EstadoNomina.PAGADA) {
-            throw new BusinessValidationException("No puedes emitir una nomina que ya esta pagada.");
+            throw new BusinessValidationException("No puedes emitir una nómina que ya está pagada.");
         }
         if (nomina.getEstado() == EstadoNomina.CANCELADA) {
-            throw new BusinessValidationException("No puedes emitir una nomina cancelada.");
+            throw new BusinessValidationException("No puedes emitir una nómina cancelada.");
         }
+        validarNominaListaParaEmision(nomina);
         if (nomina.getGasto() == null) {
             Gasto gasto = gastoService.construirGastoNomina(
                     nomina.getStaffPerfil(),
-                    "Nomina " + nombreStaff(nomina.getStaffPerfil()) + " " + nomina.getPeriodo(),
+                    "Nómina " + nombreStaff(nomina.getStaffPerfil()) + " " + nomina.getPeriodo(),
                     nomina.getSalarioNeto(),
                     operationalClockService.today(),
                     nomina.getReferencia());
@@ -143,7 +171,7 @@ public class NominaService {
     public Nomina cancelar(Long id) {
         Nomina nomina = buscarPorId(id);
         if (nomina.getEstado() == EstadoNomina.PAGADA) {
-            throw new BusinessValidationException("No puedes cancelar una nomina ya pagada.");
+            throw new BusinessValidationException("No puedes cancelar una nómina ya pagada.");
         }
         nomina.setEstado(EstadoNomina.CANCELADA);
         return nominaRepository.save(nomina);
@@ -161,8 +189,8 @@ public class NominaService {
 
         String periodoNormalizado = normalizarPeriodo(periodo);
         if (nominaRepository.existsByStaffPerfilIdAndPeriodo(staffPerfilId, periodoNormalizado)) {
-            throw new BusinessValidationException("Ya existe una nomina para este staff en el periodo "
-                    + periodoNormalizado + ". Selecciona otro periodo o revisa el historico.");
+            throw new BusinessValidationException("Ya existe una nómina para este staff en el periodo "
+                    + periodoNormalizado + ". Selecciona otro periodo o revisa el histórico.");
         }
 
         // En alta manual se priorizan los valores del formulario; los del staff son fallback.
@@ -171,7 +199,7 @@ public class NominaService {
             if (salarioBase != null && salarioBase.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new BusinessValidationException("El salario base indicado en el formulario debe ser mayor que 0.");
             }
-            throw new BusinessValidationException("No se puede generar la nomina porque el salario base no es valido. "
+            throw new BusinessValidationException("No se puede generar la nómina porque el salario base no es válido. "
                     + "Indica un salario base en el formulario o configura un salario base mensual en el staff.");
         }
 
@@ -188,7 +216,7 @@ public class NominaService {
         Gasto gasto = generarGasto
                 ? gastoService.construirGastoNomina(
                 staffPerfil,
-                "Nomina " + nombreStaff(staffPerfil) + " " + periodoNormalizado,
+                "Nómina " + nombreStaff(staffPerfil) + " " + periodoNormalizado,
                 neto,
                 fechaEmision,
                 referencia)
@@ -236,12 +264,13 @@ public class NominaService {
     public void marcarPagada(Long id) {
         Nomina nomina = buscarPorId(id);
         if (nomina.getEstado() == EstadoNomina.CANCELADA) {
-            throw new BusinessValidationException("No puedes marcar como pagada una nomina cancelada.");
+            throw new BusinessValidationException("No puedes marcar como pagada una nómina cancelada.");
         }
         if (nomina.getEstado() == EstadoNomina.BORRADOR) {
             emitir(id);
             nomina = buscarPorId(id);
         }
+        validarNominaListaParaEmision(nomina);
         nomina.setEstado(EstadoNomina.PAGADA);
         if (nomina.getGasto() != null) {
             gastoService.marcarPagado(nomina.getGasto().getId());
@@ -265,6 +294,21 @@ public class NominaService {
 
     private String buildReferencia(StaffPerfil staffPerfil, String periodo) {
         return "NOM-" + periodo.replace("-", "") + "-" + staffPerfil.getId();
+    }
+
+    private void validarNominaListaParaEmision(Nomina nomina) {
+        if (nomina.getStaffPerfil() == null || nomina.getStaffPerfil().getId() == null) {
+            throw new BusinessValidationException("La nómina no tiene un staff válido asociado.");
+        }
+        if (nomina.getPeriodo() == null || nomina.getPeriodo().isBlank()) {
+            throw new BusinessValidationException("La nómina no tiene periodo definido.");
+        }
+        if (nomina.getSalarioNeto() == null || nomina.getSalarioNeto().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessValidationException("La nómina debe tener salario neto mayor que 0 para emitirse o pagarse.");
+        }
+        if (nomina.getReferencia() == null || nomina.getReferencia().isBlank()) {
+            nomina.setReferencia(buildReferencia(nomina.getStaffPerfil(), nomina.getPeriodo()));
+        }
     }
 
     private String nombreStaff(StaffPerfil staffPerfil) {

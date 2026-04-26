@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar gasto' : 'Nuevo gasto')}"></head>
+<head th:replace="~{fragments/head :: head('Gasto')}"></head>
 <body class="ff-app">
 <div class="ff-app-shell">
     <div th:replace="~{fragments/sidebar :: sidebar('gastos')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar gasto' : 'Nuevo gasto', 'Registro financiero interno.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Gasto', 'Registro financiero interno.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -15,14 +15,14 @@
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Finanzas</span>
-                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Editar gasto' : 'Nuevo gasto'">Nuevo gasto</h2>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Editar gasto' : 'Nuevo gasto'}">Nuevo gasto</h2>
                         <p class="ff-section-subtitle">Registra concepto, categoria y relacion operativa.</p>
                     </div>
                 </section>
 
                 <section class="ff-surface-card ff-animate-in">
                     <div class="ff-card-body">
-                        <form th:action="${modoEdicion} ? @{/gastos/{id}(id=${gasto.id})} : @{/gastos}" th:object="${gasto}" method="post" class="row g-3">
+                        <form th:action="${modoEdicion ? '/gastos/' + gasto.id : '/gastos'}" th:object="${gasto}" method="post" class="row g-3">
                             <div class="col-md-8">
                                 <label class="form-label" for="concepto">Concepto</label>
                                 <input id="concepto" type="text" class="form-control" th:field="*{concepto}" required>

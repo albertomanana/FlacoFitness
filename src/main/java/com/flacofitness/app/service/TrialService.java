@@ -3,12 +3,18 @@ package com.flacofitness.app.service;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.TrialConversionResult;
+import com.flacofitness.app.model.dto.TrialForm;
 import com.flacofitness.app.model.entity.MembresiaUsuario;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Rol;
@@ -37,19 +43,22 @@ public class TrialService {
     private final RolRepository rolRepository;
     private final MembresiaUsuarioRepository membresiaUsuarioRepository;
     private final OperationalClockService operationalClockService;
+    private final PasswordEncoder passwordEncoder;
 
     public TrialService(TrialRepository trialRepository,
                         StaffPerfilRepository staffPerfilRepository,
                         UsuarioRepository usuarioRepository,
                         RolRepository rolRepository,
                         MembresiaUsuarioRepository membresiaUsuarioRepository,
-                        OperationalClockService operationalClockService) {
+                        OperationalClockService operationalClockService,
+                        PasswordEncoder passwordEncoder) {
         this.trialRepository = trialRepository;
         this.staffPerfilRepository = staffPerfilRepository;
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.membresiaUsuarioRepository = membresiaUsuarioRepository;
         this.operationalClockService = operationalClockService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<Trial> listarTodos() {
@@ -111,6 +120,14 @@ public class TrialService {
     }
 
     @Transactional
+    public Trial guardar(TrialForm form) {
+        Trial trial = new Trial();
+        aplicarFormulario(trial, form);
+        normalizar(trial);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
     public Trial actualizar(Long id, Trial trialActualizado) {
         Trial trial = buscarPorId(id);
         trial.setNombre(trialActualizado.getNombre());
@@ -122,6 +139,14 @@ public class TrialService {
         trial.setEstado(trialActualizado.getEstado());
         trial.setStaffResponsable(trialActualizado.getStaffResponsable());
         trial.setObservaciones(trialActualizado.getObservaciones());
+        normalizar(trial);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial actualizar(Long id, TrialForm form) {
+        Trial trial = buscarPorId(id);
+        aplicarFormulario(trial, form);
         normalizar(trial);
         return trialRepository.save(trial);
     }
@@ -142,14 +167,23 @@ public class TrialService {
 
     @Transactional
     public Usuario convertirAUsuario(Long trialId) {
+        return convertirAUsuarioConCredenciales(trialId).usuario();
+    }
+
+    @Transactional
+    public TrialConversionResult convertirAUsuarioConCredenciales(Long trialId) {
         Trial trial = buscarPorId(trialId);
         if (trial.getEmail() == null || trial.getEmail().isBlank()) {
             throw new BusinessValidationException("Para convertir un trial a usuario debe tener email");
         }
 
-        boolean usuarioExistente = usuarioRepository.findByEmail(trial.getEmail()).isPresent();
-        Usuario usuario = usuarioRepository.findByEmail(trial.getEmail())
+        String emailNormalizado = trial.getEmail().trim();
+        var usuarioExistenteOpt = usuarioRepository.findByEmailIgnoreCase(emailNormalizado);
+        boolean usuarioExistente = usuarioExistenteOpt.isPresent();
+        TrialConversionResult conversion = usuarioExistenteOpt
+                .map(usuario -> new TrialConversionResult(usuario, null, false))
                 .orElseGet(() -> crearUsuarioDesdeTrial(trial));
+        Usuario usuario = conversion.usuario();
 
         if (!usuarioExistente && usuario.getPlan() != null) {
             boolean tieneMembresia = membresiaUsuarioRepository
@@ -163,7 +197,7 @@ public class TrialService {
         trial.setUsuarioConvertido(usuario);
         trial.setEstado(EstadoTrial.CONVERTIDO);
         trialRepository.save(trial);
-        return usuario;
+        return conversion;
     }
 
     private void crearMembresiaDesdeConversion(Usuario usuario, Plan plan) {
@@ -177,16 +211,39 @@ public class TrialService {
         membresiaUsuarioRepository.save(m);
     }
 
-    private Usuario crearUsuarioDesdeTrial(Trial trial) {
+    private TrialConversionResult crearUsuarioDesdeTrial(Trial trial) {
         Usuario usuario = new Usuario();
         usuario.setNombre(trial.getNombre());
         usuario.setApellidos(trial.getApellidos());
-        usuario.setEmail(trial.getEmail());
+        usuario.setEmail(trial.getEmail().trim());
         usuario.setTelefono(trial.getTelefono());
         usuario.setActivo(true);
+        usuario.setUsername(generarUsernameUnico(trial));
+        String temporal = generarPasswordTemporal();
+        usuario.setPasswordHash(passwordEncoder.encode(temporal));
+        usuario.setMustChangePassword(true);
         Rol rolCliente = rolRepository.findByNombre(ROL_CLIENTE).orElse(null);
         usuario.setRol(rolCliente);
-        return usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+        return new TrialConversionResult(guardado, temporal, true);
+    }
+
+    private void aplicarFormulario(Trial trial, TrialForm form) {
+        trial.setNombre(form.getNombre());
+        trial.setApellidos(form.getApellidos());
+        trial.setTelefono(form.getTelefono());
+        trial.setEmail(form.getEmail());
+        trial.setOrigen(form.getOrigen());
+        trial.setFechaPrueba(form.getFechaPrueba());
+        trial.setEstado(form.getEstado());
+        trial.setObservaciones(form.getObservaciones());
+        if (form.getStaffResponsableId() != null) {
+            StaffPerfil staff = new StaffPerfil();
+            staff.setId(form.getStaffResponsableId());
+            trial.setStaffResponsable(staff);
+        } else {
+            trial.setStaffResponsable(null);
+        }
     }
 
     private void normalizar(Trial trial) {
@@ -204,5 +261,35 @@ public class TrialService {
         } else {
             trial.setStaffResponsable(null);
         }
+    }
+
+    private String generarPasswordTemporal() {
+        return "FF-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private String generarUsernameUnico(Trial trial) {
+        String base = trial.getEmail();
+        if (StringUtils.hasText(base) && base.contains("@")) {
+            base = base.substring(0, base.indexOf('@'));
+        } else if (StringUtils.hasText(trial.getNombre())) {
+            base = trial.getNombre();
+        } else {
+            base = "cliente";
+        }
+
+        String normalizado = base.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9._-]", "")
+                .replaceAll("^[._-]+|[._-]+$", "");
+        if (normalizado.isBlank()) {
+            normalizado = "cliente";
+        }
+
+        String candidato = normalizado;
+        int suffix = 2;
+        while (usuarioRepository.existsByUsernameIgnoreCase(candidato)) {
+            candidato = normalizado + suffix;
+            suffix++;
+        }
+        return candidato;
     }
 }

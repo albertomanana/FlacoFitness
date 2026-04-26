@@ -64,9 +64,11 @@ function initializeDashboard() {
         hydrateDashboard(latestStats, utils, { animateStats: false });
     });
 
-    window.setTimeout(() => {
+    if (!initialStats) {
         loadDashboard(defaultRange);
-    }, 150);
+    } else {
+        updateDashboardTimestamp();
+    }
 }
 
 function hydrateDashboard(stats, utils, options = {}) {
@@ -161,7 +163,7 @@ function animateDashboardStat(key, rawValue, kind, utils, animate = true) {
         }
 
         const startTime = performance.now();
-        const duration = 1250;
+        const duration = 1550;
 
         function step(timestamp) {
             const progress = Math.min((timestamp - startTime) / duration, 1);
@@ -420,10 +422,6 @@ function createChart(canvasId, type, data, options) {
     }
 
     const existingChart = Chart.getChart(canvas);
-    if (existingChart) {
-        existingChart.destroy();
-    }
-
     const radialChart = isRadialChart(type);
     const theme = getChartTheme();
     const baseOptions = {
@@ -433,7 +431,7 @@ function createChart(canvasId, type, data, options) {
             mode: "index",
             intersect: false
         },
-        animation: {
+        animation: shouldReduceDashboardMotion() ? false : {
             duration: 650,
             easing: "easeOutQuart"
         },
@@ -481,10 +479,24 @@ function createChart(canvasId, type, data, options) {
         };
     }
 
+    const nextOptions = mergeChartOptions(baseOptions, options, radialChart);
+
+    if (existingChart && existingChart.config.type !== type) {
+        existingChart.destroy();
+    }
+
+    const reusableChart = Chart.getChart(canvas);
+    if (reusableChart) {
+        reusableChart.data = data;
+        reusableChart.options = nextOptions;
+        reusableChart.update(shouldReduceDashboardMotion() ? "none" : undefined);
+        return;
+    }
+
     new Chart(canvas, {
         type,
         data,
-        options: mergeChartOptions(baseOptions, options, radialChart)
+        options: nextOptions
     });
 }
 

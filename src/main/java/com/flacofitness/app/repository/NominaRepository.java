@@ -5,9 +5,13 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.flacofitness.app.model.entity.Nomina;
 import com.flacofitness.app.model.enums.EstadoNomina;
+
+import java.math.BigDecimal;
 
 public interface NominaRepository extends JpaRepository<Nomina, Long> {
 
@@ -26,4 +30,7 @@ public interface NominaRepository extends JpaRepository<Nomina, Long> {
     boolean existsByStaffPerfilIdAndPeriodoAndIdNot(Long staffPerfilId, String periodo, Long id);
 
     long countByEstado(EstadoNomina estado);
+
+    @Query("select coalesce(sum(n.salarioNeto), 0) from Nomina n where n.estado = :estado")
+    BigDecimal sumSalarioNetoByEstado(@Param("estado") EstadoNomina estado);
 }

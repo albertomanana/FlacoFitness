@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar usuario' : 'Nuevo usuario', 'Datos personales, cuenta y contexto operativo.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Usuario', 'Datos personales, cuenta y contexto operativo.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -15,14 +15,14 @@
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Usuarios</span>
-                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar usuario' : 'Alta de usuario'}">Alta de usuario</h2>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Actualizar usuario' : 'Alta de usuario'}">Alta de usuario</h2>
                         <p class="ff-section-subtitle">Unifica identidad, acceso, plan y foto en un solo flujo coherente.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/usuarios}">Volver</a>
                 </section>
 
                 <form th:object="${usuario}"
-                      th:action="${modoEdicion} ? @{/usuarios/{id}(id=${usuario.id})} : @{/usuarios}"
+                      th:action="${modoEdicion ? '/usuarios/' + usuario.id : '/usuarios'}"
                       method="post"
                       enctype="multipart/form-data"
                       data-ff-user-form>
@@ -143,43 +143,26 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="rawPassword" class="form-label" th:text="${modoEdicion} ? 'Nueva contraseña (opcional)' : 'Contraseña inicial'}">Contraseña inicial</label>
-                                                    <input id="rawPassword" type="password" class="form-control" th:field="*{rawPassword}" autocomplete="new-password" placeholder="Minimo 8 caracteres">
+                                                    <label for="rawPassword" class="form-label" th:text="${modoEdicion ? 'Nueva contraseña (opcional)' : 'Contraseña inicial'}">Contraseña inicial</label>
+                                                    <div class="ff-password-field">
+                                                        <input id="rawPassword" type="password" class="form-control" th:field="*{rawPassword}" autocomplete="new-password" placeholder="Minimo 8 caracteres" data-password-input="userRawPassword">
+                                                        <button class="ff-password-toggle" type="button" data-password-toggle="userRawPassword" aria-label="Mostrar u ocultar contrasena">
+                                                            <i class="fa-solid fa-eye"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <label for="confirmPassword" class="form-label" th:text="${modoEdicion} ? 'Confirmar nueva contraseña' : 'Confirmar contraseña'}">Confirmar contraseña</label>
-                                                    <input id="confirmPassword" type="password" class="form-control" th:field="*{confirmPassword}" autocomplete="new-password" placeholder="Repite la contraseña">
+                                                    <label for="confirmPassword" class="form-label" th:text="${modoEdicion ? 'Confirmar nueva contraseña' : 'Confirmar contraseña'}">Confirmar contraseña</label>
+                                                    <div class="ff-password-field">
+                                                        <input id="confirmPassword" type="password" class="form-control" th:field="*{confirmPassword}" autocomplete="new-password" placeholder="Repite la contrasena" data-password-input="userConfirmPassword">
+                                                        <button class="ff-password-toggle" type="button" data-password-toggle="userConfirmPassword" aria-label="Mostrar u ocultar confirmacion">
+                                                            <i class="fa-solid fa-eye"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </section>
 
-                                        <section class="ff-form-section">
-                                            <div class="ff-form-section-header">
-                                                <h4 class="ff-form-section-title">Foto del perfil</h4>
-                                                <p class="ff-form-section-text">La imagen se guarda junto con el resto del formulario, sin pasos extra.</p>
-                                            </div>
-                                            <div class="row g-3 align-items-center">
-                                                <div class="col-md-4">
-                                                    <div class="ff-form-photo-preview">
-                                                        <img class="ff-avatar ff-avatar-xxl"
-                                                             th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
-                                                             alt="Preview de usuario"
-                                                             data-ff-photo-preview>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-8">
-                                                    <label for="fotoFile" class="form-label">Imagen</label>
-                                                    <input id="fotoFile"
-                                                           name="fotoFile"
-                                                           type="file"
-                                                           class="form-control"
-                                                           accept="image/png,image/jpeg,image/gif,image/webp"
-                                                           data-ff-photo-input>
-                                                    <div class="form-text">JPG, PNG, GIF o WEBP. Maximo 5 MB.</div>
-                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fotoPath')}" th:errors="*{fotoPath}">Error</div>
-                                                </div>
-                                            </div>
-                                        </section>
                                     </div>
                                 </div>
                             </div>
@@ -199,12 +182,25 @@
                                             <img class="ff-avatar ff-avatar-xl"
                                                  th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
                                                  alt="Preview del avatar"
+                                                 data-ff-photo-preview
                                                  data-ff-photo-preview-secondary>
                                             <strong data-ff-name-preview
                                                     th:text="${usuario.nombre != null and !usuario.nombre.isBlank() ? usuario.nombre + (usuario.apellidos != null and !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '') : 'Nuevo usuario'}">Nuevo usuario</strong>
                                             <span class="ff-table-secondary" data-ff-email-preview th:text="${usuario.email != null and !usuario.email.isBlank() ? usuario.email : 'correo@ejemplo.com'}">correo@ejemplo.com</span>
                                             <span class="ff-soft-badge" data-ff-username-preview th:text="${usuario.username != null and !usuario.username.isBlank() ? '@' + usuario.username : '@username'}">@username</span>
                                         </div>
+                                        <div class="mt-4">
+                                            <label for="fotoFile" class="form-label">Foto de perfil</label>
+                                            <input id="fotoFile"
+                                                   name="fotoFile"
+                                                   type="file"
+                                                   class="form-control"
+                                                   accept="image/png,image/jpeg,image/gif,image/webp"
+                                                   data-ff-photo-input>
+                                            <div class="form-text">Se previsualiza al momento y se guarda con el usuario. JPG, PNG, GIF o WEBP; maximo 5 MB.</div>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fotoPath')}" th:errors="*{fotoPath}">Error</div>
+                                        </div>
+                                        <button type="submit" class="btn btn-success w-100 mt-3">Guardar usuario</button>
                                     </div>
                                 </aside>
 
@@ -219,15 +215,15 @@
                                         <div class="ff-side-list">
                                             <div class="ff-side-item">
                                                 <span class="ff-side-label">Modo</span>
-                                                <span class="ff-side-value" th:text="${modoEdicion} ? 'Edicion' : 'Alta inicial'}">Alta inicial</span>
+                                                <span class="ff-side-value" th:text="${modoEdicion ? 'Edicion' : 'Alta inicial'}">Alta inicial</span>
                                             </div>
                                             <div class="ff-side-item">
                                                 <span class="ff-side-label">Foto</span>
-                                                <span class="ff-side-value" th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath)} ? 'Personalizada' : 'Avatar por defecto'}">Avatar por defecto</span>
+                                                <span class="ff-side-value" th:text="${@userPhotoUrlResolver.hasCustomPhoto(usuario.fotoPath) ? 'Personalizada' : 'Avatar por defecto'}">Avatar por defecto</span>
                                             </div>
                                             <div class="ff-side-item">
                                                 <span class="ff-side-label">Acceso</span>
-                                                <span class="ff-side-value" th:text="${modoEdicion} ? 'Password opcional al editar' : 'Se crea con contraseña inicial'}">Cuenta activa</span>
+                                                <span class="ff-side-value" th:text="${modoEdicion ? 'Password opcional al editar' : 'Se crea con contraseña inicial'}">Cuenta activa</span>
                                             </div>
                                             <div class="ff-side-item">
                                                 <span class="ff-side-label">Siguiente paso</span>

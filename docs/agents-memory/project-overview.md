@@ -54,6 +54,8 @@ Dejar una base estable, profesional y defendible para seguir iterando sin romper
 - Password por defecto del proyecto: `flaco_pass`
 - `spring.sql.init.mode=never`
 - `spring.jpa.hibernate.ddl-auto=update`
+- Limpieza MySQL 2026-04-26 aplicada: se retiraron tablas legacy sin entidad (`app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`) y columnas legacy de `gastos`/`reservas_sesion` tras backup SQL.
+- Catalogo comercial activo simplificado: solo `Basico` a 29 EUR y `Estudiante` a 19 EUR quedan activos; `Premium`, `Plus` y `Trimestral` se conservan inactivos como historico.
 
 No hay H2, no hay fallback en memoria y no debe reintroducirse.
 
@@ -63,12 +65,22 @@ No hay H2, no hay fallback en memoria y no debe reintroducirse.
 - El arbol de trabajo no esta limpio; no hacer reset ciego.
 - `.\mvnw.cmd clean -DskipTests compile` pasa.
 - `.\mvnw.cmd test` pasa.
-- Suite actual validada: 23 tests en verde.
+- Suite actual validada: 35 tests en verde.
 - La app arranca en `http://localhost:8080` cuando MySQL local esta disponible.
-- En la validacion del 2026-04-24 `localhost:3306` no respondia, asi que el smoke HTTP real queda pendiente de levantar MySQL/phpMyAdmin.
+- En la validacion del 2026-04-26 MySQL respondio, la app arranco en `8083` y se verificaron rutas criticas con sesion ADMIN real.
 - Credenciales bootstrap para usuarios legacy: password temporal definida por `app.auth.bootstrap-password` y obligacion de cambio al primer acceso.
 
 ## Ultima iteracion cerrada
+
+En la iteracion 2026-04-26 se ejecuto la limpieza definitiva de base de datos y residuos:
+
+- se creo backup SQL previo en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`;
+- se añadieron scripts auditables `docs/db/cleanup-2026-04-26-precheck.sql`, `cleanup-2026-04-26.sql` y `cleanup-2026-04-26-postcheck.sql`;
+- se migraron datos utiles de columnas legacy de `gastos` antes de eliminarlas (`monto`, `descripcion`, `pagado`, `recurrente`, `frecuencia`, `staff_id`);
+- `reservas_sesion.sesion_id` queda alineada con `sesiones_clase` y se retiraron columnas duplicadas legacy;
+- se eliminaron los scripts SQL legacy `src/main/resources/data.sql`, `docs/data.sql` y `docs/init.sql` para impedir ejecuciones accidentales contra MySQL real;
+- se limpio la UI de autenticacion con mostrar/ocultar password y se retiro CSS residual del antiguo reloj simulado;
+- validacion cerrada: compile, 35 tests, postcheck MySQL limpio y smoke HTTP ADMIN en `/`, `/usuarios`, `/staff`, `/membresias`, `/trials`, `/pagos`, `/gastos`, `/nominas`, `/sesiones`, `/maquinas` y `/materiales`.
 
 En la iteracion 2026-04-26 se cerro un bloque de estabilizacion premium enfocado en rendimiento, copy y QA:
 
@@ -88,6 +100,15 @@ En la iteracion 2026-04-26 tambien se ejecuto el rediseño Command Center de int
 - se añadieron fuentes `Space Grotesk` e `IBM Plex Sans`;
 - Anime.js queda servido localmente y `hud-motion.js` añade motion ligero con fallback seguro y respeto de `prefers-reduced-motion`;
 - no se cambiaron rutas, controladores, contratos JSON ni reglas de negocio.
+
+En la iteracion 2026-04-26 tambien se ejecuto el bloque Performance + Finanzas + Nominas Estables:
+
+- `NominaController` dejo de bindear la entidad `Nomina` en formularios y ahora usa `NominaForm`, evitando errores por campos generados en backend (`salarioNeto`, `fechaEmision`, `estado`, `referencia`);
+- `NominaService` queda reforzado como unica fuente para calcular neto, referencia, fecha real, emision, pago y gasto asociado de categoria `NOMINA`;
+- se anadio `/finanzas` como Centro financiero MVC y `/stats/finanzas` como agregado JSON para ingresos, gastos, deuda, beneficio, pagos, recurrentes y nominas;
+- el dashboard ya no dispara fetch automatico si ya tiene estado inicial renderizado por servidor y los charts se actualizan sin destruirse si conservan tipo;
+- `hud-motion.js` evita animaciones de `box-shadow` y mantiene motion solo en `transform/opacity`;
+- la suite subio a 33 tests en verde y MySQL `flacofitness` respondio correctamente.
 
 En la iteracion 2026-04-24 se cerro el cambio mas estructural del producto:
 
@@ -132,3 +153,19 @@ Si otro agente o desarrollador entra al proyecto, debe leer en este orden:
 ## Nota de continuidad
 
 Este repositorio ya paso por una recuperacion fuerte. Hay trabajo previo importante preservado en Git y en la rama actual. La prioridad no es crecer a lo loco, sino continuar con cambios pequenos, validados y documentados.
+
+## Nota 2026-04-26 (rebuild total desde cero)
+
+- Se documento una guia maestra para reconstruir el producto completo desde cero, modulo por modulo, en `docs/agents-memory/rebuild-from-zero-modular-guide.md`.
+- La guia define una propuesta de identidad alternativa para el rebuild (`AtlasGym OS`) y una base alternativa (`atlasgym_core`) como blueprint de nueva implementacion.
+- Este material no cambia el runtime actual de FlacoFitness; sirve como documento de ejecucion para un reinicio controlado y defendible.
+
+## Nota 2026-04-26 (rescate funcional usuarios, trials, nominas e inventario)
+
+- Se cerro un bloque de rescate orientado a evitar 500 en flujos simples: emitir/pagar/cancelar nominas ahora captura errores de negocio y vuelve con flash.
+- El login con password temporal redirige directamente a `/cuenta/password`; el cambio de password refresca sesion y limpia `mustChangePassword`.
+- `trials` deja de bindear la entidad completa en formularios y usa `TrialForm`; la conversion a usuario genera username, password temporal BCrypt y obliga cambio al entrar.
+- `usuarios/form` mantiene el submit sticky y anade CTA visible en la columna derecha, preview de foto/username y carga de imagen junto al resumen.
+- El buscador del selector de usuario en staff ya no reconstruye el `<select>`; solo oculta opciones y conserva seleccion valida.
+- Maquinas y materiales generan un gasto `PAGADO` al alta cuando tienen coste de compra/coste unitario y stock.
+- Validacion: `.\mvnw.cmd clean -DskipTests compile` correcto y `.\mvnw.cmd test` correcto con 43 tests en verde.

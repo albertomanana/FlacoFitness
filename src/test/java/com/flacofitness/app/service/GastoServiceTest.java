@@ -2,6 +2,8 @@ package com.flacofitness.app.service;
 
 import com.flacofitness.app.model.entity.Gasto;
 import com.flacofitness.app.model.entity.GastoRecurrente;
+import com.flacofitness.app.model.entity.Maquina;
+import com.flacofitness.app.model.entity.Material;
 import com.flacofitness.app.model.enums.CategoriaGasto;
 import com.flacofitness.app.model.enums.EstadoGasto;
 import com.flacofitness.app.model.enums.FrecuenciaGasto;
@@ -21,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -111,6 +114,47 @@ class GastoServiceTest {
                 List.of(EstadoGasto.PROGRAMADO, EstadoGasto.PENDIENTE),
                 EstadoGasto.VENCIDO,
                 hoy);
+    }
+
+    @Test
+    void crearGastoCompraMaterial_creaGastoPagadoConImporteTotal() {
+        Material material = new Material();
+        material.setId(5L);
+        material.setNombre("Bandas");
+        material.setStock(4);
+        material.setCosteUnitario(new BigDecimal("12.50"));
+        material.setProveedor("Proveedor Fit");
+
+        when(materialRepository.findById(5L)).thenReturn(Optional.of(material));
+        when(gastoRepository.save(any(Gasto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Gasto gasto = gastoService.crearGastoCompraMaterial(material);
+
+        assertThat(gasto.getCategoria()).isEqualTo(CategoriaGasto.MATERIAL);
+        assertThat(gasto.getTipoGasto()).isEqualTo(TipoGasto.VARIABLE);
+        assertThat(gasto.getEstado()).isEqualTo(EstadoGasto.PAGADO);
+        assertThat(gasto.getImporte()).isEqualByComparingTo("50.00");
+        assertThat(gasto.getMaterial()).isSameAs(material);
+    }
+
+    @Test
+    void crearGastoCompraMaquina_creaGastoPagadoVinculado() {
+        Maquina maquina = new Maquina();
+        maquina.setId(6L);
+        maquina.setNombre("Bike Pro");
+        maquina.setMarca("FitTech");
+        maquina.setCosteCompra(new BigDecimal("899.00"));
+
+        when(maquinaRepository.findById(6L)).thenReturn(Optional.of(maquina));
+        when(gastoRepository.save(any(Gasto.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Gasto gasto = gastoService.crearGastoCompraMaquina(maquina);
+
+        assertThat(gasto.getCategoria()).isEqualTo(CategoriaGasto.MAQUINA);
+        assertThat(gasto.getTipoGasto()).isEqualTo(TipoGasto.VARIABLE);
+        assertThat(gasto.getEstado()).isEqualTo(EstadoGasto.PAGADO);
+        assertThat(gasto.getImporte()).isEqualByComparingTo("899.00");
+        assertThat(gasto.getMaquina()).isSameAs(maquina);
     }
 
 }

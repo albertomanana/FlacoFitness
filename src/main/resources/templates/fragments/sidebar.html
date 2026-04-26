@@ -243,10 +243,26 @@
             </details>
 
             <details class="ff-nav-group"
-                     th:if="${accessProfile.canSeeSection('pagos') or accessProfile.canSeeSection('gastos') or accessProfile.canSeeSection('nominas') or accessProfile.canSeeSection('recurrentes')}"
-                     th:attr="open=${activeSection == 'pagos' or activeSection == 'gastos' or activeSection == 'nominas' or activeSection == 'recurrentes'} ? 'open' : null">
+                     th:if="${accessProfile.canSeeSection('finanzas') or accessProfile.canSeeSection('pagos') or accessProfile.canSeeSection('gastos') or accessProfile.canSeeSection('nominas') or accessProfile.canSeeSection('recurrentes')}"
+                     th:attr="open=${activeSection == 'finanzas' or activeSection == 'pagos' or activeSection == 'gastos' or activeSection == 'nominas' or activeSection == 'recurrentes'} ? 'open' : null">
                 <summary class="ff-nav-group-toggle">Finanzas</summary>
                 <div class="ff-nav">
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('finanzas')}"
+                       th:classappend="${activeSection == 'finanzas'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'finanzas'} ? 'page' : null"
+                       th:href="@{/finanzas}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"/>
+                                <path d="m7 15 4-4 3 3 5-7"/>
+                                <path d="M14 7h5v5"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Centro financiero</span>
+                    </a>
+
                     <a class="ff-nav-link"
                        th:if="${accessProfile.canSeeSection('gastos')}"
                        th:classappend="${activeSection == 'gastos'} ? ' is-active' : ''"
@@ -293,7 +309,7 @@
                                 <path d="M7 16h6"/>
                             </svg>
                         </span>
-                        <span class="ff-nav-label">Nominas</span>
+                        <span class="ff-nav-label">Nóminas</span>
                     </a>
 
                     <a class="ff-nav-link"
@@ -338,7 +354,7 @@
                                 <path d="M21 3v18"/>
                             </svg>
                         </span>
-                        <span class="ff-nav-label">Cerrar sesion</span>
+                        <span class="ff-nav-label">Cerrar sesión</span>
                     </button>
                 </form>
             </div>

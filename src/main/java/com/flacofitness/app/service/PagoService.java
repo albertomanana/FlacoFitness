@@ -105,6 +105,14 @@ public class PagoService {
         return total != null ? total : BigDecimal.ZERO;
     }
 
+    public BigDecimal calcularDeudaTotal() {
+        BigDecimal total = pagoRepository.sumMontoByEstados(List.of(
+                EstadoPago.PROGRAMADO,
+                EstadoPago.PENDIENTE,
+                EstadoPago.VENCIDO));
+        return total != null ? total : BigDecimal.ZERO;
+    }
+
     public BigDecimal calcularDeudaTotalPorUsuario(Long usuarioId) {
         return pagoRepository.findByUsuarioId(usuarioId).stream()
                 .filter(p -> p.getEstado() != EstadoPago.PAGADO)
@@ -124,6 +132,14 @@ public class PagoService {
 
     public long contarPagosVencidos() {
         return pagoRepository.countByEstado(EstadoPago.VENCIDO);
+    }
+
+    public long contarPagosProgramados() {
+        return pagoRepository.countByEstado(EstadoPago.PROGRAMADO);
+    }
+
+    public long contarPagosPagados() {
+        return pagoRepository.countByEstado(EstadoPago.PAGADO);
     }
 
     public List<Pago> listarRecientes() {

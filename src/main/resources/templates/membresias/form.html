@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/head :: head(${modoEdicion} ? 'Editar membresia' : 'Nueva membresia')}"></head>
+<head th:replace="~{fragments/head :: head('Membresia')}"></head>
 <body class="ff-app">
 <div class="ff-app-shell">
     <div th:replace="~{fragments/sidebar :: sidebar('membresias')}"></div>
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar membresia' : 'Nueva membresia', 'Catalogo comercial.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Membresia', 'Catalogo comercial.')}"></div>
         <main class="ff-content">
             <div class="ff-content-stack">
-                <section class="ff-section-header"><div><span class="ff-section-eyebrow">Membresias</span><h2 class="ff-section-title" th:text="${modoEdicion} ? 'Editar plan' : 'Crear plan'">Crear plan</h2><p class="ff-section-subtitle">Define la oferta que despues se contrata por usuario.</p></div><a class="btn btn-outline-secondary" th:href="@{/membresias}">Volver</a></section>
-                <form class="ff-surface-card" th:object="${plan}" th:action="${modoEdicion} ? @{/membresias/{id}(id=${plan.id})} : @{/membresias}" method="post">
+                <section class="ff-section-header"><div><span class="ff-section-eyebrow">Membresias</span><h2 class="ff-section-title" th:text="${modoEdicion ? 'Editar plan' : 'Crear plan'}">Crear plan</h2><p class="ff-section-subtitle">Define la oferta que despues se contrata por usuario.</p></div><a class="btn btn-outline-secondary" th:href="@{/membresias}">Volver</a></section>
+                <form class="ff-surface-card" th:object="${plan}" th:action="${modoEdicion ? '/membresias/' + plan.id : '/membresias'}" method="post">
                     <div class="ff-card-body">
                         <div class="row g-3">
                             <div class="col-md-6"><label class="form-label" for="nombre">Nombre</label><input id="nombre" class="form-control" th:field="*{nombre}"><div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div></div>

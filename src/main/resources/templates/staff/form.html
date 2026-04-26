@@ -6,7 +6,7 @@
     <div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar staff' : 'Nuevo staff', 'Alta y mantenimiento del equipo interno.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Staff', 'Alta y mantenimiento del equipo interno.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
@@ -15,7 +15,7 @@
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Staff</span>
-                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar perfil interno' : 'Alta de staff'}">Alta de staff</h2>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Actualizar perfil interno' : 'Alta de staff'}">Alta de staff</h2>
                         <p class="ff-section-subtitle">Conecta al usuario correcto con rol interno, agenda y operaciones financieras.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/staff}">Volver</a>
@@ -32,7 +32,7 @@
                             </div>
                             <div class="ff-card-body">
                                 <form th:object="${staff}"
-                                      th:action="${modoEdicion} ? @{/staff/{id}(id=${staff.id})} : @{/staff}"
+                                      th:action="${modoEdicion ? '/staff/' + staff.id : '/staff'}"
                                       method="post"
                                       class="d-flex flex-column gap-4">
                                     <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-0" role="alert">
@@ -144,7 +144,7 @@
                                     <div class="ff-side-list">
                                         <div class="ff-side-item">
                                             <span class="ff-side-label">Modo</span>
-                                            <span class="ff-side-value" th:text="${modoEdicion} ? 'Edicion' : 'Alta inicial'}">Alta inicial</span>
+                                            <span class="ff-side-value" th:text="${modoEdicion ? 'Edicion' : 'Alta inicial'}">Alta inicial</span>
                                         </div>
                                         <div class="ff-side-item">
                                             <span class="ff-side-label">Agenda</span>

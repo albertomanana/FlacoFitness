@@ -6,6 +6,26 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 ## Historial
 
+### 2026-04-26 (Limpieza definitiva MySQL, auth UI y residuos)
+
+- Se creo backup SQL previo de tablas sensibles en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.
+- Se añadieron scripts auditables en `docs/db/`: `cleanup-2026-04-26-precheck.sql`, `cleanup-2026-04-26.sql` y `cleanup-2026-04-26-postcheck.sql`.
+- Se eliminaron de MySQL las tablas legacy sin entidad vigente: `app_clock_settings`, `staff`, `sesiones`, `ejercicios` y `rutina_ejercicios`.
+- Se migraron datos utiles y se eliminaron columnas legacy de `gastos`: `monto`, `descripcion`, `pagado`, `recurrente`, `frecuencia` y `staff_id`.
+- Se normalizo `reservas_sesion` para usar `sesion_id -> sesiones_clase.id`, retirando columnas duplicadas legacy.
+- Se simplifico el catalogo vendible: `Basico` 29 EUR y `Estudiante` 19 EUR activos; `Premium`, `Plus` y `Trimestral` quedan inactivos como historico.
+- Se retiraron scripts SQL legacy `src/main/resources/data.sql`, `docs/data.sql` y `docs/init.sql` para evitar confusion o ejecucion accidental contra MySQL real.
+- Se limpio el runtime del antiguo reloj simulado: `OperationalClockState` ya no expone bandera simulada y se retiraron estilos `ff-clock`/`is-simulated`.
+- Login y cambio de password incorporan mostrar/ocultar contraseña con JS ligero y estilos coherentes en dark mode.
+- Validacion: `compile`, 35 tests, postcheck MySQL limpio y smoke HTTP con ADMIN real en dashboard y modulos criticos.
+
+### 2026-04-26 (Documentacion total para rebuild desde cero)
+
+- Se creo la guia `docs/agents-memory/rebuild-from-zero-modular-guide.md` con documentacion total del sistema modulo por modulo.
+- La guia describe como recrear la aplicacion desde cero (arquitectura, setup, modelo, rutas, servicios transversales, orden por sprints, testing y DoD).
+- Se definio una propuesta de nombre alternativo (`AtlasGym OS`) y base de datos alternativa (`atlasgym_core`) para ejecutar el reinicio sin acoplarse al estado roto actual.
+- Se incluyo checklist de renombrado tecnico y SQL base para inicializar la nueva BD alternativa.
+
 ### 2026-04-24 (Operations Deck — rediseño visual completo)
 
 - Se lanzó un rediseño visual completo de la shell y los módulos con la estética "Operations Deck": dark-first, glassmorphism sutil, acento HUD cian `#38BDF8`, verde `#22C55E` preservado para marca y CTAs.
@@ -367,3 +387,26 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 - Dashboard, usuarios, cliente, pagos, gastos, recurrentes, asistencias, staff, rutinas y nominas activan `ff-command-stack`.
 - Se añadio Anime.js UMD local y `hud-motion.js` para stagger reveals, hover HUD y hints ligeros con fallback si la libreria no carga.
 - Validacion: compile, tests, MySQL, arranque temporal en `8082`, assets nuevos 200 y rutas protegidas 302 a `/acceso`.
+
+### 2026-04-26 (Performance, finanzas y nominas estables)
+
+- Se corrigio la causa raiz del fallo de creacion de nominas: el formulario ya no valida la entidad persistida completa, sino `NominaForm`.
+- `NominaService` mantiene el calculo de salario neto, fecha real, referencia unica, duplicado por staff/periodo y gasto asociado `NOMINA` como logica central.
+- Se anadio `/finanzas` como centro financiero con KPIs, riesgos, obligaciones, charts y accesos a pagos, gastos, recurrentes y nominas.
+- Se anadio `/stats/finanzas` como JSON agregado, sin cambiar `/stats/dashboard`, `/stats/gastos` ni contratos existentes.
+- El dashboard deja de hacer doble fetch tras render SSR y reutiliza charts si el tipo no cambia.
+- `hud-motion.js` elimina animacion de `box-shadow`; `finance-center.js` queda aislado para no pisar funciones del dashboard.
+- PDFs de nomina limpian copy de demo/experimental y refuerzan lectura documental.
+- Validacion: compile, 33 tests, MySQL disponible, arranque temporal en `8081` y smoke HTTP protegido.
+
+### 2026-04-26 (Rescate funcional anti-500)
+
+- `NominaController` captura errores de negocio en emitir, pagar, cancelar y generacion automatica; las acciones vuelven con flash.
+- `AccessController` redirige directamente a cambio de password cuando la cuenta tiene `mustChangePassword=true`.
+- `CuentaController` deja de lanzar excepcion si no hay sesion y vuelve a `/acceso` con mensaje claro.
+- `TrialController` usa `TrialForm`; crear trial redirige a detalle sin binding fragil de entidades.
+- `TrialService` genera username, password temporal BCrypt y obliga cambio al convertir un lead en usuario nuevo.
+- `usuarios/form` mueve la foto a la columna derecha, mantiene preview de username/foto y refuerza el CTA de guardado.
+- `app.js` corrige el filtro de selects para staff: no reconstruye opciones ni inserta opciones falsas.
+- `Maquina.costeCompra` y los servicios de inventario crean gastos automaticos pagados al alta.
+- Validacion: compile limpio y 43 tests en verde.

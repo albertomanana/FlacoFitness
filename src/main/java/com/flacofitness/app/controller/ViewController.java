@@ -115,7 +115,7 @@ public class ViewController {
         model.addAttribute("rutinasDestacadas", rutinaService.listarActivasDestacadas());
         model.addAttribute("ultimosPagos", pagoService.listarRecientes());
         model.addAttribute("proximosCobros", usuarioService.listarRenovacionesProximas());
-        // NUEVAS MÉTRICAS PARA DASHBOARD
+        // Metricas operativas del dashboard
         model.addAttribute("usuariosAsistenciaActivos", asistenciaService.contarUsuariosActivos());
         model.addAttribute("usuariosAsistenciaInactivos", asistenciaService.contarUsuariosInactivos());
         model.addAttribute("usuariosFinancierosAlDia", pagoService.contarUsuariosAlDia());
@@ -141,16 +141,15 @@ public class ViewController {
         model.addAttribute("dashboardGuide", uxMemoryStateService.buildDashboardGuide(
                 (String) request.getAttribute(com.flacofitness.app.service.BrowserTokenService.REQUEST_ATTR), profile));
         model.addAttribute("recentActivity", activityLogService.recentActivity());
-        DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado);
+        DashboardStatsResponse dashboardStats = construirDashboardStats(rangoNormalizado, ingresosMesActual, gastoMesActual);
         model.addAttribute("dashboardStats", dashboardStats);
         model.addAttribute("dashboardStatsJson", serializarDashboardStats(dashboardStats));
         return "home/index";
     }
 
-    private DashboardStatsResponse construirDashboardStats(int rangoDias) {
-        BigDecimal ingresosMesActual = pagoService.calcularIngresosMesActual();
-        BigDecimal gastoMesActual = gastoService.calcularGastoMesActual();
-
+    private DashboardStatsResponse construirDashboardStats(int rangoDias,
+                                                           BigDecimal ingresosMesActual,
+                                                           BigDecimal gastoMesActual) {
         return new DashboardStatsResponse(
                 usuarioService.contarTotal(),
                 usuarioService.contarActivos(),
@@ -170,7 +169,7 @@ public class ViewController {
                 gastoService.obtenerGastosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
                 usuarioService.obtenerAltasMensuales(),
-                // NUEVAS MÉTRICAS
+                // Metricas operativas
                 asistenciaService.contarUsuariosActivos(),
                 asistenciaService.contarUsuariosInactivos(),
                 pagoService.contarUsuariosAlDia(),

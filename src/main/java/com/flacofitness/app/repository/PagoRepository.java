@@ -61,6 +61,9 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
     @Query("select coalesce(sum(pago.monto), 0) from Pago pago where pago.estado = :estado")
     BigDecimal sumMontoByEstado(@Param("estado") EstadoPago estado);
 
+    @Query("select coalesce(sum(pago.monto), 0) from Pago pago where pago.estado in :estados")
+    BigDecimal sumMontoByEstados(@Param("estados") Collection<EstadoPago> estados);
+
     @Query("select coalesce(sum(pago.monto), 0) from Pago pago " +
             "where pago.estado = :estado and year(pago.fechaPago) = :anio and month(pago.fechaPago) = :mes")
     BigDecimal sumMontoByEstadoAndPeriodo(@Param("estado") EstadoPago estado,

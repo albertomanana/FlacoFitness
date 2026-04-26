@@ -1,6 +1,7 @@
 -- FlacoFitness - referencia de datos semilla
--- Para desarrollo real se recomienda el perfil `local`, que ejecuta
--- `DemoDataSeeder` y genera una demo completa sin tocar MySQL.
+-- En MySQL real `spring.sql.init.mode=never`; este archivo es referencia.
+-- Para una demo controlada se puede activar `DemoDataSeeder` con
+-- `app.demo-seeder.enabled=true`.
 
 INSERT INTO roles (nombre)
 SELECT 'STAFF'
@@ -15,20 +16,20 @@ SELECT 'Basico',
        'Plan mensual base para acceso general',
        'MENSUAL',
        'Acceso general, registro de asistencias y rutinas base.',
-       29.90,
+       29.00,
        30,
        true
 WHERE NOT EXISTS (SELECT 1 FROM planes WHERE nombre = 'Basico');
 
 INSERT INTO planes (nombre, descripcion, tipo_membresia, beneficios, precio_mensual, duracion_dias, activo)
-SELECT 'Premium',
-       'Plan mensual completo con mayor cobertura de servicios',
-       'PREMIUM',
-       'Rutinas personalizadas, prioridad en clases y seguimiento ampliado.',
-       49.90,
+SELECT 'Estudiante',
+       'Cuota reducida para estudiantes',
+       'ESTUDIANTE',
+       'Acceso general con precio reducido.',
+       19.00,
        30,
        true
-WHERE NOT EXISTS (SELECT 1 FROM planes WHERE nombre = 'Premium');
+WHERE NOT EXISTS (SELECT 1 FROM planes WHERE nombre = 'Estudiante');
 
 -- La demo rica incluye:
 -- - usuarios clientes y staff

@@ -1,12 +1,12 @@
 package com.flacofitness.app.controller;
 
 import com.flacofitness.app.exception.BusinessValidationException;
-import com.flacofitness.app.model.entity.StaffPerfil;
-import com.flacofitness.app.model.entity.Trial;
+import com.flacofitness.app.model.dto.TrialConversionResult;
+import com.flacofitness.app.model.dto.TrialForm;
 import com.flacofitness.app.model.enums.EstadoTrial;
 import com.flacofitness.app.service.ControllerActivityLogger;
-import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.OperationalClockService;
+import com.flacofitness.app.service.StaffService;
 import com.flacofitness.app.service.TrialService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -60,34 +60,30 @@ public class TrialController {
 
     @GetMapping("/nuevo")
     public String nuevo(Model model) {
-        Trial trial = new Trial();
-        trial.setFechaPrueba(operationalClockService.today());
-        trial.setEstado(EstadoTrial.PENDIENTE);
-        trial.setStaffResponsable(new StaffPerfil());
+        TrialForm trialForm = new TrialForm();
+        trialForm.setFechaPrueba(operationalClockService.today());
+        trialForm.setEstado(EstadoTrial.PENDIENTE);
         cargarCatalogos(model);
-        model.addAttribute("trial", trial);
+        model.addAttribute("trialForm", trialForm);
         model.addAttribute("modoEdicion", false);
         return "trials/form";
     }
 
     @PostMapping
-    public String guardar(@Valid @ModelAttribute("trial") Trial trial,
+    public String guardar(@Valid @ModelAttribute("trialForm") TrialForm trialForm,
                           BindingResult bindingResult,
                           Model model,
                           RedirectAttributes redirectAttributes,
                           HttpServletRequest request,
                           HttpSession session) {
-        normalizarRelaciones(trial);
-
         if (bindingResult.hasErrors()) {
-            prepararRelaciones(trial);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", false);
             return "trials/form";
         }
 
         try {
-            Trial guardado = trialService.guardar(trial);
+            var guardado = trialService.guardar(trialForm);
             controllerActivityLogger.log(request, session,
                     "trials", "trial_creado", "trial", guardado.getId(),
                     "Trial creado",
@@ -96,7 +92,6 @@ public class TrialController {
             return "redirect:/trials/" + guardado.getId();
         } catch (BusinessValidationException ex) {
             bindingResult.reject("trialError", ex.getMessage());
-            prepararRelaciones(trial);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", false);
             model.addAttribute("mensajeError", ex.getMessage());
@@ -112,33 +107,29 @@ public class TrialController {
 
     @GetMapping("/{id}/editar")
     public String editar(@PathVariable Long id, Model model) {
-        Trial trial = trialService.buscarPorId(id);
-        prepararRelaciones(trial);
         cargarCatalogos(model);
-        model.addAttribute("trial", trial);
+        model.addAttribute("trialForm", TrialForm.from(trialService.buscarPorId(id)));
         model.addAttribute("modoEdicion", true);
         return "trials/form";
     }
 
     @PostMapping("/{id}")
     public String actualizar(@PathVariable Long id,
-                             @Valid @ModelAttribute("trial") Trial trial,
+                             @Valid @ModelAttribute("trialForm") TrialForm trialForm,
                              BindingResult bindingResult,
                              Model model,
                              RedirectAttributes redirectAttributes,
                              HttpServletRequest request,
                              HttpSession session) {
-        normalizarRelaciones(trial);
-
+        trialForm.setId(id);
         if (bindingResult.hasErrors()) {
-            prepararRelaciones(trial);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", true);
             return "trials/form";
         }
 
         try {
-            Trial actualizado = trialService.actualizar(id, trial);
+            var actualizado = trialService.actualizar(id, trialForm);
             controllerActivityLogger.log(request, session,
                     "trials", "trial_actualizado", "trial", actualizado.getId(),
                     "Trial actualizado",
@@ -147,7 +138,6 @@ public class TrialController {
             return "redirect:/trials/" + id;
         } catch (BusinessValidationException ex) {
             bindingResult.reject("trialError", ex.getMessage());
-            prepararRelaciones(trial);
             cargarCatalogos(model);
             model.addAttribute("modoEdicion", true);
             model.addAttribute("mensajeError", ex.getMessage());
@@ -176,12 +166,20 @@ public class TrialController {
                             HttpServletRequest request,
                             HttpSession session) {
         try {
-            Long usuarioId = trialService.convertirAUsuario(id).getId();
+            TrialConversionResult conversion = trialService.convertirAUsuarioConCredenciales(id);
+            Long usuarioId = conversion.usuario().getId();
             controllerActivityLogger.log(request, session,
                     "trials", "trial_convertido", "trial", id,
                     "Trial convertido",
                     "El lead se convirtio en un nuevo usuario.");
-            redirectAttributes.addFlashAttribute("mensajeExito", "Trial convertido a usuario. Verifica el perfil y la membresía asignada.");
+            if (conversion.nuevoUsuario()) {
+                redirectAttributes.addFlashAttribute("mensajeExito",
+                        "Trial convertido a usuario. Password temporal: " + conversion.temporalPassword()
+                                + ". El usuario debera cambiarla al entrar.");
+            } else {
+                redirectAttributes.addFlashAttribute("mensajeExito",
+                        "Trial vinculado a un usuario existente. Verifica el perfil y la membresia asignada.");
+            }
             return "redirect:/usuarios/" + usuarioId;
         } catch (BusinessValidationException ex) {
             redirectAttributes.addFlashAttribute("mensajeError", ex.getMessage());
@@ -192,17 +190,5 @@ public class TrialController {
     private void cargarCatalogos(Model model) {
         model.addAttribute("staffActivos", staffService.listarActivos());
         model.addAttribute("estadosTrial", EstadoTrial.values());
-    }
-
-    private void prepararRelaciones(Trial trial) {
-        if (trial.getStaffResponsable() == null) {
-            trial.setStaffResponsable(new StaffPerfil());
-        }
-    }
-
-    private void normalizarRelaciones(Trial trial) {
-        if (trial.getStaffResponsable() != null && trial.getStaffResponsable().getId() == null) {
-            trial.setStaffResponsable(null);
-        }
     }
 }

@@ -18,6 +18,10 @@ function initializeDataTables() {
     window.ffTables = [];
 
     tables.forEach((table) => {
+        if (table.__ffDataTable || (typeof DataTable.isDataTable === "function" && DataTable.isDataTable(table))) {
+            return;
+        }
+
         /* ── Guard: do NOT init DataTable on empty-state tables ──
            When Thymeleaf renders the empty tbody with a single
            td[colspan], DataTables interprets it as a data row

@@ -1,5 +1,6 @@
 package com.flacofitness.app.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
@@ -22,11 +23,14 @@ public class MaquinaService {
 
     private final MaquinaRepository maquinaRepository;
     private final OperationalClockService operationalClockService;
+    private final GastoService gastoService;
 
     public MaquinaService(MaquinaRepository maquinaRepository,
-                          OperationalClockService operationalClockService) {
+                          OperationalClockService operationalClockService,
+                          GastoService gastoService) {
         this.maquinaRepository = maquinaRepository;
         this.operationalClockService = operationalClockService;
+        this.gastoService = gastoService;
     }
 
     public List<Maquina> listarFiltradas(EstadoMaquina estado, CategoriaMaquina categoria) {
@@ -96,7 +100,11 @@ public class MaquinaService {
     public Maquina guardar(Maquina maquina) {
         validarNumeroSerieUnico(maquina.getNumeroSerie(), null);
         normalizar(maquina);
-        return maquinaRepository.save(maquina);
+        Maquina guardada = maquinaRepository.save(maquina);
+        if (guardada.getCosteCompra() != null && guardada.getCosteCompra().compareTo(BigDecimal.ZERO) > 0) {
+            gastoService.crearGastoCompraMaquina(guardada);
+        }
+        return guardada;
     }
 
     @Transactional
@@ -113,6 +121,7 @@ public class MaquinaService {
         maquina.setUbicacion(maquinaActualizada.getUbicacion());
         maquina.setEstado(maquinaActualizada.getEstado());
         maquina.setFechaCompra(maquinaActualizada.getFechaCompra());
+        maquina.setCosteCompra(maquinaActualizada.getCosteCompra());
         maquina.setUltimaRevision(maquinaActualizada.getUltimaRevision());
         maquina.setProximaRevision(maquinaActualizada.getProximaRevision());
         maquina.setObservaciones(maquinaActualizada.getObservaciones());
@@ -177,6 +186,9 @@ public class MaquinaService {
                 && maquina.getUltimaRevision() != null
                 && maquina.getProximaRevision().isBefore(maquina.getUltimaRevision())) {
             throw new BusinessValidationException("La proxima revision no puede ser anterior a la ultima revision");
+        }
+        if (maquina.getCosteCompra() != null && maquina.getCosteCompra().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("El coste de compra no puede ser negativo");
         }
 
         if (StringUtils.hasText(maquina.getNumeroSerie())) {

@@ -359,6 +359,26 @@ Implementar el plan "Roadmap Maestro Para Absorber El `.claude` Y Cerrar FlacoFi
 4. limpieza tecnica y QA total
 5. revision final tipo CTO/Product
 
+## Entrada 2026-04-26 (documentacion total para rehacer desde cero)
+
+### Fecha
+
+2026-04-26
+
+### Contexto
+
+Solicitud de documentar completamente el proyecto modulo por modulo para rehacer la app desde cero por estado roto, incluyendo nombre alternativo y base de datos alternativa.
+
+### Prompt
+
+"quiero que me generes una documentacion total de lo que consiste el proyecto modulo por modulo explicandolo todo , para crear la app desde cero, ya que está rota, vamos a crear todo de 0 una base de datos alternativa y un nombre alternativo"
+
+### Resultado
+
+- Se creo `docs/agents-memory/rebuild-from-zero-modular-guide.md` como plan maestro de reconstruccion.
+- El documento incluye arquitectura objetivo, setup, modelo de datos, 17 modulos funcionales, servicios transversales, orden por sprints, estrategia de tests, checklist de renombrado y SQL de base alternativa.
+- Se propuso nombre alternativo `AtlasGym OS` y base alternativa `atlasgym_core`.
+
 Con reglas explicitas:
 - sin H2
 - sin SPA
@@ -545,3 +565,106 @@ Implementar el plan "FlacoFitness Command Center":
 - Se marco `ff-command-stack` en pantallas clave.
 - Se añadio Anime.js local y `hud-motion.js` con fallback seguro.
 - Validacion: compile y tests en verde, MySQL disponible, app temporal `8082`, assets nuevos 200 y rutas protegidas redirigiendo a `/acceso`.
+
+## Entrada 2026-04-26 (Performance + Finanzas + Nominas Estables)
+
+### Fecha
+
+2026-04-26
+
+### Contexto
+
+Optimizar tiempos de carga, animaciones y rendimiento general; hacer crecer Finanzas y reparar Nominas para que crear, emitir, pagar y exportar funcione de forma estable con fecha real y MySQL `flacofitness`.
+
+### Prompt
+
+Implementar el plan "Performance + Finanzas + Nominas Estables":
+
+- crear `NominaForm` y dejar de bindear la entidad `Nomina`;
+- anadir Centro financiero `/finanzas` y `/stats/finanzas`;
+- evitar doble fetch del dashboard y animaciones pesadas;
+- mantener MVC, Thymeleaf, Bootstrap, JS ligero y MySQL real;
+- validar compile, tests, MySQL y smoke HTTP;
+- actualizar documentacion viva.
+
+### Resultado
+
+- `NominaController` usa `NominaForm`; `NominaService` calcula neto, fecha, referencia, estado y gasto asociado.
+- `/finanzas` entrega KPIs, riesgos, obligaciones, charts y quick actions conectadas.
+- `/stats/finanzas` expone el agregado financiero JSON para el centro.
+- Dashboard evita fetch inicial duplicado y actualiza charts sin destruirlos si el tipo se mantiene.
+- `hud-motion.js` queda en transform/opacity y `finance-center.js` no contamina el scope global.
+- Validacion: `compile`, 33 tests, MySQL disponible, app temporal `8081`, smoke HTTP protegido.
+
+## Entrada 2026-04-26 (Limpieza definitiva de FlacoFitness)
+
+### Fecha
+
+2026-04-26
+
+### Contexto
+
+Limpiar profundamente MySQL, residuos de codigo, autenticacion, interfaz y scripts obsoletos sin reescribir la app ni perder datos relevantes.
+
+### Prompt
+
+Implementar el "Plan De Limpieza Definitiva De FlacoFitness":
+
+- auditar entidades, repositorios, servicios, templates, CSS, JS, scripts SQL y tablas reales;
+- crear backup y scripts de precheck/cleanup/postcheck para MySQL `flacofitness`;
+- eliminar restos de H2 y simulacion temporal;
+- limpiar scripts SQL legacy y residuos de interfaz/auth;
+- validar compile, tests, MySQL y smoke HTTP real;
+- actualizar `docs/agents-memory/*`.
+
+Restricciones:
+
+- MySQL `flacofitness` como unica persistencia;
+- sin H2;
+- sin borrar datos importantes sin backup;
+- mantener MVC, Thymeleaf, Bootstrap y JS ligero;
+- no tocar `atlasgym-os/` salvo orden explicita.
+
+### Resultado
+
+- Backup SQL creado en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.
+- Scripts añadidos en `docs/db/cleanup-2026-04-26-precheck.sql`, `cleanup-2026-04-26.sql` y `cleanup-2026-04-26-postcheck.sql`.
+- Eliminadas tablas legacy: `app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`.
+- Migrados datos utiles y eliminadas columnas legacy de `gastos` y `reservas_sesion`.
+- Catalogo activo reducido a `Basico` y `Estudiante`, conservando planes legacy como inactivos.
+- Eliminados `src/main/resources/data.sql`, `docs/data.sql` y `docs/init.sql`.
+- Login y cambio de password incorporan mostrar/ocultar contraseña.
+- Runtime sin H2 ni simulacion temporal activa en `src`.
+- Validacion: `.\mvnw.cmd clean -DskipTests compile`, `.\mvnw.cmd test` con 35 pruebas, postcheck MySQL limpio y smoke ADMIN en rutas criticas con 200.
+
+## Entrada 2026-04-26 (Rescate funcional anti-500)
+
+### Fecha
+
+2026-04-26
+
+### Contexto
+
+El usuario reporta muchos errores 500 en funciones basicas y bloqueos de uso real: nominas al emitir/cobrar, reset y cambio de password, formularios de usuario poco claros, trials fallando, selector de usuario en staff incomodo, e inventario sin gasto automatico.
+
+### Prompt
+
+Implementar el "Plan De Rescate Funcional Para FlacoFitness":
+
+- eliminar 500 en acciones de nomina;
+- hacer usable el reset temporal y cambio de password;
+- mejorar formulario de usuario con preview y CTA claro;
+- convertir trials con credenciales reales;
+- arreglar buscador de usuario en staff;
+- crear gastos automaticos desde maquinas/materiales;
+- validar compile y tests.
+
+### Resultado
+
+- Nominas protegidas contra 500 en acciones de estado.
+- Auth temporal validada con cambio obligatorio.
+- Trials usan DTO y conversion con password temporal BCrypt.
+- Usuarios tienen preview/foto en columna derecha y CTA reforzado.
+- Staff search conserva el select real.
+- Maquinas y materiales generan gasto pagado al alta con coste.
+- Validacion: `compile` correcto y `test` correcto con 43 pruebas.

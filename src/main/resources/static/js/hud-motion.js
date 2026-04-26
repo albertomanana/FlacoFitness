@@ -11,7 +11,6 @@
 
         revealPanels();
         primeHudHover();
-        pulseRailHints();
         animateOperationalChips();
     });
 
@@ -53,24 +52,6 @@
                     easing: "easeOutCubic"
                 });
             });
-        });
-    }
-
-    function pulseRailHints() {
-        const rails = document.querySelectorAll(".ff-dashboard-rail-panel, .ff-table-shell");
-        if (!rails.length) {
-            return;
-        }
-
-        runAnimation(rails, {
-            boxShadow: [
-                "0 0 0 1px rgba(56, 189, 248, 0.00)",
-                "0 0 0 1px rgba(56, 189, 248, 0.18)",
-                "0 0 0 1px rgba(56, 189, 248, 0.00)"
-            ],
-            duration: 1800,
-            delay: stagger(120, { start: 450 }),
-            easing: "easeInOutSine"
         });
     }
 

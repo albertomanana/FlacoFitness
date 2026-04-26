@@ -2,17 +2,9 @@
 
 ## Prioridad alta
 
-- Arrancar la app con MySQL local disponible y validar smoke real de:
-  - dashboard premium
-  - login con email/username + password
-  - cambio de password
-  - reset temporal por admin
-  - builder de nomina, emision y PDF
-  - busqueda global
-  - FAB por perfil
-  - ultimos visitados
-  - actividad reciente
-  - tooltips first-use
+- Ejecutar el blueprint `docs/agents-memory/rebuild-from-zero-modular-guide.md` solo en un repositorio/branch de reinicio controlado, no sobre el runtime limpio actual.
+- Definir formalmente si el rebuild usa nombre alternativo `AtlasGym OS` y base alternativa `atlasgym_core` como baseline oficial.
+- Crear checklist de migracion funcional modulo por modulo para validar equivalencia minima contra FlacoFitness actual.
 - Ejecutar QA visual profunda por modulo sobre MySQL real: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales` y `/cliente`.
 - Verificar smoke por perfiles reales (`ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE`, `CLIENTE`) incluyendo accesos denegados, redirecciones y visibilidad de sidebar.
 - Ejecutar QA visual especifica del bloque financiero tras el nuevo builder de nominas, el detalle premium y el PDF individual.
@@ -128,3 +120,43 @@
 - [x] Pantallas clave marcadas con `ff-command-stack`: dashboard, usuarios, cliente, finanzas, asistencias, staff, rutinas y nominas.
 - [x] Anime.js local añadido y `hud-motion.js` implementado con fallback seguro y respeto de reduced motion.
 - [x] Smoke de assets nuevos y rutas principales completado en puerto temporal `8082`.
+
+## COMPLETADO 2026-04-26 (performance + finanzas + nominas)
+
+- [x] `NominaController` migrado a `NominaForm`; se elimina la validacion rota de entidad incompleta en POST.
+- [x] Crear, editar borrador, emitir, pagar, cancelar y exportar PDF mantienen rutas existentes; se anadio alias POST `/nominas/{id}/pagar`.
+- [x] `NominaServiceTest` cubre borrador, emision con gasto, pago con gasto, duplicados, bloqueo de edicion y neto no positivo.
+- [x] Nuevo Centro financiero MVC en `/finanzas` y agregado JSON `/stats/finanzas`.
+- [x] Sidebar y permisos actualizados para mostrar `finanzas` solo a ADMIN/GERENTE.
+- [x] Dashboard evita doble fetch tras SSR y actualiza charts sin destruir si conserva tipo.
+- [x] `hud-motion.js` elimina pulso de `box-shadow`; `finance-center.js` queda encapsulado para evitar colisiones globales.
+- [x] Validacion final: compile, 33 tests, MySQL disponible y smoke HTTP en `8081`.
+
+## COMPLETADO 2026-04-26 (limpieza definitiva MySQL y residuos)
+
+- [x] Backup SQL previo creado en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.
+- [x] Scripts `precheck`, `cleanup` y `postcheck` documentados en `docs/db/`.
+- [x] Eliminadas tablas legacy sin entidad vigente: `app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`.
+- [x] Eliminadas columnas legacy de `gastos` y `reservas_sesion` tras migrar datos utiles.
+- [x] `reservas_sesion.sesion_id` queda alineada con `sesiones_clase.id`.
+- [x] Catalogo activo simplificado a `Basico` 29 EUR y `Estudiante` 19 EUR; planes legacy quedan historicos inactivos.
+- [x] Eliminados SQL legacy de classpath/docs root: `src/main/resources/data.sql`, `docs/data.sql`, `docs/init.sql`.
+- [x] Auth UI incorpora mostrar/ocultar password en login y cambio de password.
+- [x] Smoke real ADMIN completado con MySQL en `8083`; rutas criticas devolvieron 200.
+- [x] Validacion final: compile, 35 tests y postcheck MySQL limpio.
+
+## COMPLETADO 2026-04-26 (rescate funcional anti-500)
+
+- [x] Nominas: acciones `emitir`, `pagar` y `cancelar` ya no propagan validaciones como 500.
+- [x] Auth: login con password temporal redirige a `/cuenta/password`; cambio de password probado con BCrypt.
+- [x] Usuarios: formulario con CTA adicional visible, preview de foto en columna derecha y toggles de password.
+- [x] Trials: formulario migrado a `TrialForm`; alta redirige a detalle y conversion crea credenciales temporales reales.
+- [x] Staff: buscador de usuario no reconstruye el select ni borra seleccion.
+- [x] Inventario: alta de maquina/material genera gasto automatico pagado si hay coste.
+- [x] Tests: suite ampliada a 43 pruebas en verde.
+
+## Pendiente recomendado despues del rescate
+
+- [ ] Smoke manual en navegador con MySQL real para los flujos que crean datos: usuario, trial, nomina, maquina y material.
+- [ ] Revisar mojibake restante en plantillas antiguas; no bloquea tests pero degrada percepcion.
+- [ ] Anadir UI visible de `costeCompra` en detalle/listado de maquinas si se quiere auditar compras desde inventario.

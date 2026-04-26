@@ -198,6 +198,53 @@ public class GastoService {
     }
 
     @Transactional
+    public Gasto crearGastoCompraMaquina(Maquina maquina) {
+        if (maquina == null || maquina.getId() == null || maquina.getCosteCompra() == null
+                || maquina.getCosteCompra().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessValidationException("La maquina debe tener un coste de compra valido para generar gasto.");
+        }
+
+        Gasto gasto = new Gasto();
+        gasto.setConcepto("Compra maquina " + maquina.getNombre());
+        gasto.setCategoria(CategoriaGasto.MAQUINA);
+        gasto.setTipoGasto(TipoGasto.VARIABLE);
+        gasto.setImporte(maquina.getCosteCompra());
+        gasto.setFecha(operationalClockService.today());
+        gasto.setFechaVencimiento(operationalClockService.today());
+        gasto.setEstado(EstadoGasto.PAGADO);
+        gasto.setProveedor(StringUtils.hasText(maquina.getMarca()) ? maquina.getMarca() : "Compra de maquina");
+        gasto.setObservaciones("Gasto automatico generado al dar de alta la maquina.");
+        gasto.setMaquina(maquina);
+        gasto.setActivo(true);
+        normalizarYValidar(gasto);
+        return gastoRepository.save(gasto);
+    }
+
+    @Transactional
+    public Gasto crearGastoCompraMaterial(Material material) {
+        if (material == null || material.getId() == null || material.getCosteUnitario() == null
+                || material.getCosteUnitario().compareTo(BigDecimal.ZERO) <= 0
+                || material.getStock() == null || material.getStock() <= 0) {
+            throw new BusinessValidationException("El material debe tener coste y stock validos para generar gasto.");
+        }
+
+        Gasto gasto = new Gasto();
+        gasto.setConcepto("Compra material " + material.getNombre());
+        gasto.setCategoria(CategoriaGasto.MATERIAL);
+        gasto.setTipoGasto(TipoGasto.VARIABLE);
+        gasto.setImporte(material.getCosteUnitario().multiply(BigDecimal.valueOf(material.getStock())));
+        gasto.setFecha(operationalClockService.today());
+        gasto.setFechaVencimiento(operationalClockService.today());
+        gasto.setEstado(EstadoGasto.PAGADO);
+        gasto.setProveedor(material.getProveedor());
+        gasto.setObservaciones("Gasto automatico generado al dar de alta el material.");
+        gasto.setMaterial(material);
+        gasto.setActivo(true);
+        normalizarYValidar(gasto);
+        return gastoRepository.save(gasto);
+    }
+
+    @Transactional
     public Gasto actualizar(Long id, Gasto gastoActualizado) {
         Gasto gasto = buscarPorId(id);
         gasto.setConcepto(gastoActualizado.getConcepto());
@@ -252,7 +299,7 @@ public class GastoService {
         gasto.setFechaVencimiento(fecha);
         gasto.setEstado(EstadoGasto.PENDIENTE);
         gasto.setProveedor("Nomina interna");
-        gasto.setObservaciones("Gasto generado desde nomina experimental " + referencia + ".");
+        gasto.setObservaciones("Gasto generado desde nómina interna " + referencia + ".");
         gasto.setStaffResponsable(staffPerfil);
         gasto.setActivo(true);
         normalizarYValidar(gasto);

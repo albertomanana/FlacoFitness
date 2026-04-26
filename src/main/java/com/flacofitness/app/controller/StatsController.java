@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.flacofitness.app.model.dto.AsistenciasStatsResponse;
 import com.flacofitness.app.model.dto.DashboardStatsResponse;
+import com.flacofitness.app.model.dto.FinancialCenterStatsResponse;
 import com.flacofitness.app.model.dto.GastosStatsResponse;
 import com.flacofitness.app.model.dto.PagosStatsResponse;
 import com.flacofitness.app.model.dto.RutinasStatsResponse;
 import com.flacofitness.app.model.dto.UsuariosStatsResponse;
 import com.flacofitness.app.service.AsistenciaService;
+import com.flacofitness.app.service.FinancialCenterService;
 import com.flacofitness.app.service.GastoService;
 import com.flacofitness.app.service.MaquinaService;
 import com.flacofitness.app.service.MaterialService;
@@ -48,6 +50,7 @@ public class StatsController {
     private final MaquinaService maquinaService;
     private final MaterialService materialService;
     private final ProductIntelligenceService productIntelligenceService;
+    private final FinancialCenterService financialCenterService;
 
     public StatsController(UsuarioService usuarioService,
                            PlanService planService,
@@ -62,7 +65,8 @@ public class StatsController {
                            NominaService nominaService,
                            MaquinaService maquinaService,
                            MaterialService materialService,
-                           ProductIntelligenceService productIntelligenceService) {
+                           ProductIntelligenceService productIntelligenceService,
+                           FinancialCenterService financialCenterService) {
         this.usuarioService = usuarioService;
         this.planService = planService;
         this.pagoService = pagoService;
@@ -77,6 +81,7 @@ public class StatsController {
         this.maquinaService = maquinaService;
         this.materialService = materialService;
         this.productIntelligenceService = productIntelligenceService;
+        this.financialCenterService = financialCenterService;
     }
 
     @GetMapping("/usuarios")
@@ -136,7 +141,7 @@ public class StatsController {
                 gastoService.obtenerGastosMensuales(),
                 usuarioService.obtenerDistribucionPorPlan(),
                 usuarioService.obtenerAltasMensuales(),
-                // NUEVAS MÉTRICAS
+                // Metricas operativas
                 asistenciaService.contarUsuariosActivos(),
                 asistenciaService.contarUsuariosInactivos(),
                 pagoService.contarUsuariosAlDia(),
@@ -177,6 +182,11 @@ public class StatsController {
                 gastoService.obtenerGastosPorCategoriaMesActual(),
                 gastoService.obtenerGastosMensuales()
         );
+    }
+
+    @GetMapping("/finanzas")
+    public FinancialCenterStatsResponse obtenerEstadisticasFinanzas() {
+        return financialCenterService.buildStats();
     }
 
     private int normalizarRango(int rangoDias) {

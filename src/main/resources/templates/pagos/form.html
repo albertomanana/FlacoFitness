@@ -6,14 +6,14 @@
     <div th:replace="~{fragments/sidebar :: sidebar('pagos')}"></div>
 
     <div class="ff-main">
-        <div th:replace="~{fragments/topbar :: topbar(${modoEdicion} ? 'Editar pago' : 'Nuevo pago', 'Registro de cobros.')}"></div>
+        <div th:replace="~{fragments/topbar :: topbar('Pago', 'Registro de cobros.')}"></div>
 
         <main class="ff-content">
             <div class="ff-content-stack">
                 <section class="ff-section-header">
                     <div>
                         <span class="ff-section-eyebrow">Formulario</span>
-                        <h2 class="ff-section-title" th:text="${modoEdicion} ? 'Actualizar pago' : 'Alta de pago'">Formulario de pago</h2>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Actualizar pago' : 'Alta de pago'}">Formulario de pago</h2>
                         <p class="ff-section-subtitle">Cobro manual con calculo automatico.</p>
                     </div>
                     <a class="btn btn-outline-secondary" th:href="@{/pagos}">Volver</a>
@@ -31,7 +31,7 @@
                             <div class="ff-card-body">
                                 <form th:object="${pago}"
                                       data-payment-form
-                                      th:action="${modoEdicion} ? @{/pagos/{id}(id=${pago.id})} : @{/pagos}"
+                                      th:action="${modoEdicion ? '/pagos/' + pago.id : '/pagos'}"
                                       method="post">
                                     <div th:if="${#fields.hasGlobalErrors()}" class="alert ff-alert ff-alert-danger" role="alert">
                                         <div th:each="error : ${#fields.globalErrors()}" th:text="${error}">Error</div>

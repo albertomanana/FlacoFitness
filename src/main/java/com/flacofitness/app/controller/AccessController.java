@@ -1,7 +1,7 @@
 package com.flacofitness.app.controller;
 
-import com.flacofitness.app.security.AccessAttemptResult;
 import com.flacofitness.app.config.AccessSettings;
+import com.flacofitness.app.security.AccessAttemptResult;
 import com.flacofitness.app.security.AccessSessionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -63,13 +63,14 @@ public class AccessController {
             if (!profile.canAccess(target, "GET")) {
                 target = profile.entryPoint();
             }
-            String successMessage = accessSessionService.getCurrentUser(session)
-                    .map(usuario -> Boolean.TRUE.equals(usuario.getMustChangePassword())
-                            ? "Acceso concedido. Debes cambiar tu contraseña temporal antes de continuar trabajando."
-                            : "Acceso concedido correctamente.")
-                    .orElse("Acceso concedido correctamente.");
-            redirectAttributes.addFlashAttribute("mensajeExito", successMessage);
-            return "redirect:" + target;
+
+            boolean mustChangePassword = accessSessionService.getCurrentUser(session)
+                    .map(usuario -> Boolean.TRUE.equals(usuario.getMustChangePassword()))
+                    .orElse(false);
+            redirectAttributes.addFlashAttribute("mensajeExito", mustChangePassword
+                    ? "Acceso concedido. Debes cambiar tu contrasena temporal antes de continuar trabajando."
+                    : "Acceso concedido correctamente.");
+            return mustChangePassword ? "redirect:/cuenta/password" : "redirect:" + target;
         }
 
         redirectAttributes.addFlashAttribute("mensajeError", result.message());

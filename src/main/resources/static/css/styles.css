@@ -902,36 +902,6 @@ body.ff-global-loading .ff-app-loading-overlay {
     min-width: 11rem;
 }
 
-.ff-clock-editor {
-    position: relative;
-}
-
-.ff-clock-editor summary {
-    display: inline-flex;
-    align-items: center;
-    height: 2rem;
-    padding: 0 0.65rem;
-    border: 1px solid var(--ff-border);
-    border-radius: var(--radius-md);
-    background: rgba(241, 245, 249, 0.9);
-    color: var(--ff-text);
-    font-size: 0.72rem;
-    font-weight: 900;
-    list-style: none;
-    cursor: pointer;
-    user-select: none;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-}
-
-.ff-clock-editor summary::-webkit-details-marker {
-    display: none;
-}
-
-.ff-clock-editor summary:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--ff-shadow-sm);
-}
-
 .ff-operational-clock-display strong {
     grid-column: 1 / -1;
     font-size: 0.78rem;
@@ -964,90 +934,9 @@ body.ff-global-loading .ff-app-loading-overlay {
     background: rgba(34, 197, 94, 0.12);
 }
 
-.ff-operational-clock-status.is-simulated {
-    color: #92400e;
-    background: rgba(245, 158, 11, 0.16);
-}
-
-.ff-operational-clock-form {
-    position: absolute;
-    top: calc(100% + 0.65rem);
-    left: 0;
-    z-index: 1100;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    width: min(38rem, calc(100vw - 2rem));
-    padding: 0.75rem;
-    border: 1px solid var(--ff-border);
-    border-radius: var(--radius-xl);
-    background: var(--ff-surface);
-    box-shadow: var(--ff-shadow-lg);
-}
-
-.ff-clock-input {
-    width: 10.4rem;
-    height: 2rem;
-    padding: 0 0.55rem;
-    border: 1px solid var(--ff-border);
-    border-radius: var(--radius-md);
-    background: var(--ff-surface);
-    color: var(--ff-text);
-    font-size: 0.76rem;
-    font-weight: 700;
-    outline: none;
-}
-
-.ff-clock-input:focus {
-    border-color: rgba(22, 163, 74, 0.5);
-    box-shadow: 0 0 0 3px var(--ff-primary-ring);
-}
-
-.ff-clock-step,
-.ff-clock-primary,
-.ff-clock-reset {
-    height: 2rem;
-    border: 1px solid transparent;
-    border-radius: var(--radius-md);
-    padding: 0 0.55rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    white-space: nowrap;
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
-}
-
-.ff-clock-step,
-.ff-clock-reset {
-    color: var(--ff-text-muted);
-    background: rgba(241, 245, 249, 0.9);
-    border-color: var(--ff-border);
-}
-
-.ff-clock-primary {
-    color: #fff;
-    background: var(--ff-primary);
-    box-shadow: 0 8px 18px rgba(22, 163, 74, 0.16);
-}
-
-.ff-clock-step:hover,
-.ff-clock-primary:hover,
-.ff-clock-reset:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--ff-shadow-sm);
-}
-
 :root[data-theme="dark"] .ff-operational-clock {
     background: rgba(15, 23, 42, 0.82);
     border-color: rgba(148, 163, 184, 0.18);
-}
-
-:root[data-theme="dark"] .ff-clock-input,
-:root[data-theme="dark"] .ff-clock-step,
-:root[data-theme="dark"] .ff-clock-reset,
-:root[data-theme="dark"] .ff-clock-editor summary {
-    background: rgba(15, 23, 42, 0.92);
-    border-color: rgba(148, 163, 184, 0.22);
 }
 
 .ff-topbar-eyebrow {
@@ -2938,6 +2827,51 @@ textarea.form-control { min-height: 6rem; }
 .ff-access-form .form-control:focus {
     box-shadow: 0 0 0 3px var(--ff-primary-ring);
     border-color: rgba(34, 197, 94, 0.35);
+}
+
+.ff-password-field {
+    position: relative;
+}
+
+.ff-password-field .form-control {
+    padding-right: 3.25rem;
+}
+
+.ff-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 0.55rem;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: rgba(15, 23, 42, 0.06);
+    color: var(--ff-text-muted);
+    transform: translateY(-50%);
+    transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.ff-password-toggle:hover {
+    color: var(--ff-text);
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.ff-password-toggle:focus-visible {
+    outline: 3px solid var(--ff-primary-ring);
+    outline-offset: 2px;
+}
+
+:root[data-theme="dark"] .ff-password-toggle {
+    background: rgba(148, 163, 184, 0.12);
+    color: rgba(226, 232, 240, 0.72);
+}
+
+:root[data-theme="dark"] .ff-password-toggle:hover {
+    background: rgba(34, 197, 94, 0.18);
+    color: #f8fafc;
 }
 
 .ff-access-card-auth .ff-access-form {
@@ -5704,6 +5638,64 @@ h4,
 .ff-hud-motion-ready .ff-command-stack > section,
 .ff-hud-motion-ready .ff-content-stack > section {
     will-change: transform, opacity;
+}
+
+.ff-dashboard-alert-grid,
+.ff-quick-actions-grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.ff-dashboard-alert-card,
+.ff-quick-action {
+    align-items: center;
+    background: rgba(18, 28, 46, 0.52);
+    border: 1px solid rgba(148, 176, 220, 0.14);
+    border-radius: 1rem;
+    color: var(--ff-text);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+    min-height: 76px;
+    padding: 1rem;
+    text-decoration: none;
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.ff-dashboard-alert-card:hover,
+.ff-quick-action:hover {
+    background: rgba(56, 189, 248, 0.10);
+    border-color: rgba(56, 189, 248, 0.36);
+    color: var(--ff-text);
+    transform: translateY(-2px);
+}
+
+.ff-dashboard-alert-card span,
+.ff-quick-action span {
+    color: var(--ff-text-secondary);
+    font-size: 0.88rem;
+}
+
+.ff-dashboard-alert-card strong {
+    color: var(--ff-text);
+    font-family: var(--ff-font-display);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.ff-quick-action {
+    justify-content: flex-start;
+}
+
+.ff-quick-action i {
+    color: var(--ff-accent);
+    width: 1.1rem;
+}
+
+:root[data-theme="light"] .ff-dashboard-alert-card,
+:root[data-theme="light"] .ff-quick-action {
+    background: rgba(255, 255, 255, 0.84);
+    border-color: rgba(15, 23, 42, 0.10);
 }
 
 @media (max-width: 991.98px) {

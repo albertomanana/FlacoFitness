@@ -22,7 +22,7 @@ public record DashboardStatsResponse(
         List<IngresoMensualStatsItem> gastosMensualesSerie,
         List<PlanDistribucionStatsItem> usuariosPorPlan,
         List<UsuarioAltaMensualStatsItem> altasRecientes,
-        // NUEVAS MÉTRICAS PARA ANÁLISIS
+        // Metricas operativas para analisis
         long usuariosAsistenciaActivos,
         long usuariosAsistenciaInactivos,
         long usuariosFinancierosAlDia,

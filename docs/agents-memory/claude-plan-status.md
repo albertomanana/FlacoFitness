@@ -1,6 +1,6 @@
 # Claude Plan Status
 
-Fecha de referencia: 2026-04-22
+Fecha de referencia: 2026-04-26
 
 ## Origen
 
@@ -24,11 +24,21 @@ Ese archivo no era un plan tecnico paso a paso, sino:
 | Carrusel premium del dashboard | Ejecutado parcialmente | Se implemento un rail premium de alertas accionables usando `shellNotifications`, sin backend paralelo |
 | Automatizacion definitiva pagos/gastos | Ejecutado | `FinancialAutomationService` centraliza vencidos y recurrencias; tiempo real via `OperationalClockService` |
 | Navegacion y UX premium | En progreso | Fila clicable, shell premium, motion controlado y menos botones redundantes; queda QA transversal |
-| Revision total de bugs y limpieza | En progreso | Se han resuelto varias regresiones, pero sigue pendiente una pasada final modulo a modulo |
+| Revision total de bugs y limpieza | En progreso alto | Limpieza MySQL aplicada, scripts legacy retirados, auth UI pulida y smoke real ADMIN completado; sigue pendiente QA visual modulo a modulo |
 | Dark mode premium | En progreso | Existe y es funcional; queda mejora fina en algunos modulos secundarios |
 | Cierre definitivo del producto | Pendiente | Debe hacerse al final, tras QA y pulido final |
 
 ## Ejecucion realizada en esta iteracion
+
+### Limpieza definitiva 2026-04-26
+
+- Backup previo creado en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.
+- Scripts de precheck/cleanup/postcheck añadidos en `docs/db`.
+- Tablas legacy eliminadas: `app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`.
+- Columnas legacy eliminadas de `gastos` y `reservas_sesion` tras migrar datos utiles.
+- Scripts SQL antiguos `src/main/resources/data.sql`, `docs/data.sql` y `docs/init.sql` retirados.
+- Login y cambio de password tienen mostrar/ocultar contraseña.
+- Validacion cerrada: compile, 35 tests, postcheck MySQL y smoke HTTP ADMIN en rutas criticas.
 
 ### Finanzas
 
@@ -81,24 +91,31 @@ Ese archivo no era un plan tecnico paso a paso, sino:
 
 ## Siguiente orden recomendado para Claude
 
-1. Cerrar QA visual real de:
+1. Cerrar smoke real en navegador con datos MySQL de:
+   - reset password -> login temporal -> cambiar password
+   - crear/editar usuario con foto
+   - crear trial -> convertir
+   - crear nomina -> emitir -> pagar
+   - crear maquina/material con coste -> comprobar gasto
+2. Cerrar QA visual real de:
    - `/`
    - `/gastos`
    - `/gastos/recurrentes`
    - `/nominas`
-2. Extender el patron de navegacion y pulido visual a modulos pendientes:
+   - `/usuarios/nuevo`
+   - `/trials/nuevo`
+3. Extender el patron de navegacion y pulido visual a modulos pendientes:
    - staff
    - membresias
-   - trials
    - clases
    - sesiones
    - maquinas
    - materiales
-3. Hacer una pasada final de limpieza:
+4. Hacer una pasada final de limpieza:
    - textos con mojibake
    - botones redundantes
    - templates financieros con copy inconsistente
-4. Ejecutar la auditoria final de producto antes del cierre total.
+5. Ejecutar la auditoria final de producto antes del cierre total.
 
 ## Reglas heredadas del `.claude`
 

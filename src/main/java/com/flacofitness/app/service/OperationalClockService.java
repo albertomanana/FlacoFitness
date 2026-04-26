@@ -37,7 +37,6 @@ public class OperationalClockService {
     public OperationalClockState state() {
         LocalDateTime current = now().withSecond(0).withNano(0);
         return new OperationalClockState(
-                false,
                 capitalize(current.format(DATE_LABEL_FORMAT)),
                 current.format(TIME_LABEL_FORMAT),
                 current.format(INPUT_FORMAT),

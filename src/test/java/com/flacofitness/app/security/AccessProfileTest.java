@@ -56,6 +56,8 @@ class AccessProfileTest {
         for (AccessProfile profile : AccessProfile.values()) {
             assertThat(profile.canAccess("/salir", "POST")).isTrue();
             assertThat(profile.canAccess("/notificaciones/1", "GET")).isTrue();
+            assertThat(profile.canAccess("/cuenta/password", "GET")).isTrue();
+            assertThat(profile.canAccess("/cuenta/password", "POST")).isTrue();
         }
     }
 

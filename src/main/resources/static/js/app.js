@@ -72,6 +72,7 @@
         initializePayrollBuilder();
         initializeUserFormAssistant();
         initializeSelectSearch();
+        initializePasswordToggles();
         initializeThemeToggle();
         initializeBrowserTokenMirror();
         initializeFab();
@@ -254,6 +255,28 @@
 
         window.addEventListener("ff:themechange", (event) => {
             syncThemeToggle(toggle, event.detail?.theme || getCurrentTheme());
+        });
+    }
+
+    function initializePasswordToggles() {
+        document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+            const field = button.closest(".ff-password-field");
+            const input = field?.querySelector("[data-password-input]");
+
+            if (!input) {
+                return;
+            }
+
+            button.addEventListener("click", () => {
+                const shouldShow = input.type === "password";
+                input.type = shouldShow ? "text" : "password";
+                button.setAttribute("aria-label", shouldShow ? "Ocultar contraseña" : "Mostrar contraseña");
+                const icon = button.querySelector("i");
+                if (icon) {
+                    icon.classList.toggle("fa-eye", !shouldShow);
+                    icon.classList.toggle("fa-eye-slash", shouldShow);
+                }
+            });
         });
     }
 
@@ -509,7 +532,8 @@
             return;
         }
 
-        const staffSelect = root.querySelector("[name='staffPerfil.id']");
+        const staffSelect = root.querySelector("[name='staffPerfilId']")
+            || root.querySelector("[name='staffPerfil.id']");
         const periodInput = root.querySelector("[name='periodo']");
         const baseInput = root.querySelector("[data-payroll-base]");
         const bonusInput = root.querySelector("[data-payroll-bonus]");
@@ -662,47 +686,48 @@
                 return;
             }
 
-            const originalOptions = Array.from(select.options).map((option) => ({
-                value: option.value,
-                text: option.textContent || "",
-                disabled: option.disabled
-            }));
+            const normalize = (value) => String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
 
-            const renderOptions = (term) => {
-                const normalizedTerm = String(term || "").trim().toLowerCase();
+            const options = Array.from(select.options).map((option) => {
+                option.dataset.ffSearchText = normalize(option.textContent || "");
+                return option;
+            });
+
+            let feedback = document.querySelector(`[data-ff-select-search-feedback="${targetId}"]`);
+            if (!feedback) {
+                feedback = document.createElement("div");
+                feedback.className = "form-text text-warning d-none";
+                feedback.dataset.ffSelectSearchFeedback = targetId;
+                select.insertAdjacentElement("afterend", feedback);
+            }
+
+            const renderOptions = () => {
+                const term = normalize(input.value);
                 const selectedValue = select.value;
-                const placeholder = originalOptions[0];
-                const matches = originalOptions.slice(1).filter((option) =>
-                    !normalizedTerm || option.text.toLowerCase().includes(normalizedTerm)
-                );
+                let visibleCount = 0;
 
-                select.innerHTML = "";
-
-                if (placeholder) {
-                    const placeholderOption = new Option(placeholder.text, placeholder.value, false, !selectedValue);
-                    placeholderOption.disabled = placeholder.disabled;
-                    select.add(placeholderOption);
-                }
-
-                if (matches.length === 0) {
-                    select.add(new Option(input.dataset.noResults || "Sin coincidencias", ""));
-                    select.value = "";
-                    return;
-                }
-
-                matches.forEach((option) => {
-                    const next = new Option(option.text, option.value, false, option.value === selectedValue);
-                    next.disabled = option.disabled;
-                    select.add(next);
+                options.forEach((option, index) => {
+                    if (index === 0 || option.value === selectedValue) {
+                        option.hidden = false;
+                        return;
+                    }
+                    const visible = !term || option.dataset.ffSearchText.includes(term);
+                    option.hidden = !visible;
+                    if (visible) {
+                        visibleCount++;
+                    }
                 });
 
-                if (matches.some((option) => option.value === selectedValue)) {
-                    select.value = selectedValue;
-                }
+                feedback.textContent = input.dataset.noResults || "Sin coincidencias para la busqueda actual.";
+                feedback.classList.toggle("d-none", visibleCount > 0 || !term);
             };
 
-            input.addEventListener("input", () => renderOptions(input.value));
-            renderOptions(input.value);
+            input.addEventListener("input", renderOptions);
+            renderOptions();
         });
     }
 

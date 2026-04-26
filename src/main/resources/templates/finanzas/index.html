@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Centro financiero')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('finanzas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Centro financiero', 'Caja, deuda, gastos y nóminas conectadas.')}"></div>
+
+        <main class="ff-content">
+            <script id="financialCenterStats" type="application/json" th:text="${financialStatsJson}">
+                {}
+            </script>
+
+            <div class="ff-content-stack ff-command-stack" data-finance-center>
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-command-hero ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title">Centro financiero</h2>
+                        <p class="ff-section-subtitle">
+                            Lectura ejecutiva del mes <strong th:text="${financialStats.periodoActual}">2026-04</strong>:
+                            ingresos, gastos, deuda, nóminas y vencimientos en un solo panel operativo.
+                        </p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-success" th:href="@{/pagos/nuevo}">
+                            <i class="fa-solid fa-credit-card me-1"></i> Registrar pago
+                        </a>
+                        <a class="btn btn-outline-secondary" th:href="@{/gastos/nuevo}">
+                            <i class="fa-solid fa-wallet me-1"></i> Crear gasto
+                        </a>
+                        <a class="btn btn-outline-secondary" th:href="@{/nominas/nueva}">
+                            <i class="fa-solid fa-file-invoice-dollar me-1"></i> Nueva nómina
+                        </a>
+                    </div>
+                </section>
+
+                <section class="ff-hud-grid">
+                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/pagos}">
+                        <span class="ff-section-eyebrow">Ingresos mes</span>
+                        <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.ingresosMes, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
+                        <span class="ff-card-subtitle">EUR cobrados</span>
+                    </a>
+                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/gastos}">
+                        <span class="ff-section-eyebrow">Gastos mes</span>
+                        <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.gastosMes, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
+                        <span class="ff-card-subtitle">EUR registrados</span>
+                    </a>
+                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/gastos}">
+                        <span class="ff-section-eyebrow">Beneficio estimado</span>
+                        <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.beneficioEstimado, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
+                        <span class="ff-card-subtitle">Ingresos menos gastos</span>
+                    </a>
+                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/pagos(estado='VENCIDO')}">
+                        <span class="ff-section-eyebrow">Deuda total</span>
+                        <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.deudaTotal, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
+                        <span class="ff-card-subtitle">Pendiente, vencida o programada</span>
+                    </a>
+                </section>
+
+                <section class="ff-panel-grid">
+                    <article class="ff-surface-card ff-animate-in">
+                        <div class="ff-card-header">
+                            <div>
+                                <p class="ff-section-eyebrow mb-0">Requiere atención</p>
+                                <h3 class="ff-card-title mt-1">Riesgo financiero</h3>
+                                <p class="ff-card-subtitle">Accesos directos a los focos que bloquean caja o cierre mensual.</p>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="ff-dashboard-alert-grid">
+                                <a class="ff-dashboard-alert-card" th:href="@{/pagos(estado='VENCIDO')}">
+                                    <span>Pagos vencidos</span>
+                                    <strong th:text="${financialStats.pagosVencidos}">0</strong>
+                                </a>
+                                <a class="ff-dashboard-alert-card" th:href="@{/pagos(estado='PENDIENTE')}">
+                                    <span>Pagos pendientes</span>
+                                    <strong th:text="${financialStats.pagosPendientes}">0</strong>
+                                </a>
+                                <a class="ff-dashboard-alert-card" th:href="@{/nominas}">
+                                    <span>Nóminas emitidas</span>
+                                    <strong th:text="${financialStats.nominasPendientes}">0</strong>
+                                </a>
+                                <a class="ff-dashboard-alert-card" th:href="@{/gastos}">
+                                    <span>Gastos críticos</span>
+                                    <strong th:text="${financialStats.gastosCriticos}">0</strong>
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <article class="ff-surface-card ff-animate-in">
+                        <div class="ff-card-header">
+                            <div>
+                                <p class="ff-section-eyebrow mb-0">Próximas obligaciones</p>
+                                <h3 class="ff-card-title mt-1">Cierres y vencimientos</h3>
+                                <p class="ff-card-subtitle">Lo que conviene resolver esta semana.</p>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="ff-payroll-breakdown">
+                                <div class="ff-payroll-breakdown-row">
+                                    <span>Gastos próximos</span>
+                                    <strong th:text="${financialStats.gastosProximos}">0</strong>
+                                </div>
+                                <div class="ff-payroll-breakdown-row">
+                                    <span>Recurrentes próximos</span>
+                                    <strong th:text="${financialStats.recurrentesProximos}">0</strong>
+                                </div>
+                                <div class="ff-payroll-breakdown-row">
+                                    <span>Nóminas por pagar</span>
+                                    <strong th:text="${financialStats.nominasPendientes}">0</strong>
+                                </div>
+                                <div class="ff-payroll-breakdown-total">
+                                    <span>Total nóminas emitidas</span>
+                                    <strong th:text="${#numbers.formatDecimal(financialStats.nominasPendientesTotal, 1, 'POINT', 2, 'COMMA') + ' EUR'}">0,00 EUR</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="ff-panel-grid">
+                    <article class="ff-surface-card ff-animate-in">
+                        <div class="ff-card-header">
+                            <div>
+                                <p class="ff-section-eyebrow mb-0">Evolución</p>
+                                <h3 class="ff-card-title mt-1">Ingresos vs gastos</h3>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <canvas height="130" data-finance-chart="cashflow"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="ff-surface-card ff-animate-in">
+                        <div class="ff-card-header">
+                            <div>
+                                <p class="ff-section-eyebrow mb-0">Distribución</p>
+                                <h3 class="ff-card-title mt-1">Gastos por categoría</h3>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <canvas height="130" data-finance-chart="expenses"></canvas>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="ff-panel-grid">
+                    <article class="ff-surface-card ff-animate-in">
+                        <div class="ff-card-header">
+                            <div>
+                                <p class="ff-section-eyebrow mb-0">Cobros</p>
+                                <h3 class="ff-card-title mt-1">Pagos por estado</h3>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <canvas height="120" data-finance-chart="payments"></canvas>
+                        </div>
+                    </article>
+
+                    <article class="ff-surface-card ff-animate-in">
+                        <div class="ff-card-header">
+                            <div>
+                                <p class="ff-section-eyebrow mb-0">Equipo</p>
+                                <h3 class="ff-card-title mt-1">Nóminas por estado</h3>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <canvas height="120" data-finance-chart="payrolls"></canvas>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="ff-table-shell ff-animate-in">
+                    <div class="ff-card-header">
+                        <div>
+                            <p class="ff-section-eyebrow mb-0">Acciones rápidas</p>
+                            <h3 class="ff-card-title mt-1">Operativa conectada</h3>
+                            <p class="ff-card-subtitle">Cada bloque abre una vista filtrada o el módulo responsable.</p>
+                        </div>
+                    </div>
+                    <div class="ff-quick-actions-grid">
+                        <a class="ff-quick-action" th:href="@{/pagos(estado='VENCIDO')}">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Resolver deuda vencida</span>
+                        </a>
+                        <a class="ff-quick-action" th:href="@{/gastos/recurrentes}">
+                            <i class="fa-solid fa-repeat"></i>
+                            <span>Procesar recurrentes</span>
+                        </a>
+                        <a class="ff-quick-action" th:href="@{/nominas}">
+                            <i class="fa-solid fa-file-circle-plus"></i>
+                            <span>Revisar nóminas automáticas</span>
+                        </a>
+                        <a class="ff-quick-action" th:href="@{/gastos/export/pdf}">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            <span>Exportar gastos</span>
+                        </a>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

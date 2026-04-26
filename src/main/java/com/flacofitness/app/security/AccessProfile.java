@@ -65,7 +65,7 @@ public enum AccessProfile {
                     "inicio", "usuarios", "membresias", "trials", "pagos", "asistencias", "sesiones"
             ).contains(section);
             case STAFF_GERENTE -> Set.of(
-                    "inicio", "usuarios", "staff", "membresias", "trials", "pagos", "gastos", "recurrentes", "nominas",
+                    "inicio", "usuarios", "staff", "membresias", "trials", "finanzas", "pagos", "gastos", "recurrentes", "nominas",
                     "maquinas", "materiales", "clases", "sesiones", "rutinas", "asistencias"
             ).contains(section);
             case CLIENTE -> "cliente".equals(section);
@@ -90,6 +90,10 @@ public enum AccessProfile {
 
         if (path.startsWith("/busqueda") || path.startsWith("/api/busqueda/global")) {
             return this != CLIENTE;
+        }
+
+        if (path.startsWith("/stats/finanzas")) {
+            return this == ADMIN || this == STAFF_GERENTE;
         }
 
         if (this == ADMIN) {
@@ -135,6 +139,7 @@ public enum AccessProfile {
         return path.startsWith("/usuarios")
                 || path.startsWith("/membresias")
                 || path.startsWith("/trials")
+                || path.startsWith("/finanzas")
                 || path.startsWith("/pagos")
                 || path.startsWith("/asistencias");
     }

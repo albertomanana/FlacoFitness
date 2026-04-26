@@ -19,6 +19,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -62,6 +63,9 @@ public class Maquina {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "fecha_compra")
     private LocalDate fechaCompra;
+
+    @Column(name = "coste_compra", precision = 10, scale = 2)
+    private BigDecimal costeCompra;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     @Column(name = "ultima_revision")

@@ -51,6 +51,7 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 
 - Encapsulan persistencia con Spring Data JPA.
 - Exponen consultas por estado, usuario, fechas, membresia, sesion o staff.
+- Desde la limpieza 2026-04-26 no deben aparecer repositorios ni queries contra tablas legacy eliminadas: `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios` o `app_clock_settings`.
 
 ### Modelo
 
@@ -131,6 +132,8 @@ El topbar muestra la fecha y hora operativa basada en el reloj real del sistema.
 
 No existe ruta de ajuste manual del reloj. `OperationalClockService` expone una abstraccion de tiempo unica para reglas de negocio, pero siempre delega en la fecha y hora reales del servidor.
 
+La tabla legacy `app_clock_settings` fue eliminada de MySQL en la limpieza 2026-04-26. Cualquier nueva simulacion temporal debe tratarse como cambio de arquitectura, no como reactivacion accidental de la tabla antigua.
+
 Al evaluar la fecha, la app ejecuta automatizacion financiera central:
 
 - marca pagos no pagados como `VENCIDO` cuando `fecha_vencimiento` queda antes de la fecha operativa;
@@ -167,6 +170,7 @@ com.flacofitness.app
 - No introducir SPA ni frameworks frontend pesados.
 - No ejecutar seeds demo contra MySQL real.
 - No introducir bases en memoria ni fallbacks de persistencia: MySQL/phpMyAdmin es la unica fuente de verdad.
+- No reintroducir `data.sql` en classpath ni scripts que creen tablas legacy ya eliminadas.
 - Mantener controladores finos y servicios con reglas de negocio.
 - Mantener compatibilidad con datos legacy cuando una relacion nueva sea opcional.
 - Documentar decisiones relevantes en `docs/agents-memory/decisions-log.md`.
@@ -192,3 +196,33 @@ com.flacofitness.app
 - El dark mode es el default si no hay preferencia guardada; el `head` aplica `data-theme` temprano para evitar flash claro.
 - Se añadio Anime.js como asset local UMD y `hud-motion.js` como inicializador progresivo: si la libreria no carga o el usuario reduce motion, la UI sigue funcional.
 - Los patrones `ff-command-stack`, `ff-hud-grid`, `ff-panel-grid`, `ff-command-hero`, `ff-hud-card`, `ff-table-shell` y `ff-empty-hud` son CSS-first y compatibles con Bootstrap.
+
+## Nota 2026-04-26 (Finanzas y performance)
+
+- `NominaController` usa `NominaForm` como DTO de entrada; la entidad `Nomina` ya no se usa como backing bean de formulario.
+- `NominaService` sigue siendo el limite transaccional para crear borrador, emitir, pagar, cancelar, calcular salario neto y vincular `Gasto` de categoria `NOMINA`.
+- `FinancialCenterService` agrega lectura financiera para `/finanzas` y `/stats/finanzas` sin introducir SPA ni modificar contratos existentes.
+- `AccessProfile` expone `finanzas` solo a ADMIN/GERENTE; `/stats/finanzas` queda restringido al mismo alcance.
+- `dashboard.js` evita doble fetch tras SSR y reutiliza instancias Chart.js cuando el tipo de grafico no cambia.
+- `finance-center.js` esta encapsulado en IIFE para no pisar funciones globales del dashboard.
+
+## Nota 2026-04-26 (Blueprint rebuild total)
+
+- Se definio un blueprint de reconstruccion completa por modulos en `docs/agents-memory/rebuild-from-zero-modular-guide.md`.
+- El blueprint mantiene la arquitectura monolitica MVC y separacion por capas (controller/service/repository/entity), con identidad tecnica alternativa para un reinicio controlado.
+- La propuesta de rebuild describe namespace y base alternativa para implementacion nueva sin afectar el contrato funcional del sistema actual.
+
+## Nota 2026-04-26 (limpieza definitiva MySQL)
+
+- Se aplico una migracion manual auditada, no automatica, para retirar deuda del esquema real `flacofitness`.
+- El precheck y postcheck viven en `docs/db/cleanup-2026-04-26-*.sql`; el script de cambios es conservador y documenta backup previo.
+- Las tablas actuales supervivientes del core son `usuarios`, `roles`, `planes`, `staff_perfiles`, `membresias_usuario`, `pagos`, `gastos`, `gastos_recurrentes`, `nominas`, `clases`, `sesiones_clase`, `reservas_sesion`, `asistencias`, `rutinas`, `usuario_rutina`, `trials`, `maquinas`, `materiales`, `activity_log`, `recent_visit` y `ux_memory_state`.
+- `src/main/resources/data.sql`, `docs/data.sql` y `docs/init.sql` se eliminaron porque apuntaban a tablas/columnas legacy y podian confundir al siguiente agente.
+
+## Nota 2026-04-26 (rescate anti-500)
+
+- `NominaController` debe tratar las acciones POST de estado como comandos seguros: `emitir`, `pagar` y `cancelar` capturan `BusinessValidationException` y regresan al detalle con flash, nunca con 500.
+- `TrialController` usa `TrialForm` como DTO de entrada para evitar binding fragil de relaciones JPA; `TrialService` resuelve `staffResponsableId` dentro de la transaccion.
+- `TrialService.convertirAUsuarioConCredenciales` es el flujo preferido para conversion comercial porque crea credenciales reales si el usuario no existe.
+- `MaquinaService` y `MaterialService` delegan en `GastoService` la creacion de gasto automatico de compra solo en altas, no en ediciones, para evitar duplicados.
+- El buscador lightweight de selects en `app.js` conserva el `<select>` original; no debe volver a reconstruir opciones en memoria porque eso rompia submits MVC.

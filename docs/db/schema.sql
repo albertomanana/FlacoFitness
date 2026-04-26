@@ -28,8 +28,7 @@
 -- clases(id, nombre, descripcion, capacidad_sugerida, activa, observaciones)
 -- sesiones_clase(id, clase_id, fecha, hora_inicio, hora_fin, aforo, estado,
 --                rutina_id, staff_responsable_id, observaciones)
--- reservas_sesion(id, sesion_clase_id, usuario_id, estado, fecha_reserva,
---                 observaciones)
+-- reservas_sesion(id, sesion_id, usuario_id, estado, fecha_reserva)
 
 -- Operacion diaria:
 -- asistencias(id, fecha, hora_entrada, observaciones, usuario_id,
@@ -48,7 +47,9 @@
 -- staff_perfiles.usuario_id debe ser unico.
 -- pagos.referencia debe ser unica.
 
--- Compatibilidad financiera legacy:
--- En algunas instalaciones antiguas, `gastos` conserva la columna `recurrente`.
--- El modelo actual usa `gasto_recurrente_id`, pero `recurrente` debe permanecer como
--- BIT(1) NOT NULL DEFAULT b'0' para no romper inserts de automatizacion al simular fecha.
+-- Limpieza 2026-04-26:
+-- Se retiraron tablas legacy sin entidad activa: app_clock_settings, staff,
+-- sesiones, ejercicios y rutina_ejercicios.
+-- Se retiraron columnas legacy de gastos: monto, descripcion, pagado,
+-- recurrente, frecuencia y staff_id.
+-- reservas_sesion usa `sesion_id` como FK directa a `sesiones_clase`.

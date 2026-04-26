@@ -1,6 +1,6 @@
 # Claude Code Handoff
 
-Fecha de referencia: 2026-04-24
+Fecha de referencia: 2026-04-26
 
 Este documento existe para que Claude Code o cualquier otro agente pueda continuar el trabajo sin perder contexto ni romper el sistema.
 
@@ -24,7 +24,9 @@ Antes de tocar codigo:
 - No convertir el proyecto en SPA.
 - No introducir React, Vue, Angular ni frameworks frontend pesados.
 - No ejecutar seeds automaticamente en MySQL real.
-- No borrar datos existentes ni tablas sin migracion justificada.
+- No borrar datos existentes ni tablas sin migracion justificada y backup previo.
+- No reintroducir tablas legacy ya eliminadas: `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`, `app_clock_settings`.
+- No reintroducir `src/main/resources/data.sql`.
 - No hacer parches rapidos que mezclen logica de negocio en vistas o controladores.
 - Toda mejora importante debe actualizar `docs/agents-memory/`.
 
@@ -69,6 +71,7 @@ Valores importantes:
 - `spring.datasource.password=flaco_pass`
 - `spring.jpa.hibernate.ddl-auto=update`
 - `spring.sql.init.mode=never`
+- Cleanup MySQL vigente documentado en `docs/db/cleanup-2026-04-26-*.sql`.
 
 ## 6. Comandos de trabajo utiles
 
@@ -96,6 +99,7 @@ mysql -h localhost -P 3306 -u flaco_user -pflaco_pass -D flacofitness
 - URL local: `http://localhost:8080`
 - Acceso por cuenta:
   - login con `email` o `username`
+  - admin local validado: `admin@flacofitness.local` / `FlacoAdmin2026!`
   - password temporal bootstrap para usuarios legacy: `FlacoTemp2026!`
   - `mustChangePassword=true` fuerza cambio de password al primer acceso bootstrap
 - Perfiles disponibles:
@@ -158,6 +162,7 @@ Servicios clave:
 - Ya no existe simulacion manual persistida del reloj.
 - `OperationalClockService` usa tiempo real del sistema.
 - Sigue siendo la abstraccion oficial para reglas de negocio temporales.
+- La tabla `app_clock_settings` fue eliminada de MySQL; no recrearla.
 
 ### Automatizacion financiera
 
@@ -177,6 +182,18 @@ No duplicar esta logica en:
 - hooks ad hoc
 
 `RecurrenceService` es el punto comun para calculo de siguientes ciclos.
+
+## 9.1 Limpieza MySQL aplicada el 2026-04-26
+
+- Backup previo: `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.
+- Scripts:
+  - `docs/db/cleanup-2026-04-26-precheck.sql`
+  - `docs/db/cleanup-2026-04-26.sql`
+  - `docs/db/cleanup-2026-04-26-postcheck.sql`
+- Tablas eliminadas: `app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`.
+- Columnas eliminadas de `gastos`: `monto`, `descripcion`, `pagado`, `recurrente`, `frecuencia`, `staff_id`.
+- Columnas eliminadas de `reservas_sesion`: `sesion_clase_id`, `asistio`, `observaciones`.
+- Postcheck limpio tras arrancar JPA: sin tablas legacy, sin FKs legacy y sin columnas legacy.
 
 ## 10. Estado de acceso y permisos
 
@@ -270,6 +287,10 @@ No duplicar esta logica en:
 - N+1 en `PagoService.contarUsuarios*`: resuelto (2026-04-23).
 - `ViewControllerTest` sin cobertura de `/gastos/{id}`: resuelto (2026-04-23).
 - Trial convertido sin MembresiaUsuario: resuelto (2026-04-23).
+- Nominas emitiendo/pagando con 500 por `BusinessValidationException`: resuelto (2026-04-26).
+- Trials creados con binding fragil de entidad: resuelto con `TrialForm` (2026-04-26).
+- Conversion de trial sin credenciales reales: resuelto con password temporal BCrypt (2026-04-26).
+- Buscador de usuario en staff que reconstruia el select: resuelto; ahora solo oculta opciones (2026-04-26).
 
 ## 13. Riesgos actuales que Claude debe vigilar
 
@@ -307,3 +328,14 @@ Orden recomendado:
 5. QA visual profunda modulo por modulo: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales`, `/cliente`.
 6. Verificar smoke por perfiles reales (ADMIN, STAFF_ENTRENADOR, STAFF_RECEPCION, STAFF_GERENTE, CLIENTE): accesos denegados, redirecciones y sidebar contextual.
 7. Hacer commit limpio de los cambios actuales.
+
+## 17. Nota de rescate 2026-04-26
+
+- Suite actual: 43 tests en verde.
+- Ultimo compile limpio: `.\mvnw.cmd clean -DskipTests compile`.
+- Si Claude retoma, priorizar smoke real en navegador de estos flujos:
+  - crear/editar usuario con foto;
+  - reset password, login temporal y cambio;
+  - crear trial y convertirlo;
+  - crear nomina, emitir y pagar;
+  - crear maquina/material con coste y verificar gasto automatico.

@@ -1,6 +1,6 @@
 # Module Status
 
-Fecha de referencia: 2026-04-24
+Fecha de referencia: 2026-04-26
 
 ## Resumen
 
@@ -11,10 +11,10 @@ La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, ca
 | Modulo | Estado | Backend | UI | Riesgo actual | Nota |
 | --- | --- | --- | --- | --- | --- |
 | Dashboard | Operativo | OK | OK | Bajo | Dashboard simplificado con rail de alertas y trio principal de charts; QA visual parcial |
-| Acceso por cuenta | Operativo | OK | OK | Medio | Login con email/username, password hash, cambio de password y reset temporal por admin; falta smoke real con MySQL levantado |
+| Acceso por cuenta | Operativo | OK | OK | Bajo | Login con email/username, password hash, cambio de password, reset temporal por admin y smoke real ADMIN validado contra MySQL |
 | Usuarios | Operativo | OK | OK | Bajo | Validado visualmente tras fix de pantalla en blanco |
 | Rutinas | Operativo | OK | Pendiente QA profunda | Medio | Many-to-many con usuarios y staff opcional |
-| Pagos | Operativo | OK | OK | Bajo | Validado visualmente; N+1 en KPIs de usuarios (academico, no critico) |
+| Pagos | Operativo | OK | OK | Bajo | Validado en smoke ADMIN; N+1 de KPIs ya eliminado con queries agregadas |
 | Asistencias | Operativo | OK | Pendiente QA profunda | Medio | Check-in libre y por sesion |
 | Staff | Operativo | OK | Pendiente QA profunda | Medio | Ligado a Usuario por `StaffPerfil` |
 | Membresias | Operativo | OK | Pendiente QA profunda | Medio | Catalogo + contrato real |
@@ -54,6 +54,15 @@ La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, ca
 - PDFs: implementados.
 - Scheduler configurable via `app.pagos.scheduler.enabled` y `app.pagos.scheduler.cron`.
 - Nominas: detalle y PDFs con presentacion mas seria para demo y archivo interno.
+- Acciones de nomina `emitir/pagar/cancelar`: protegidas contra 500 por validaciones de negocio.
+- Alta de maquinas/materiales: genera gasto automatico pagado si existe coste.
+
+### Rescate funcional 2026-04-26
+
+- Usuarios: formulario renderiza con CTA visible, preview de foto/username y toggles de password.
+- Trials: formulario usa DTO y la conversion genera credenciales temporales reales.
+- Staff: buscador de usuario robusto sin mutar el select.
+- Auth: password temporal obliga cambio y el cambio queda cubierto por test.
 
 ### Tiempo
 
@@ -65,6 +74,7 @@ La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, ca
 - Solo MySQL real.
 - No H2.
 - No seeds automaticos.
+- Limpieza MySQL 2026-04-26 aplicada: tablas legacy eliminadas, FKs reparadas y postcheck limpio tras arranque JPA.
 
 ## Orden recomendado de QA visual
 
