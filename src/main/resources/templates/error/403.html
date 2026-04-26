@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Acceso denegado')}"></head>
+<body class="ff-error-page">
+<main class="ff-error-shell">
+    <section class="ff-error-card ff-animate-in">
+        <a class="ff-error-brand" th:href="@{/}" aria-label="Ir al dashboard">
+            <img th:src="@{/img/logo.svg}" alt="FlacoFitness">
+        </a>
+
+        <span class="ff-error-code ff-error-code-warning">403</span>
+        <h1 class="ff-error-title">Acceso denegado</h1>
+        <p class="ff-error-message">
+            El perfil activo no tiene permisos para esta operacion.
+        </p>
+        <p class="ff-error-hint">
+            Cambia de cuenta o vuelve a una seccion disponible para tu perfil.
+        </p>
+
+        <div class="ff-error-actions">
+            <a class="btn btn-success" th:href="@{/}">Ir al inicio</a>
+            <form th:action="@{/salir}" method="post" class="d-inline">
+                <button class="btn btn-outline-secondary" type="submit">Cambiar perfil</button>
+            </form>
+        </div>
+
+        <p class="ff-error-meta">FlacoFitness · permisos MVP por perfil</p>
+    </section>
+</main>
+</body>
+</html>

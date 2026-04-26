@@ -7,11 +7,12 @@ import com.flacofitness.app.model.enums.EstadoPago;
 import com.flacofitness.app.model.enums.MetodoPago;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
+import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -38,17 +39,31 @@ class PagoServiceTest {
     @Mock
     private PlanRepository planRepository;
 
-    @InjectMocks
+    @Mock
+    private MembresiaUsuarioRepository membresiaUsuarioRepository;
+
     private PagoService pagoService;
 
+    @BeforeEach
+    void setUp() {
+        OperationalClockService operationalClockService = new OperationalClockService();
+        RecurrenceService recurrenceService = new RecurrenceService();
+        pagoService = new PagoService(
+                pagoRepository,
+                usuarioRepository,
+                planRepository,
+                membresiaUsuarioRepository,
+                operationalClockService,
+                recurrenceService);
+    }
+
     @Test
-    void generarPagosMensuales_creaPagoPendienteYAvanzaFechaProxima() {
-        LocalDate hoy = LocalDate.now();
-        LocalDate fechaVencida = hoy.minusDays(1);
+    void generarPagosMensuales_creaPagoVencidoSiElCicloYaPasoYAvanzaFechaProxima() {
+        LocalDate fechaVencida = LocalDate.now().minusDays(1);
         Usuario usuario = crearUsuario(1L, fechaVencida);
 
-        when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
-        when(pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaVencida)).thenReturn(false);
+        when(usuarioRepository.findUsuariosConPagoPendiente(LocalDate.now())).thenReturn(List.of(usuario));
+        when(pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaVencida)).thenReturn(false);
         when(pagoRepository.save(any(Pago.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         int pagosGenerados = pagoService.generarPagosMensuales();
@@ -60,27 +75,44 @@ class PagoServiceTest {
         assertThat(pagosGenerados).isEqualTo(1);
         assertThat(pagoGenerado.getUsuario()).isSameAs(usuario);
         assertThat(pagoGenerado.getPlan()).isSameAs(usuario.getPlan());
-        assertThat(pagoGenerado.getFechaPago()).isEqualTo(fechaVencida);
-        assertThat(pagoGenerado.getEstado()).isEqualTo(EstadoPago.PENDIENTE);
+        assertThat(pagoGenerado.getFechaVencimiento()).isEqualTo(fechaVencida);
+        assertThat(pagoGenerado.getEstado()).isEqualTo(EstadoPago.VENCIDO);
         assertThat(pagoGenerado.getMetodoPago()).isEqualTo(MetodoPago.TRANSFERENCIA);
         assertThat(usuario.getFechaProximoPago()).isEqualTo(fechaVencida.plusDays(usuario.getPlan().getDuracionDias()));
     }
 
     @Test
-    void generarPagosMensuales_reutilizaUltimoPagoSiNoHayFechaProximaYEvitaDuplicados() {
+    void actualizarPagosVencidos_usaFechaOperativa() {
         LocalDate hoy = LocalDate.now();
+        when(pagoRepository.marcarVencidos(
+                List.of(EstadoPago.PROGRAMADO, EstadoPago.PENDIENTE),
+                EstadoPago.VENCIDO,
+                hoy)).thenReturn(3);
+
+        int actualizados = pagoService.actualizarPagosVencidos();
+
+        assertThat(actualizados).isEqualTo(3);
+        verify(pagoRepository).marcarVencidos(
+                List.of(EstadoPago.PROGRAMADO, EstadoPago.PENDIENTE),
+                EstadoPago.VENCIDO,
+                hoy);
+    }
+
+    @Test
+    void generarPagosMensuales_reutilizaUltimoPagoSiNoHayFechaProximaYEvitaDuplicados() {
         Usuario usuario = crearUsuario(2L, null);
+        LocalDate hoy = LocalDate.now();
         LocalDate ultimaFechaPago = hoy.minusDays(35);
 
         Pago ultimoPago = new Pago();
         ultimoPago.setId(10L);
-        ultimoPago.setFechaPago(ultimaFechaPago);
+        ultimoPago.setFechaVencimiento(ultimaFechaPago);
 
         LocalDate fechaEsperada = ultimaFechaPago.plusDays(usuario.getPlan().getDuracionDias());
 
         when(usuarioRepository.findUsuariosConPagoPendiente(hoy)).thenReturn(List.of(usuario));
-        when(pagoRepository.findTopByUsuarioIdOrderByFechaPagoDescIdDesc(usuario.getId())).thenReturn(Optional.of(ultimoPago));
-        when(pagoRepository.existsByUsuarioIdAndFechaPago(usuario.getId(), fechaEsperada)).thenReturn(true);
+        when(pagoRepository.findTopByUsuarioIdOrderByFechaVencimientoDescIdDesc(usuario.getId())).thenReturn(Optional.of(ultimoPago));
+        when(pagoRepository.existsByUsuarioIdAndFechaVencimiento(usuario.getId(), fechaEsperada)).thenReturn(true);
 
         int pagosGenerados = pagoService.generarPagosMensuales();
 
@@ -106,4 +138,5 @@ class PagoServiceTest {
         usuario.setFechaProximoPago(fechaProximoPago);
         return usuario;
     }
+
 }

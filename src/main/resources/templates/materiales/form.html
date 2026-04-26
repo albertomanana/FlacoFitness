@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Material')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('materiales')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Material', 'Stock y reposicion.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div><span class="ff-section-eyebrow">Inventario</span><h2 class="ff-section-title" th:text="${modoEdicion ? 'Editar material' : 'Nuevo material'}">Nuevo material</h2></div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <form th:action="${modoEdicion ? '/materiales/' + material.id : '/materiales'}" th:object="${material}" method="post" class="row g-3">
+                            <div class="col-md-8"><label class="form-label" for="nombre">Nombre</label><input id="nombre" class="form-control" th:field="*{nombre}" required></div>
+                            <div class="col-md-4"><label class="form-label" for="categoria">Categoria</label><select id="categoria" class="form-select" th:field="*{categoria}" required><option value="">Selecciona...</option><option th:each="categoria : ${categoriasMaterial}" th:value="${categoria}" th:text="${#strings.replace(categoria.name(), '_', ' ')}">Categoria</option></select></div>
+                            <div class="col-md-3"><label class="form-label" for="stock">Stock</label><input id="stock" type="number" min="0" class="form-control" th:field="*{stock}" required></div>
+                            <div class="col-md-3"><label class="form-label" for="stockMinimo">Stock minimo</label><input id="stockMinimo" type="number" min="0" class="form-control" th:field="*{stockMinimo}" required></div>
+                            <div class="col-md-3"><label class="form-label" for="costeUnitario">Coste unitario</label><input id="costeUnitario" type="number" step="0.01" min="0" class="form-control" th:field="*{costeUnitario}"><div class="form-text">Al crear, genera gasto pagado si hay stock.</div></div>
+                            <div class="col-md-3"><label class="form-label" for="estado">Estado</label><select id="estado" class="form-select" th:field="*{estado}" required><option value="">Selecciona...</option><option th:each="estado : ${estadosMaterial}" th:value="${estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option></select></div>
+                            <div class="col-md-6"><label class="form-label" for="ubicacion">Ubicacion</label><input id="ubicacion" class="form-control" th:field="*{ubicacion}"></div>
+                            <div class="col-md-6"><label class="form-label" for="proveedor">Proveedor</label><input id="proveedor" class="form-control" th:field="*{proveedor}"></div>
+                            <div class="col-12"><label class="form-label" for="observaciones">Observaciones</label><textarea id="observaciones" rows="4" class="form-control" th:field="*{observaciones}"></textarea></div>
+                            <div class="col-12 d-flex gap-2"><button class="btn btn-success" type="submit">Guardar</button><a class="btn btn-outline-secondary" th:href="@{/materiales}">Cancelar</a></div>
+                        </form>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

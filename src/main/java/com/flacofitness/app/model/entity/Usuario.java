@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,6 +21,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import jakarta.persistence.ManyToMany;
 
 @Entity
 @Table(name = "usuarios")
@@ -46,6 +50,16 @@ public class Usuario {
     @Email
     @Column(nullable = false, unique = true, length = 150)
     private String email;
+
+    @Column(unique = true, length = 60)
+    private String username;
+
+    @Column(name = "password_hash", length = 120)
+    private String passwordHash;
+
+    @NotNull
+    @Column(name = "must_change_password", nullable = false)
+    private Boolean mustChangePassword = Boolean.FALSE;
 
     @Column(length = 20)
     private String telefono;
@@ -79,4 +93,13 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @ManyToMany(mappedBy = "usuarios", fetch = FetchType.LAZY)
+    private Set<Rutina> rutinas = new LinkedHashSet<>();
+
+    @Transient
+    private String rawPassword;
+
+    @Transient
+    private String confirmPassword;
 }

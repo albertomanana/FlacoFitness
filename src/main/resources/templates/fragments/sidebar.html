@@ -23,10 +23,11 @@
             </div>
         </div>
 
-        <nav class="ff-nav-section" aria-label="Navegacion principal">
-            <span class="ff-nav-section-label">Operaciones</span>
+        <nav class="ff-nav-section" aria-label="Resumen general">
+            <span class="ff-nav-section-label">Vision general</span>
             <div class="ff-nav">
                 <a class="ff-nav-link"
+                   th:if="${accessProfile.canSeeSection('inicio')}"
                    th:classappend="${activeSection == 'inicio'} ? ' is-active' : ''"
                    th:attr="aria-current=${activeSection == 'inicio'} ? 'page' : null"
                    th:href="@{/}">
@@ -41,76 +42,330 @@
                     </span>
                     <span class="ff-nav-label">Dashboard</span>
                 </a>
-
                 <a class="ff-nav-link"
-                   th:classappend="${activeSection == 'usuarios'} ? ' is-active' : ''"
-                   th:attr="aria-current=${activeSection == 'usuarios'} ? 'page' : null"
-                   th:href="@{/usuarios}">
+                   th:if="${accessProfile.canSeeSection('cliente')}"
+                   th:classappend="${activeSection == 'cliente'} ? ' is-active' : ''"
+                   th:attr="aria-current=${activeSection == 'cliente'} ? 'page' : null"
+                   th:href="@{/cliente}">
                     <span class="ff-nav-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                            <circle cx="9" cy="7" r="4"/>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            <circle cx="12" cy="8" r="4"/>
+                            <path d="M4 21a8 8 0 0 1 16 0"/>
                         </svg>
                     </span>
-                    <span class="ff-nav-label">Usuarios</span>
-                </a>
-
-                <a class="ff-nav-link"
-                   th:classappend="${activeSection == 'rutinas'} ? ' is-active' : ''"
-                   th:attr="aria-current=${activeSection == 'rutinas'} ? 'page' : null"
-                   th:href="@{/rutinas}">
-                    <span class="ff-nav-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M18 20V10"/>
-                            <path d="M12 20V4"/>
-                            <path d="M6 20v-6"/>
-                        </svg>
-                    </span>
-                    <span class="ff-nav-label">Rutinas</span>
-                </a>
-
-                <a class="ff-nav-link"
-                   th:classappend="${activeSection == 'pagos'} ? ' is-active' : ''"
-                   th:attr="aria-current=${activeSection == 'pagos'} ? 'page' : null"
-                   th:href="@{/pagos}">
-                    <span class="ff-nav-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                            <line x1="1" y1="10" x2="23" y2="10"/>
-                        </svg>
-                    </span>
-                    <span class="ff-nav-label">Pagos</span>
-                </a>
-
-                <a class="ff-nav-link"
-                   th:classappend="${activeSection == 'asistencias'} ? ' is-active' : ''"
-                   th:attr="aria-current=${activeSection == 'asistencias'} ? 'page' : null"
-                   th:href="@{/asistencias}">
-                    <span class="ff-nav-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                            <path d="M9 16l2 2 4-4"/>
-                        </svg>
-                    </span>
-                    <span class="ff-nav-label">Asistencias</span>
+                    <span class="ff-nav-label">Mi panel</span>
                 </a>
             </div>
         </nav>
 
+        <nav class="ff-nav-section" aria-label="Navegacion principal">
+            <span class="ff-nav-section-label">Operaciones</span>
+            <details class="ff-nav-group"
+                     th:if="${accessProfile.canSeeSection('usuarios') or accessProfile.canSeeSection('staff') or accessProfile.canSeeSection('membresias') or accessProfile.canSeeSection('trials')}"
+                     th:attr="open=${activeSection == 'usuarios' or activeSection == 'staff' or activeSection == 'membresias' or activeSection == 'trials'} ? 'open' : null">
+                <summary class="ff-nav-group-toggle">Personas y comercial</summary>
+                <div class="ff-nav">
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('usuarios')}"
+                       th:classappend="${activeSection == 'usuarios'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'usuarios'} ? 'page' : null"
+                       th:href="@{/usuarios}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Usuarios</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('staff')}"
+                       th:classappend="${activeSection == 'staff'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'staff'} ? 'page' : null"
+                       th:href="@{/staff}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="m19 8 2 2-4 4-2-2z"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Staff</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('membresias')}"
+                       th:classappend="${activeSection == 'membresias'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'membresias'} ? 'page' : null"
+                       th:href="@{/membresias}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                <path d="M7 9h10"/>
+                                <path d="M7 13h6"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Membresias</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('trials')}"
+                       th:classappend="${activeSection == 'trials'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'trials'} ? 'page' : null"
+                       th:href="@{/trials}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21a8 8 0 1 0-16 0"/>
+                                <circle cx="12" cy="7" r="4"/>
+                                <path d="M17 11h4"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Trials</span>
+                    </a>
+                </div>
+            </details>
+
+            <details class="ff-nav-group"
+                     th:if="${accessProfile.canSeeSection('rutinas') or accessProfile.canSeeSection('clases') or accessProfile.canSeeSection('sesiones') or accessProfile.canSeeSection('asistencias') or accessProfile.canSeeSection('maquinas') or accessProfile.canSeeSection('materiales')}"
+                     th:attr="open=${activeSection == 'rutinas' or activeSection == 'clases' or activeSection == 'sesiones' or activeSection == 'asistencias' or activeSection == 'maquinas' or activeSection == 'materiales'} ? 'open' : null">
+                <summary class="ff-nav-group-toggle">Programacion y piso</summary>
+                <div class="ff-nav">
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('rutinas')}"
+                       th:classappend="${activeSection == 'rutinas'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'rutinas'} ? 'page' : null"
+                       th:href="@{/rutinas}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 20V10"/>
+                                <path d="M12 20V4"/>
+                                <path d="M6 20v-6"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Rutinas</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('clases')}"
+                       th:classappend="${activeSection == 'clases'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'clases'} ? 'page' : null"
+                       th:href="@{/clases}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 19V5"/>
+                                <path d="M20 19V5"/>
+                                <path d="M8 12h8"/>
+                                <path d="M8 8h8"/>
+                                <path d="M8 16h8"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Clases</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('sesiones')}"
+                       th:classappend="${activeSection == 'sesiones'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'sesiones'} ? 'page' : null"
+                       th:href="@{/sesiones}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                                <path d="M16 2v4"/>
+                                <path d="M8 2v4"/>
+                                <path d="M3 10h18"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Sesiones</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('maquinas')}"
+                       th:classappend="${activeSection == 'maquinas'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'maquinas'} ? 'page' : null"
+                       th:href="@{/maquinas}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="8" height="16" rx="1"/>
+                                <rect x="13" y="7" width="8" height="13" rx="1"/>
+                                <path d="M7 8v8"/>
+                                <path d="M17 11v5"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Maquinas</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('materiales')}"
+                       th:classappend="${activeSection == 'materiales'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'materiales'} ? 'page' : null"
+                       th:href="@{/materiales}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 7h16v13H4z"/>
+                                <path d="M8 7V4h8v3"/>
+                                <path d="M9 12h6"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Material</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('asistencias')}"
+                       th:classappend="${activeSection == 'asistencias'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'asistencias'} ? 'page' : null"
+                       th:href="@{/asistencias}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                                <path d="M9 16l2 2 4-4"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Asistencias</span>
+                    </a>
+                </div>
+            </details>
+
+            <details class="ff-nav-group"
+                     th:if="${accessProfile.canSeeSection('finanzas') or accessProfile.canSeeSection('pagos') or accessProfile.canSeeSection('gastos') or accessProfile.canSeeSection('nominas') or accessProfile.canSeeSection('recurrentes')}"
+                     th:attr="open=${activeSection == 'finanzas' or activeSection == 'pagos' or activeSection == 'gastos' or activeSection == 'nominas' or activeSection == 'recurrentes'} ? 'open' : null">
+                <summary class="ff-nav-group-toggle">Finanzas</summary>
+                <div class="ff-nav">
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('finanzas')}"
+                       th:classappend="${activeSection == 'finanzas'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'finanzas'} ? 'page' : null"
+                       th:href="@{/finanzas}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 3v18h18"/>
+                                <path d="m7 15 4-4 3 3 5-7"/>
+                                <path d="M14 7h5v5"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Centro financiero</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('gastos')}"
+                       th:classappend="${activeSection == 'gastos'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'gastos'} ? 'page' : null"
+                       th:href="@{/gastos}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 1v22"/>
+                                <path d="M17 5H9a3 3 0 0 0 0 6h6a3 3 0 0 1 0 6H7"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Gastos</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('recurrentes')}"
+                       th:classappend="${activeSection == 'recurrentes'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'recurrentes'} ? 'page' : null"
+                       th:href="@{/gastos/recurrentes}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 1l4 4-4 4"/>
+                                <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                                <path d="M7 23l-4-4 4-4"/>
+                                <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Recurrentes</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('nominas')}"
+                       th:classappend="${activeSection == 'nominas'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'nominas'} ? 'page' : null"
+                       th:href="@{/nominas}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="16" rx="2" ry="2"/>
+                                <path d="M7 8h10"/>
+                                <path d="M7 12h10"/>
+                                <path d="M7 16h6"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Nóminas</span>
+                    </a>
+
+                    <a class="ff-nav-link"
+                       th:if="${accessProfile.canSeeSection('pagos')}"
+                       th:classappend="${activeSection == 'pagos'} ? ' is-active' : ''"
+                       th:attr="aria-current=${activeSection == 'pagos'} ? 'page' : null"
+                       th:href="@{/pagos}">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Pagos</span>
+                    </a>
+                </div>
+            </details>
+        </nav>
+
+        <nav class="ff-nav-section" aria-label="Acceso">
+            <span class="ff-nav-section-label">Cuenta</span>
+            <div class="ff-nav">
+                <a class="ff-nav-link" th:href="@{/cuenta/password}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 15v4"/>
+                            <path d="M8 11V7a4 4 0 1 1 8 0v4"/>
+                            <rect x="4" y="11" width="16" height="10" rx="2"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Cambiar contraseña</span>
+                </a>
+                <form th:action="@{/salir}" method="post" class="m-0">
+                    <button type="submit" class="ff-nav-link w-100 text-start">
+                        <span class="ff-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 17l5-5-5-5"/>
+                                <path d="M15 12H3"/>
+                                <path d="M21 3v18"/>
+                            </svg>
+                        </span>
+                        <span class="ff-nav-label">Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </nav>
+
         <div class="ff-sidebar-footer">
-            <div class="ff-sidebar-avatar">AD</div>
+            <div class="ff-sidebar-avatar" th:text="${accessProfile.initials}">AD</div>
             <div>
-                <span class="ff-sidebar-user-name">Administrador</span>
-                <span class="ff-sidebar-user-role">Workspace</span>
+                <span class="ff-sidebar-user-name"
+                      th:text="${currentUser != null ? (currentUser.username != null ? currentUser.username : currentUser.email) : accessProfile.label}">Administrador</span>
+                <span class="ff-sidebar-user-role" th:text="${accessProfile.description}">Workspace</span>
             </div>
         </div>
     </div>

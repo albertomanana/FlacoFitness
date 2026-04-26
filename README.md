@@ -45,9 +45,9 @@ flacofitness/
 
 La aplicación quedará disponible por defecto en `http://localhost:8080`.
 
-### Vista rápida sin MySQL
+### Perfil local con MySQL
 
-Si solo quieres abrir la interfaz y navegar por el proyecto sin depender de MySQL, arranca con el perfil local:
+El perfil local tambien usa MySQL/phpMyAdmin y la base `flacofitness`. No hay base alternativa en memoria ni fallback automatico:
 
 ```bash
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
@@ -59,7 +59,7 @@ En Windows PowerShell:
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
 ```
 
-Esto levantará una base H2 en memoria y dejará la aplicación disponible en `http://localhost:8080`.
+Esto arrancara la aplicacion contra MySQL y dejara el panel disponible en `http://localhost:8080`.
 
 ## Ejecución con Docker
 

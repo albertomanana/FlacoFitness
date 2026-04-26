@@ -1,37 +1,39 @@
 # Roadmap
 
-## Fase 1: modelado
+Fecha de referencia: 2026-04-17
 
-- Definir entidades, atributos y relaciones
-- Elaborar diagrama entidad-relación
-- Establecer convenciones de nombres y validaciones base
+## Fase 1: Fundacion del dominio (completada)
 
-## Fase 2: backend base
+- Modelado base de usuarios, planes, rutinas, asistencias y pagos.
+- Separacion de capas MVC y convenciones de repositorio.
+- Bootstrap operativo del proyecto con documentacion viva.
 
-- Crear entidades JPA, repositorios y servicios iniciales
-- Configurar manejo de errores y validaciones
-- Preparar datos de prueba y estructura CRUD básica
+## Fase 2: Nucleo SaaS conectado (completada)
 
-## Fase 3: frontend CRUD
+- Incorporacion de staff, membresias contractuales, trials, clases, sesiones y reservas.
+- Reglas de negocio cruzadas entre contratos, cobros, agenda y asistencias.
+- Automatizaciones de estado en servicios y scheduler.
 
-- Construir vistas Thymeleaf por módulo
-- Incorporar formularios, listados y páginas de detalle
-- Unificar fragmentos compartidos de interfaz
+## Fase 3: Shell premium y observabilidad (completada)
 
-## Fase 4: lógica de negocio
+- Dashboard con KPIs conectados y graficos operativos.
+- Centro de notificaciones accionables y priorizadas.
+- Modo oscuro persistente, mejoras responsive y navegacion contextual por modulo.
 
-- Aplicar reglas de membresías, pagos y asistencias
-- Implementar asignación de rutinas y ejercicios
-- Añadir validaciones funcionales y flujos completos
+## Fase 4: Cierre academico-producto (en curso)
 
-## Fase 5: dockerización
+- QA profundo por perfiles en entorno local y MySQL.
+- Homogeneizacion final de UI/UX en formularios y listados legacy.
+- Sincronizacion completa de `docs/agents-memory` con estado real del sistema.
 
-- Ajustar contenedores para entorno reproducible
-- Validar comunicación entre aplicación y MySQL
-- Preparar variables de entorno y guía de despliegue
+## Fase 5: Hardening pre-entrega (pendiente)
 
-## Fase 6: documentación y defensa
+- Pruebas MVC de rutas protegidas y contratos de dashboard.
+- Reglas unitarias de permisos y perfiles de acceso.
+- Exportables funcionales (CSV) para pagos, sesiones, asistencias y trials.
 
-- Completar memoria técnica del repositorio
-- Refinar decisiones arquitectónicas y justificaciones
-- Preparar guion de presentación y preguntas de defensa
+## Fase 6: Evolucion post-defensa (pendiente)
+
+- Endurecimiento de seguridad con Spring Security.
+- Estrategia de multigimnasio solo con caso comercial validado.
+- Evaluacion de telemetria de negocio y trazabilidad de notificaciones.

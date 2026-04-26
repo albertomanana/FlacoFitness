@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${titulo}">Recurrentes</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #102033; margin: 0; padding: 24px; background: #f5f7fb; }
+        .sheet { background: #ffffff; border: 1px solid #dbe4ee; border-radius: 18px; padding: 24px; }
+        .header { border-bottom: 2px solid #e7edf5; padding-bottom: 16px; margin-bottom: 18px; }
+        .eyebrow { text-transform: uppercase; letter-spacing: .12em; font-size: 11px; color: #4b647f; margin: 0 0 6px; }
+        h1 { margin: 0; font-size: 28px; }
+        .subtitle { margin: 6px 0 0; color: #607387; }
+        .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 18px 0 24px; }
+        .card { border: 1px solid #dfe8f2; border-radius: 14px; padding: 14px 16px; background: #fbfdff; }
+        .label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6b7f92; margin: 0 0 4px; }
+        .value { font-size: 18px; font-weight: 700; margin: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border-bottom: 1px solid #e6edf5; text-align: left; padding: 10px 8px; font-size: 12px; vertical-align: top; }
+        th { background: #f2f6fb; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #586b7e; }
+        .muted { color: #617488; }
+    </style>
+</head>
+<body>
+<div class="sheet">
+    <div class="header">
+        <p class="eyebrow">FlacoFitness / Finanzas</p>
+        <h1 th:text="${titulo}">Plantillas recurrentes</h1>
+        <p class="subtitle" th:text="${subtitulo}">Seguimiento de cargos automaticos.</p>
+    </div>
+
+    <div class="summary">
+        <div class="card">
+            <p class="label">Activas</p>
+            <p class="value" th:text="${recurrentesActivos}">0</p>
+        </div>
+        <div class="card">
+            <p class="label">Proximas 7 dias</p>
+            <p class="value" th:text="${recurrentesProximos}">0</p>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Concepto</th>
+            <th>Frecuencia</th>
+            <th>Pr&oacute;ximo cargo</th>
+            <th>Relacion</th>
+            <th>Importe</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="recurrente : ${recurrentes}">
+            <td>
+                <div th:text="${recurrente.concepto}">Concepto</div>
+                <div class="muted" th:text="${#strings.defaultString(recurrente.proveedor, 'Sin proveedor')}">Proveedor</div>
+            </td>
+            <td th:text="${recurrente.frecuencia != null ? #strings.replace(recurrente.frecuencia.name(), '_', ' ') : '-'}">Mensual</td>
+            <td th:text="${recurrente.fechaProximoCargo != null ? #temporals.format(recurrente.fechaProximoCargo, 'dd/MM/yyyy') : '-'}">-</td>
+            <td class="muted">
+                <span th:if="${recurrente.staffResponsable != null}" th:text="${'Staff: ' + recurrente.staffResponsable.usuario.nombre}">Staff</span>
+                <span th:if="${recurrente.maquina != null}"><br th:if="${recurrente.staffResponsable != null}"/>Maquina: <span th:text="${recurrente.maquina.nombre}">Maquina</span></span>
+                <span th:if="${recurrente.material != null}"><br th:if="${recurrente.staffResponsable != null or recurrente.maquina != null}"/>Material: <span th:text="${recurrente.material.nombre}">Material</span></span>
+                <span th:if="${recurrente.staffResponsable == null and recurrente.maquina == null and recurrente.material == null}">General</span>
+            </td>
+            <td th:text="${recurrente.importe != null ? #numbers.formatDecimal(recurrente.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

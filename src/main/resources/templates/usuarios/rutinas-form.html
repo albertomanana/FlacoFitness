@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Asignar rutinas')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('usuarios')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Asignar rutinas', 'Gestion del entrenamiento del usuario.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Entrenamiento</span>
+                        <h2 class="ff-section-title" th:text="'Rutinas de ' + ${usuario.nombre}">Asignar rutinas</h2>
+                        <p class="ff-section-subtitle">Selecciona los planes de trabajo para este perfil.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/usuarios/{id}(id=${usuario.id})}">Volver al perfil</a>
+                </section>
+
+                <section class="row g-4 ff-form-layout justify-content-center">
+                    <div class="col-12 col-xl-8">
+                        <div class="ff-surface-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Gestor de asignacion</h3>
+                                    <p class="ff-card-subtitle">Marca las rutinas que debe realizar el usuario.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <form th:action="@{/usuarios/{id}/rutinas(id=${usuario.id})}" method="post">
+                                    <div class="d-flex flex-column gap-4">
+                                        <div class="row g-3">
+                                            <div class="col-12" th:if="${not #lists.isEmpty(todasLasRutinas)}">
+                                                <div class="list-group">
+                                                    <label class="list-group-item d-flex gap-3 align-items-center" th:each="rutina : ${todasLasRutinas}">
+                                                        <input class="form-check-input flex-shrink-0" type="checkbox" name="rutinaIds" th:value="${rutina.id}"
+                                                               th:checked="${#lists.contains(rutinasAsignadas, rutina)}" style="font-size: 1.375em;">
+                                                        <span class="d-flex flex-column">
+                                                            <strong th:text="${rutina.nombre}">Rutina</strong>
+                                                            <small class="text-muted" th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin tipo'}">Detalle</small>
+                                                        </span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-12" th:if="${#lists.isEmpty(todasLasRutinas)}">
+                                                <div class="alert alert-info">No hay rutinas creadas en la base de datos. Ve a Rutinas para crear una.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="ff-form-actions mt-4">
+                                        <p class="ff-form-actions-note">Habilitando el panel principal de base de datos.</p>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-success" th:disabled="${#lists.isEmpty(todasLasRutinas)}">Guardar asignacion</button>
+                                            <a class="btn btn-outline-secondary" th:href="@{/usuarios/{id}(id=${usuario.id})}">Cancelar</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -14,9 +14,10 @@ function initializeDashboard() {
     const refreshButton = dashboard.querySelector("[data-dashboard-refresh]");
     const defaultRange = normalizeDashboardRange(Number(dashboard.dataset.defaultRange || 30));
     const initialStats = readInitialDashboardStats();
+    let latestStats = initialStats;
 
     if (initialStats) {
-        hydrateDashboard(initialStats, utils);
+        hydrateDashboard(initialStats, utils, { animateStats: false });
     }
 
     if (typeof Chart === "undefined") {
@@ -31,7 +32,8 @@ function initializeDashboard() {
 
         try {
             const stats = await fetchDashboardStats(dashboard.dataset.statsDashboardUrl, range);
-            hydrateDashboard(stats, utils);
+            latestStats = stats;
+            hydrateDashboard(stats, utils, { animateStats: true });
             toggleDashboardAlert(false);
             updateDashboardTimestamp();
         } catch (error) {
@@ -55,18 +57,26 @@ function initializeDashboard() {
         });
     }
 
-    window.setTimeout(() => {
+    window.addEventListener("ff:themechange", () => {
+        if (!latestStats) {
+            return;
+        }
+        hydrateDashboard(latestStats, utils, { animateStats: false });
+    });
+
+    if (!initialStats) {
         loadDashboard(defaultRange);
-    }, 150);
+    } else {
+        updateDashboardTimestamp();
+    }
 }
 
-function hydrateDashboard(stats, utils) {
-    updateDashboardStats(stats, utils);
+function hydrateDashboard(stats, utils, options = {}) {
+    updateDashboardStats(stats, utils, options);
     updateDashboardRangeLabel(stats.rangoDias || 30);
     renderPlanChart(stats.usuariosPorPlan || []);
-    renderIngresosChart(stats.ingresosMensualesSerie || [], utils);
+    renderIngresosGastosChart(stats.ingresosMensualesSerie || [], stats.gastosMensualesSerie || [], utils);
     renderAsistenciasChart(stats.asistenciasRecientes || []);
-    renderAltasChart(stats.altasRecientes || []);
 }
 
 function readInitialDashboardStats() {
@@ -111,49 +121,90 @@ function normalizeDashboardRange(range) {
     return Math.max(7, Math.min(parsed, 365));
 }
 
-function updateDashboardStats(stats, utils) {
-    animateDashboardStat("totalUsuarios", stats.totalUsuarios, "integer", utils);
-    animateDashboardStat("usuariosActivos", stats.usuariosActivos, "integer", utils);
-    animateDashboardStat("planesActivos", stats.planesActivos, "integer", utils);
-    animateDashboardStat("pagosPendientes", stats.pagosPendientes, "integer", utils);
-    animateDashboardStat("pagosVencidos", stats.pagosVencidos, "integer", utils);
-    animateDashboardStat("renovacionesProximas", stats.renovacionesProximas, "integer", utils);
-    animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency", utils);
-    animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils);
-    animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils);
-    animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils);
+function updateDashboardStats(stats, utils, options = {}) {
+    const animate = options.animateStats !== false;
+
+    animateDashboardStat("totalUsuarios", stats.totalUsuarios, "integer", utils, animate);
+    animateDashboardStat("usuariosActivos", stats.usuariosActivos, "integer", utils, animate);
+    animateDashboardStat("planesActivos", stats.planesActivos, "integer", utils, animate);
+    animateDashboardStat("pagosPendientes", stats.pagosPendientes, "integer", utils, animate);
+    animateDashboardStat("pagosVencidos", stats.pagosVencidos, "integer", utils, animate);
+    animateDashboardStat("renovacionesProximas", stats.renovacionesProximas, "integer", utils, animate);
+    animateDashboardStat("ingresosMensuales", stats.ingresosMensuales, "currency", utils, animate);
+    animateDashboardStat("gastoMesActual", stats.gastoMesActual, "currency", utils, animate);
+    animateDashboardStat("beneficioEstimado", stats.beneficioEstimado, "currency", utils, animate);
+    updateProfitCardColor(stats.beneficioEstimado);
+    animateDashboardStat("ingresosTotales", stats.ingresosTotales, "currency", utils, animate);
+    animateDashboardStat("asistenciasHoy", stats.asistenciasHoy, "integer", utils, animate);
+    animateDashboardStat("rutinasActivas", stats.rutinasActivas, "integer", utils, animate);
+    animateDashboardStat("staffActivos", stats.staffActivos, "integer", utils, animate);
+    animateDashboardStat("trialsPendientes", stats.trialsPendientes, "integer", utils, animate);
+    animateDashboardStat("trialsHoy", stats.trialsHoy, "integer", utils, animate);
+    animateDashboardStat("trialsSemana", stats.trialsSemana, "integer", utils, animate);
+    animateDashboardStat("sesionesHoy", stats.sesionesHoy, "integer", utils, animate);
+    animateDashboardStat("membresiasActivas", stats.membresiasActivas, "integer", utils, animate);
+    animateDashboardStat("membresiasVencidas", stats.membresiasVencidas, "integer", utils, animate);
+    animateDashboardStat("maquinasFueraServicio", stats.maquinasFueraServicio, "integer", utils, animate);
+    animateDashboardStat("materialesBajoStock", stats.materialesBajoStock, "integer", utils, animate);
+    animateDashboardStat("maquinasRevisionProxima", stats.maquinasRevisionProxima, "integer", utils, animate);
 }
 
-function animateDashboardStat(key, rawValue, kind, utils) {
+function animateDashboardStat(key, rawValue, kind, utils, animate = true) {
     document.querySelectorAll(`[data-stat="${key}"]`).forEach((target) => {
         const nextValue = Number(rawValue || 0);
         const currentValue = Number(target.dataset.statRaw || 0);
 
+        cancelDashboardStatAnimation(target);
         target.dataset.statRaw = String(nextValue);
 
-        if (currentValue === nextValue) {
+        if (!animate || currentValue === nextValue || shouldReduceDashboardMotion()) {
             target.textContent = formatDashboardValue(nextValue, kind, utils);
             return;
         }
 
         const startTime = performance.now();
-        const duration = 450;
+        const duration = 1550;
 
         function step(timestamp) {
             const progress = Math.min((timestamp - startTime) / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
+            const eased = easeOutQuart(progress);
             const animatedValue = currentValue + ((nextValue - currentValue) * eased);
             target.textContent = formatDashboardValue(animatedValue, kind, utils, progress < 1);
 
             if (progress < 1) {
-                window.requestAnimationFrame(step);
+                target.dataset.statAnimationFrame = String(window.requestAnimationFrame(step));
             } else {
                 target.textContent = formatDashboardValue(nextValue, kind, utils);
+                delete target.dataset.statAnimationFrame;
             }
         }
 
-        window.requestAnimationFrame(step);
+        target.dataset.statAnimationFrame = String(window.requestAnimationFrame(step));
     });
+}
+
+function updateProfitCardColor(value) {
+    const isPositive = Number(value || 0) >= 0;
+    document.querySelectorAll("[data-kpi-profit]").forEach((card) => {
+        card.dataset.kpiProfit = isPositive ? "positive" : "negative";
+    });
+}
+
+function cancelDashboardStatAnimation(target) {
+    const frameId = Number(target.dataset.statAnimationFrame);
+
+    if (frameId) {
+        window.cancelAnimationFrame(frameId);
+        delete target.dataset.statAnimationFrame;
+    }
+}
+
+function easeOutQuart(progress) {
+    return 1 - Math.pow(1 - progress, 4);
+}
+
+function shouldReduceDashboardMotion() {
+    return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 function formatDashboardValue(value, kind, utils, isAnimating = false) {
@@ -206,12 +257,7 @@ function renderPlanChart(planDistribution) {
         labels: planDistribution.map((item) => item.plan),
         datasets: [{
             data: planDistribution.map((item) => Number(item.totalUsuarios || 0)),
-            backgroundColor: [
-                "rgba(22, 163, 74, 0.88)",
-                "rgba(59, 130, 246, 0.88)",
-                "rgba(249, 115, 22, 0.88)",
-                "rgba(148, 163, 184, 0.88)"
-            ],
+            backgroundColor: getChartColors().donutColors,
             borderWidth: 0
         }]
     }, {
@@ -223,27 +269,47 @@ function renderPlanChart(planDistribution) {
     });
 }
 
-function renderIngresosChart(ingresosMensuales, utils) {
-    if (!Array.isArray(ingresosMensuales) || ingresosMensuales.length === 0) {
-        toggleChartEmptyState("ingresos", true);
+function renderIngresosGastosChart(ingresosMensuales, gastosMensuales, utils) {
+    const ingresos = Array.isArray(ingresosMensuales) ? ingresosMensuales : [];
+    const gastos = Array.isArray(gastosMensuales) ? gastosMensuales : [];
+
+    if (ingresos.length === 0 && gastos.length === 0) {
+        toggleChartEmptyState("ingresosGastos", true);
         return;
     }
 
-    toggleChartEmptyState("ingresos", false);
-    createChart("ingresosChart", "bar", {
-        labels: ingresosMensuales.map((item) => utils.formatPeriod(item.periodo)),
-        datasets: [{
-            label: "Ingresos",
-            data: ingresosMensuales.map((item) => Number(item.total || 0)),
-            backgroundColor: "rgba(22, 163, 74, 0.82)",
-            hoverBackgroundColor: "rgba(21, 128, 61, 0.92)",
-            borderRadius: 14,
-            borderSkipped: false,
-            maxBarThickness: 42
-        }]
+    const ingresosByPeriod = new Map(ingresos.map((item) => [item.periodo, Number(item.total || 0)]));
+    const gastosByPeriod = new Map(gastos.map((item) => [item.periodo, Number(item.total || 0)]));
+    const orderedPeriods = buildContinuousPeriods(
+        Array.from(new Set([...ingresosByPeriod.keys(), ...gastosByPeriod.keys()])).sort()
+    );
+
+    toggleChartEmptyState("ingresosGastos", false);
+    createChart("ingresosGastosChart", "bar", {
+        labels: orderedPeriods.map((period) => utils.formatPeriod(period)),
+        datasets: [
+            {
+                label: "Ingresos",
+                data: orderedPeriods.map((period) => ingresosByPeriod.get(period) || 0),
+                backgroundColor: getChartColors().incomeBar,
+                hoverBackgroundColor: getChartColors().incomeBarHover,
+                borderRadius: 12,
+                borderSkipped: false,
+                maxBarThickness: 34
+            },
+            {
+                label: "Gastos",
+                data: orderedPeriods.map((period) => gastosByPeriod.get(period) || 0),
+                backgroundColor: getChartColors().expenseBar,
+                hoverBackgroundColor: getChartColors().expenseBarHover,
+                borderRadius: 12,
+                borderSkipped: false,
+                maxBarThickness: 34
+            }
+        ]
     }, {
         plugins: {
-            legend: { display: false },
+            legend: { display: true, position: "bottom" },
             tooltip: {
                 callbacks: {
                     label(context) {
@@ -265,6 +331,55 @@ function renderIngresosChart(ingresosMensuales, utils) {
     });
 }
 
+function buildContinuousPeriods(periods) {
+    if (!Array.isArray(periods) || periods.length === 0) {
+        return [];
+    }
+
+    const sorted = periods
+        .map(parsePeriod)
+        .filter((item) => item !== null)
+        .sort((a, b) => (a.year - b.year) || (a.month - b.month));
+
+    if (sorted.length === 0) {
+        return periods;
+    }
+
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    const result = [];
+
+    let year = first.year;
+    let month = first.month;
+
+    while (year < last.year || (year === last.year && month <= last.month)) {
+        result.push(`${year}-${String(month).padStart(2, "0")}`);
+        month += 1;
+        if (month > 12) {
+            month = 1;
+            year += 1;
+        }
+    }
+
+    return result;
+}
+
+function parsePeriod(period) {
+    if (!period || !period.includes("-")) {
+        return null;
+    }
+
+    const [yearRaw, monthRaw] = period.split("-");
+    const year = Number(yearRaw);
+    const month = Number(monthRaw);
+
+    if (!Number.isInteger(year) || !Number.isInteger(month) || month < 1 || month > 12) {
+        return null;
+    }
+
+    return { year, month };
+}
+
 function renderAsistenciasChart(asistenciasRecientes) {
     if (!Array.isArray(asistenciasRecientes) || asistenciasRecientes.length === 0) {
         toggleChartEmptyState("asistencias", true);
@@ -277,44 +392,8 @@ function renderAsistenciasChart(asistenciasRecientes) {
         datasets: [{
             label: "Asistencias",
             data: asistenciasRecientes.map((item) => Number(item.total || 0)),
-            borderColor: "rgba(37, 99, 235, 0.92)",
-            backgroundColor: "rgba(37, 99, 235, 0.16)",
-            fill: true,
-            tension: 0.35,
-            pointRadius: 3,
-            pointHoverRadius: 5
-        }]
-    }, {
-        plugins: {
-            legend: { display: false }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    precision: 0
-                }
-            }
-        }
-    });
-}
-
-function renderAltasChart(altasRecientes) {
-    if (!Array.isArray(altasRecientes) || altasRecientes.length === 0) {
-        toggleChartEmptyState("altas", true);
-        return;
-    }
-
-    const utils = createDashboardUtils();
-
-    toggleChartEmptyState("altas", false);
-    createChart("altasChart", "line", {
-        labels: altasRecientes.map((item) => utils.formatPeriod(item.periodo)),
-        datasets: [{
-            label: "Altas",
-            data: altasRecientes.map((item) => Number(item.total || 0)),
-            borderColor: "rgba(249, 115, 22, 1)",
-            backgroundColor: "rgba(249, 115, 22, 0.14)",
+            borderColor: getChartColors().attendanceLine,
+            backgroundColor: getChartColors().attendanceFill,
             fill: true,
             tension: 0.35,
             pointRadius: 3,
@@ -343,11 +422,8 @@ function createChart(canvasId, type, data, options) {
     }
 
     const existingChart = Chart.getChart(canvas);
-    if (existingChart) {
-        existingChart.destroy();
-    }
-
     const radialChart = isRadialChart(type);
+    const theme = getChartTheme();
     const baseOptions = {
         responsive: true,
         maintainAspectRatio: false,
@@ -355,7 +431,7 @@ function createChart(canvasId, type, data, options) {
             mode: "index",
             intersect: false
         },
-        animation: {
+        animation: shouldReduceDashboardMotion() ? false : {
             duration: 650,
             easing: "easeOutQuart"
         },
@@ -364,15 +440,28 @@ function createChart(canvasId, type, data, options) {
                 labels: {
                     usePointStyle: true,
                     boxWidth: 8,
-                    color: "#475569"
+                    color: theme.textSecondary
                 }
             },
             tooltip: {
-                backgroundColor: "#1d2939",
-                titleColor: "#ffffff",
-                bodyColor: "#ffffff",
+                backgroundColor: theme.tooltipBg,
+                titleColor: theme.tooltipText,
+                bodyColor: theme.tooltipText,
                 padding: 12,
-                displayColors: false
+                cornerRadius: 10,
+                borderColor: theme.tooltipBorder,
+                borderWidth: 1,
+                displayColors: false,
+                titleFont: {
+                    family: "'Manrope', 'Inter', sans-serif",
+                    weight: "700",
+                    size: 12
+                },
+                bodyFont: {
+                    family: "'Inter', system-ui, sans-serif",
+                    weight: "500",
+                    size: 13
+                }
             }
         }
     };
@@ -380,20 +469,34 @@ function createChart(canvasId, type, data, options) {
     if (!radialChart) {
         baseOptions.scales = {
             x: {
-                ticks: { color: "#475569" },
+                ticks: { color: theme.textSecondary },
                 grid: { display: false }
             },
             y: {
-                ticks: { color: "#475569" },
-                grid: { color: "rgba(148, 163, 184, 0.18)" }
+                ticks: { color: theme.textSecondary },
+                grid: { color: theme.grid }
             }
         };
+    }
+
+    const nextOptions = mergeChartOptions(baseOptions, options, radialChart);
+
+    if (existingChart && existingChart.config.type !== type) {
+        existingChart.destroy();
+    }
+
+    const reusableChart = Chart.getChart(canvas);
+    if (reusableChart) {
+        reusableChart.data = data;
+        reusableChart.options = nextOptions;
+        reusableChart.update(shouldReduceDashboardMotion() ? "none" : undefined);
+        return;
     }
 
     new Chart(canvas, {
         type,
         data,
-        options: mergeChartOptions(baseOptions, options, radialChart)
+        options: nextOptions
     });
 }
 
@@ -448,6 +551,51 @@ function toggleDashboardAlert(visible, message) {
             }
         }
     }
+}
+
+function getChartColors() {
+    const isDark = document.documentElement.dataset.theme === "dark";
+    // Operations Deck palette in dark:
+    //   primary (ingresos) = verde marca #22C55E
+    //   accent HUD (attendance) = cian #38BDF8
+    //   warning = ámbar #F59E0B
+    //   danger (gastos) = rojo #EF4444
+    //   donut rotation: cyan, green, amber, rose, gray
+    return {
+        incomeBar:       isDark ? "rgba(34,197,94,0.78)"  : "rgba(22,163,74,0.82)",
+        incomeBarHover:  isDark ? "rgba(34,197,94,0.95)"  : "rgba(21,128,61,0.92)",
+        expenseBar:      isDark ? "rgba(239,68,68,0.68)"  : "rgba(239,68,68,0.72)",
+        expenseBarHover: isDark ? "rgba(239,68,68,0.88)"  : "rgba(220,38,38,0.84)",
+        attendanceLine:  isDark ? "rgba(56,189,248,0.92)" : "rgba(14,165,233,0.92)",
+        attendanceFill:  isDark ? "rgba(56,189,248,0.20)" : "rgba(14,165,233,0.16)",
+        donutColors: isDark
+            ? [
+                "rgba(56,189,248,0.85)",  // cyan — primary HUD
+                "rgba(74,222,128,0.85)",  // green — brand
+                "rgba(251,191,36,0.85)",  // amber
+                "rgba(244,114,182,0.85)", // rose
+                "rgba(148,176,220,0.75)"  // steel
+            ]
+            : [
+                "rgba(14,165,233,0.88)",
+                "rgba(22,163,74,0.88)",
+                "rgba(249,115,22,0.88)",
+                "rgba(236,72,153,0.88)",
+                "rgba(148,163,184,0.88)"
+            ]
+    };
+}
+
+function getChartTheme() {
+    const styles = window.getComputedStyle(document.documentElement);
+
+    return {
+        textSecondary: (styles.getPropertyValue("--ff-text-muted") || "#475569").trim(),
+        grid: (styles.getPropertyValue("--ff-chart-grid") || "rgba(148, 163, 184, 0.18)").trim(),
+        tooltipBg: (styles.getPropertyValue("--ff-chart-tooltip-bg") || "#1d2939").trim(),
+        tooltipText: (styles.getPropertyValue("--ff-chart-tooltip-text") || "#ffffff").trim(),
+        tooltipBorder: (styles.getPropertyValue("--ff-border-glow") || "rgba(56, 189, 248, 0.22)").trim()
+    };
 }
 
 function createDashboardUtils() {

@@ -1,8 +1,11 @@
 package com.flacofitness.app.model.entity;
 
+import com.flacofitness.app.model.enums.TipoMembresia;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -35,6 +38,13 @@ public class Plan {
 
     @Column(columnDefinition = "TEXT")
     private String descripcion;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_membresia", length = 30)
+    private TipoMembresia tipoMembresia;
+
+    @Column(columnDefinition = "TEXT")
+    private String beneficios;
 
     @NotNull
     @Column(name = "precio_mensual", nullable = false, precision = 10, scale = 2)

@@ -5,10 +5,24 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.flacofitness.app.repository.AsistenciaRepository;
+import com.flacofitness.app.repository.ActivityLogRepository;
+import com.flacofitness.app.repository.ClaseRepository;
+import com.flacofitness.app.repository.GastoRepository;
+import com.flacofitness.app.repository.GastoRecurrenteRepository;
+import com.flacofitness.app.repository.MaquinaRepository;
+import com.flacofitness.app.repository.MaterialRepository;
+import com.flacofitness.app.repository.MembresiaUsuarioRepository;
+import com.flacofitness.app.repository.NominaRepository;
 import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.PlanRepository;
+import com.flacofitness.app.repository.ReservaSesionRepository;
 import com.flacofitness.app.repository.RolRepository;
+import com.flacofitness.app.repository.RecentVisitRepository;
 import com.flacofitness.app.repository.RutinaRepository;
+import com.flacofitness.app.repository.SesionClaseRepository;
+import com.flacofitness.app.repository.StaffPerfilRepository;
+import com.flacofitness.app.repository.TrialRepository;
+import com.flacofitness.app.repository.UxMemoryStateRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 
 @SpringBootTest(properties = {
@@ -37,6 +51,48 @@ class FlacoFitnessApplicationTests {
 
     @MockBean
     private PagoRepository pagoRepository;
+
+    @MockBean
+    private StaffPerfilRepository staffPerfilRepository;
+
+    @MockBean
+    private MembresiaUsuarioRepository membresiaUsuarioRepository;
+
+    @MockBean
+    private TrialRepository trialRepository;
+
+    @MockBean
+    private ClaseRepository claseRepository;
+
+    @MockBean
+    private SesionClaseRepository sesionClaseRepository;
+
+    @MockBean
+    private ReservaSesionRepository reservaSesionRepository;
+
+    @MockBean
+    private GastoRepository gastoRepository;
+
+    @MockBean
+    private GastoRecurrenteRepository gastoRecurrenteRepository;
+
+    @MockBean
+    private NominaRepository nominaRepository;
+
+    @MockBean
+    private MaquinaRepository maquinaRepository;
+
+    @MockBean
+    private MaterialRepository materialRepository;
+
+    @MockBean
+    private ActivityLogRepository activityLogRepository;
+
+    @MockBean
+    private RecentVisitRepository recentVisitRepository;
+
+    @MockBean
+    private UxMemoryStateRepository uxMemoryStateRepository;
 
     @Test
     void contextLoads() {

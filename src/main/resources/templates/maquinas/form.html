@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Maquina')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('maquinas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Maquina', 'Catalogo y mantenimiento.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Operacion</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Editar maquina' : 'Nueva maquina'}">Nueva maquina</h2>
+                    </div>
+                </section>
+
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card">
+                            <div class="ff-card-body">
+                                <form th:action="${modoEdicion ? '/maquinas/' + maquina.id : '/maquinas'}" th:object="${maquina}" method="post" class="row g-3">
+                                    <div class="col-md-8"><label class="form-label" for="nombre">Nombre</label><input id="nombre" class="form-control" th:field="*{nombre}" required></div>
+                                    <div class="col-md-4"><label class="form-label" for="categoria">Categoria</label><select id="categoria" class="form-select" th:field="*{categoria}" required><option value="">Selecciona...</option><option th:each="cat : ${categoriasMaquina}" th:value="${cat}" th:text="${#strings.replace(cat.name(), '_', ' ')}">Categoria</option></select></div>
+                                    <div class="col-md-4"><label class="form-label" for="marca">Marca</label><input id="marca" class="form-control" th:field="*{marca}"></div>
+                                    <div class="col-md-4"><label class="form-label" for="modelo">Modelo</label><input id="modelo" class="form-control" th:field="*{modelo}"></div>
+                                    <div class="col-md-4"><label class="form-label" for="numeroSerie">Numero de serie</label><input id="numeroSerie" class="form-control" th:field="*{numeroSerie}"></div>
+                                    <div class="col-md-6"><label class="form-label" for="ubicacion">Ubicacion</label><input id="ubicacion" class="form-control" th:field="*{ubicacion}"></div>
+                                    <div class="col-md-6"><label class="form-label" for="estado">Estado</label><select id="estado" class="form-select" th:field="*{estado}" required><option value="">Selecciona...</option><option th:each="estado : ${estadosMaquina}" th:value="${estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option></select></div>
+                                    <div class="col-md-3"><label class="form-label" for="fechaCompra">Fecha compra</label><input id="fechaCompra" type="date" class="form-control" th:field="*{fechaCompra}"></div>
+                                    <div class="col-md-3"><label class="form-label" for="costeCompra">Coste de compra</label><input id="costeCompra" type="number" step="0.01" min="0" class="form-control" th:field="*{costeCompra}" placeholder="0.00"><div class="form-text">Al crear, genera gasto pagado automatico.</div></div>
+                                    <div class="col-md-3"><label class="form-label" for="ultimaRevision">Ultima revision</label><input id="ultimaRevision" type="date" class="form-control" th:field="*{ultimaRevision}"></div>
+                                    <div class="col-md-3"><label class="form-label" for="proximaRevision">Proxima revision</label><input id="proximaRevision" type="date" class="form-control" th:field="*{proximaRevision}"></div>
+                                    <div class="col-12"><label class="form-label" for="observaciones">Observaciones</label><textarea id="observaciones" class="form-control" rows="4" th:field="*{observaciones}"></textarea></div>
+                                    <div class="col-12 d-flex gap-2"><button class="btn btn-success" type="submit">Guardar</button><a class="btn btn-outline-secondary" th:href="@{/maquinas}">Cancelar</a></div>
+                                </form>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-12 col-xl-4" id="foto-panel">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header"><div><h3 class="ff-card-title">Foto de la maquina</h3><p class="ff-card-subtitle">JPG, PNG, GIF o WEBP.</p></div></div>
+                            <div class="ff-card-body" th:if="${modoEdicion}">
+                                <img class="img-fluid rounded border mb-3" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(maquina.fotoPath)}" alt="Foto maquina">
+                                <form th:action="@{/maquinas/{id}/foto(id=${maquina.id})}" method="post" enctype="multipart/form-data" class="d-grid gap-2">
+                                    <input type="hidden" name="redirectTo" value="editar">
+                                    <input type="file" name="foto" class="form-control" accept="image/png,image/jpeg,image/gif,image/webp" required>
+                                    <button type="submit" class="btn btn-outline-success">Actualizar foto</button>
+                                </form>
+                            </div>
+                            <div class="ff-card-body" th:unless="${modoEdicion}">
+                                Guarda primero la maquina para habilitar la carga de foto.
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -2,26 +2,161 @@
 
 ## Prioridad alta
 
-- Exponer `fechaProximoPago` y el estado de renovacion automatica en las vistas de usuario y pagos
-- Consolidar una primera version estable para defensa y valorar promocion controlada a `main`
-- Completar una demostracion mas rica con datos semilla funcionales para dashboard, pagos y asistencias
-- Validar el dashboard tambien sobre MySQL real con captura visual, para cerrar definitivamente la paridad entre `local-demo` y `mysql-real`
-- Continuar con bloque 4: robustecer asignacion de rutinas con fallback sin drag and drop y mejorar gestion multiusuario
+- Ejecutar el blueprint `docs/agents-memory/rebuild-from-zero-modular-guide.md` solo en un repositorio/branch de reinicio controlado, no sobre el runtime limpio actual.
+- Definir formalmente si el rebuild usa nombre alternativo `AtlasGym OS` y base alternativa `atlasgym_core` como baseline oficial.
+- Crear checklist de migracion funcional modulo por modulo para validar equivalencia minima contra FlacoFitness actual.
+- Ejecutar QA visual profunda por modulo sobre MySQL real: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales` y `/cliente`.
+- Verificar smoke por perfiles reales (`ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE`, `CLIENTE`) incluyendo accesos denegados, redirecciones y visibilidad de sidebar.
+- Ejecutar QA visual especifica del bloque financiero tras el nuevo builder de nominas, el detalle premium y el PDF individual.
+- Revisar dark mode modulo por modulo con foco en login, formularios, tablas, dropdowns y charts.
+- Revisar notificaciones restantes para que todas apunten a detalle o listado filtrado, no a modulos genericos.
+- Anadir tests dedicados para `ProductIntelligenceService`, `GlobalSearchService`, truncado de `RecentVisitService` y flujo de `NominaService`.
 
 ## Prioridad media
 
-- Anadir CRUD visual para planes y roles si se necesita una defensa mas completa del modelo administrativo
-- Crear diagramas de arquitectura y base de datos para la documentacion tecnica
-- Implementar modo oscuro global respetando los design tokens ya definidos
-- Anadir pruebas unitarias basicas para los servicios principales
-- Anadir pruebas MVC o de integracion que cubran el render de la home y eviten regresiones silenciosas de Thymeleaf en el dashboard
-- Anadir pruebas MVC o de integracion que cubran el render del detalle de usuario y su timeline para evitar regresiones silenciosas de Thymeleaf
-- Reducir dependencia de CDNs: mover gradualmente librerias criticas (jQuery/DataTables/Sortable) a WebJars o recursos locales para demos offline
-- Explorar animacion de transicion entre paginas para una experiencia mas fluida
+- Crear tests unitarios adicionales para reglas de `AccessProfile`, `ShellNotificationService` y `ActivityLogService`.
+- Documentar un flujo de defensa claro: cuenta -> usuario -> membresia -> pago -> sesion -> asistencia -> nomina/gasto.
+- Revisar si `spring.profiles.active` debe quedar por defecto en `local` o moverse a variable de entorno para despliegue real.
+- Persistir historial de notificaciones importantes en backend para auditar alertas vistas/no vistas por usuario.
+- Ampliar busqueda global v1 a `gastos`, `nominas`, `maquinas` y `materiales` solo si la primera version demuestra uso real.
+- Refinar aun mas el builder de nominas con avatar del staff o selector enriquecido si no rompe simplicidad MVC.
 
 ## Prioridad baja
 
-- Preparar scripts de despliegue y revision final de Docker
-- Valorar exportacion simple de tablas a CSV si aporta valor real a la entrega final
-- Investigar lazy-loading de imagenes de avatar en listados con muchos registros
-- Documentar el sistema de design tokens en un archivo de referencia para futuras extensiones
+- Evaluar migracion de la auth custom actual a Spring Security solo si el proyecto necesita hardening comercial real.
+- Preparar exportacion CSV de pagos, asistencias, trials y sesiones.
+- Mover todas las librerias frontend a recursos locales o WebJars para demos sin internet.
+- Crear diagramas ER y diagrama de arquitectura en `docs/diagrams/`.
+- Evaluar multi-gimnasio/multi-tenant solo si aparece un caso comercial real.
+- Revisar codificacion de algunos markdown antiguos para eliminar restos de mojibake.
+
+## COMPLETADO 2026-04-22 (bloque financiero)
+
+- [x] Bug critico corregido: `gastos/detail.html` accedia a `gasto.frecuencia` que no existe en `Gasto`; corregido a `gasto.gastoRecurrente.frecuencia` con null-guards correctos.
+- [x] `SaaSSchedulerService` ahora usa `${app.pagos.scheduler.cron}` y `${app.pagos.scheduler.enabled}` desde properties en lugar de cron hardcodeado.
+- [x] QA de codigo completa del bloque financiero: GastoService, PagoService, NominaService, GastoRecurrenteService, FinancialAutomationService, RecurrenceService, ShellNotificationService auditados sin bugs adicionales.
+- [x] AccessProfile.canAccessAsManager validado: cubre `/gastos`, `/nominas`, `/pagos`, `/maquinas`, `/materiales`.
+- [x] StatsController validado: `/stats/dashboard` y `/stats/gastos` cubren todas las metricas financieras correctamente.
+- [x] Templates nominas/ y gastos/recurrentes/ validados visualmente sin errores de propiedad.
+- [x] `CLAUDE.md` creado en raiz con reglas del proyecto y orden de lectura para Claude Code.
+- [x] `docs/agents-memory/claude-plan-status.md` creado para traducir el archivo `.claude` a estado real ejecutado.
+- [x] `/gastos` actualizado para usar filtros financieros completos ya soportados por backend.
+- [x] Exportacion PDF individual anadida para detalle de gasto.
+- [x] Dashboard simplificado con set corto de KPIs y rail premium de alertas accionables.
+- [x] Grafica secundaria de altas retirada para dejar solo los tres charts principales del dashboard.
+- [x] Detalle de nomina rehecho como expediente salarial y PDF individual/listado reforzados.
+
+## COMPLETADO 2026-04-22 (bloques 1-4 anteriores)
+
+- [x] Git limpio: tree commiteado, stash pre-recovery eliminado (era estado incompleto con root/sin-pass).
+- [x] `PagoSchedulerService` deprecated eliminado.
+- [x] Proyecciones JPA (*PorMesView, *PorPlanView, GastoPorCategoriaView) movidas de `repository/` a `model/dto/`.
+- [x] Trial: filtro por rango de fechas (desde/hasta) anadido en controller, service, repo y template.
+- [x] `AccessProfile.canAccessAsManager` corregido (indentacion de /nominas).
+- [x] `UsuarioService.guardar()` cierra automaticamente trials pendientes con el mismo email.
+- [x] Panel Cliente ampliado con seccion "Reservas activas" e "Historial de asistencias".
+
+## COMPLETADO 2026-04-23 (coherencia UX y navegacion)
+
+- [x] Redirecciones post-accion mejoradas para volver a detalle en `staff`, `materiales`, `maquinas`, `membresias`, `pagos`, `gastos` y `recurrentes`.
+- [x] Fichas secundarias enriquecidas: `staff/detail`, `maquinas/detail`, `materiales/detail`, `membresias/detail` y `pagos/detail`.
+- [x] Botones redundantes reducidos en listados con fila clicable (`staff`, `membresias`, `gastos`, `recurrentes`, `pagos`).
+- [x] Notificaciones mas contextuales para usuarios inactivos, renovaciones, gastos criticos, recurrentes y maquinas fuera de servicio.
+- [x] `ViewControllerTest` ampliado para cubrir detalles de `staff`, `maquinas` y `materiales`.
+- [x] Limpieza de copy visible y sidebar con textos coherentes en ASCII.
+
+## COMPLETADO 2026-04-23 (producto premium e inteligencia)
+
+- [x] `ProductIntelligenceService` creado para clasificar usuarios, detectar membresias por caducar y marcar gastos anomalos.
+- [x] `DashboardStatsResponse` ampliado con panel `Requiere atencion`.
+- [x] Busqueda global v1 creada con pagina `/busqueda` y endpoint `/api/busqueda/global`.
+- [x] FAB global por perfil anadido al shell sin romper MVC ni roles actuales.
+- [x] `RecentVisitService` y persistencia `recent_visit` integrados en topbar y dashboard.
+- [x] `UxMemoryStateService` y persistencia `ux_memory_state` integrados para tooltips y onboarding.
+- [x] `ActivityLogService` y persistencia `activity_log` integrados en dashboard, usuario y staff.
+- [x] Tooltips first-use anadidos a dashboard, usuarios, pagos, membresias, sesiones, trials, staff, gastos, maquinas y materiales.
+- [x] Filtros persistentes en navegador aplicados a listados prioritarios.
+
+## COMPLETADO 2026-04-23 (cierre profesional SaaS)
+
+- [x] Dead code eliminado: `fragments/navbar.html` confirmado como huerfano con grep y borrado.
+- [x] `ViewControllerTest` ampliado con `adminPuedeVerListadoGastos` y `adminPuedeVerDetalleGasto`; cubre regresion EL1008E de `gastos/detail.html`.
+- [x] Sistema de KPI cards unificado: `pagos/list.html`, `gastos/list.html`, `nominas/list.html` migrados a `.ff-kpi-card` con variantes semanticas `ff-kpi-positive/warning/danger/neutral`.
+- [x] CSS: variantes semanticas de KPI cards anadidas a `styles.css` con dark mode overrides. `.ff-filter-panel` anadido para envolver filtros en los modulos financieros.
+- [x] Status badges normalizados: `pagos/list.html` usa `.ff-status-badge` en lugar de clases Bootstrap inline; `nominas/list.html` corregido de `ff-status-warning` a `ff-status-pending`.
+- [x] Beneficio estimado del dashboard: `data-kpi-profit` anadido con `th:attr` en `home/index.html`; `updateProfitCardColor()` en `dashboard.js` actualiza el color en cada refresco de datos.
+- [x] Dark mode para Chart.js: `getChartColors()` anadida a `dashboard.js`; `renderPlanChart`, `renderIngresosGastosChart` y `renderAsistenciasChart` usan colores del tema en lugar de hex hardcodeados.
+- [x] N+1 eliminado en `PagoService`: tres queries JPQL de agregacion anadidas a `PagoRepository`; `contarUsuariosAlDia/ConDeuda/ConPagosVencidos` reemplazados con llamadas directas al repositorio.
+- [x] Trial->MembresiaUsuario: `TrialService.convertirAUsuario()` auto-crea `MembresiaUsuario` cuando el trial se convierte a un usuario nuevo con plan asignado y sin membresia activa previa.
+- [x] Tests: 21 en verde.
+
+## COMPLETADO 2026-04-24 (auth por cuenta + nominas)
+
+- [x] Acceso compartido por PIN sustituido por autenticacion por cuenta con `email/username + password`.
+- [x] `Usuario` ampliado con `username`, `passwordHash` y `mustChangePassword`.
+- [x] Hash seguro con BCrypt via `PasswordEncoder`.
+- [x] Cambio de password implementado en `/cuenta/password`.
+- [x] Reset temporal por admin implementado desde `UsuarioController`.
+- [x] Backfill de credenciales legacy con `AuthBootstrapRunner`.
+- [x] `NominaService` ampliado con flujo `BORRADOR -> EMITIDA -> PAGADA/CANCELADA`.
+- [x] Builder premium de nomina con preview en vivo y detalle/PDF mas profesional.
+
+## COMPLETADO 2026-04-26 (estabilizacion premium)
+
+- [x] Busqueda global v2 ligera: usuarios, staff y sesiones usan queries limitadas de repositorio en lugar de `listarTodos().stream()`.
+- [x] Contrato `/api/busqueda/global` mantenido sin cambios y protegido con `GlobalSearchServiceTest`.
+- [x] Dashboard, stats y PDF de gastos reducen calculos repetidos de ingresos/gastos mensuales.
+- [x] `StaffController` evita cargar dos veces el listado de staff.
+- [x] `nominas/list.html` incorpora filtros persistentes, copy mas limpio y empty state accionable.
+- [x] Contadores del dashboard suavizados para una animacion menos brusca.
+- [x] `cookies.txt` tratado como artefacto local e ignorado por Git.
+- [x] Validacion final: compile, tests, MySQL y smoke HTTP basico con app temporal en `8081`.
+
+## COMPLETADO 2026-04-26 (Command Center UI)
+
+- [x] Dark mode convertido en experiencia principal por defecto sin eliminar light mode.
+- [x] Nuevas fuentes: `Space Grotesk` para display/KPIs y `IBM Plex Sans` para UI.
+- [x] Capa CSS Command Center con paleta tactica, glassmorphism, HUD cards, grids apilados, tablas, formularios y empty states.
+- [x] Pantallas clave marcadas con `ff-command-stack`: dashboard, usuarios, cliente, finanzas, asistencias, staff, rutinas y nominas.
+- [x] Anime.js local añadido y `hud-motion.js` implementado con fallback seguro y respeto de reduced motion.
+- [x] Smoke de assets nuevos y rutas principales completado en puerto temporal `8082`.
+
+## COMPLETADO 2026-04-26 (performance + finanzas + nominas)
+
+- [x] `NominaController` migrado a `NominaForm`; se elimina la validacion rota de entidad incompleta en POST.
+- [x] Crear, editar borrador, emitir, pagar, cancelar y exportar PDF mantienen rutas existentes; se anadio alias POST `/nominas/{id}/pagar`.
+- [x] `NominaServiceTest` cubre borrador, emision con gasto, pago con gasto, duplicados, bloqueo de edicion y neto no positivo.
+- [x] Nuevo Centro financiero MVC en `/finanzas` y agregado JSON `/stats/finanzas`.
+- [x] Sidebar y permisos actualizados para mostrar `finanzas` solo a ADMIN/GERENTE.
+- [x] Dashboard evita doble fetch tras SSR y actualiza charts sin destruir si conserva tipo.
+- [x] `hud-motion.js` elimina pulso de `box-shadow`; `finance-center.js` queda encapsulado para evitar colisiones globales.
+- [x] Validacion final: compile, 33 tests, MySQL disponible y smoke HTTP en `8081`.
+
+## COMPLETADO 2026-04-26 (limpieza definitiva MySQL y residuos)
+
+- [x] Backup SQL previo creado en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.
+- [x] Scripts `precheck`, `cleanup` y `postcheck` documentados en `docs/db/`.
+- [x] Eliminadas tablas legacy sin entidad vigente: `app_clock_settings`, `staff`, `sesiones`, `ejercicios`, `rutina_ejercicios`.
+- [x] Eliminadas columnas legacy de `gastos` y `reservas_sesion` tras migrar datos utiles.
+- [x] `reservas_sesion.sesion_id` queda alineada con `sesiones_clase.id`.
+- [x] Catalogo activo simplificado a `Basico` 29 EUR y `Estudiante` 19 EUR; planes legacy quedan historicos inactivos.
+- [x] Eliminados SQL legacy de classpath/docs root: `src/main/resources/data.sql`, `docs/data.sql`, `docs/init.sql`.
+- [x] Auth UI incorpora mostrar/ocultar password en login y cambio de password.
+- [x] Smoke real ADMIN completado con MySQL en `8083`; rutas criticas devolvieron 200.
+- [x] Validacion final: compile, 35 tests y postcheck MySQL limpio.
+
+## COMPLETADO 2026-04-26 (rescate funcional anti-500)
+
+- [x] Nominas: acciones `emitir`, `pagar` y `cancelar` ya no propagan validaciones como 500.
+- [x] Auth: login con password temporal redirige a `/cuenta/password`; cambio de password probado con BCrypt.
+- [x] Usuarios: formulario con CTA adicional visible, preview de foto en columna derecha y toggles de password.
+- [x] Trials: formulario migrado a `TrialForm`; alta redirige a detalle y conversion crea credenciales temporales reales.
+- [x] Staff: buscador de usuario no reconstruye el select ni borra seleccion.
+- [x] Inventario: alta de maquina/material genera gasto automatico pagado si hay coste.
+- [x] Tests: suite ampliada a 43 pruebas en verde.
+
+## Pendiente recomendado despues del rescate
+
+- [ ] Smoke manual en navegador con MySQL real para los flujos que crean datos: usuario, trial, nomina, maquina y material.
+- [ ] Revisar mojibake restante en plantillas antiguas; no bloquea tests pero degrada percepcion.
+- [ ] Anadir UI visible de `costeCompra` en detalle/listado de maquinas si se quiere auditar compras desde inventario.

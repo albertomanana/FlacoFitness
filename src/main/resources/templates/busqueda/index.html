@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Busqueda global')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Busqueda global', 'Encuentra usuarios, staff y sesiones desde un solo lugar.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack" data-module-key="busqueda">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Busqueda</span>
+                        <h2 class="ff-section-title">Resultados agrupados</h2>
+                        <p class="ff-section-subtitle" th:text="${query != null and !query.isBlank()} ? 'Coincidencias para &quot;' + query + '&quot;.' : 'Escribe algo en el buscador global para empezar.'">
+                            Escribe algo en el buscador global para empezar.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card">
+                    <div class="ff-card-body">
+                        <div class="ff-search-groups" th:if="${searchResult != null and !#lists.isEmpty(searchResult.groups)}">
+                            <article class="ff-search-group" th:each="group : ${searchResult.groups}">
+                                <div class="ff-card-header px-0 pt-0">
+                                    <div>
+                                        <p class="ff-section-eyebrow mb-0" th:text="${group.label}">Grupo</p>
+                                        <h3 class="ff-card-title mt-1" th:text="${#lists.size(group.items)} + ' resultado(s)'">0 resultados</h3>
+                                    </div>
+                                </div>
+                                <div class="ff-action-list">
+                                    <a class="ff-action-link" th:each="item : ${group.items}" th:href="${item.url}">
+                                        <div>
+                                            <strong th:text="${item.title}">Titulo</strong>
+                                            <span th:text="${item.subtitle}">Descripcion</span>
+                                        </div>
+                                        <span class="ff-kpi-highlight" th:text="${item.group}">Grupo</span>
+                                    </a>
+                                </div>
+                            </article>
+                        </div>
+                        <div class="ff-empty-state-hero" th:if="${searchResult == null or #lists.isEmpty(searchResult.groups)}">
+                            <strong>No hay resultados todavia</strong>
+                            <p>Prueba con un nombre, email, rol interno o el nombre de una sesion.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -63,6 +63,13 @@ public class UserPhotoStorageService {
         }
     }
 
+    public void validarFotoUsuario(MultipartFile foto) {
+        if (foto == null || foto.isEmpty()) {
+            return;
+        }
+        validarFoto(foto);
+    }
+
     private void validarFoto(MultipartFile foto) {
         if (foto == null || foto.isEmpty()) {
             throw new BusinessValidationException("Debes seleccionar una imagen para subir");

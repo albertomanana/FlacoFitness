@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Membresias')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('membresias')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Membresias', 'Catalogo comercial y contratos.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack" data-module-key="membresias">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="membresias">
+                    <div>
+                        <span class="ff-section-eyebrow">Membresias</span>
+                        <h3 class="ff-card-title mt-1">Piensa en catalogo y contrato</h3>
+                        <p class="ff-card-subtitle">Aqui defines la oferta comercial. La venta real se hace luego desde la ficha del usuario para mantener el contexto.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Comercial</span>
+                        <h2 class="ff-section-title">Catalogo de membresias</h2>
+                        <p class="ff-section-subtitle">Planes vendibles que luego se contratan por usuario.</p>
+                    </div>
+                    <a class="btn btn-success" th:href="@{/membresias/nueva}">Nueva membresia</a>
+                </section>
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Catalogo</p><p class="ff-stat-value" th:text="${#lists.size(planes)}">0</p><p class="ff-stat-note">Planes creados</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Planes activos</p><p class="ff-stat-value" th:text="${planes.?[activo == true].size()}">0</p><p class="ff-stat-note">Disponibles para venta</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Contratos activos</p><p class="ff-stat-value" th:text="${membresiasActivas}">0</p><p class="ff-stat-note">Usuarios con contrato</p></article></div>
+                    <div class="col-sm-6 col-xl-3"><article class="ff-surface-card ff-stat-card"><p class="ff-stat-label">Vencidas</p><p class="ff-stat-value" th:text="${membresiasVencidas}">0</p><p class="ff-stat-note">Requieren seguimiento</p></article></div>
+                </section>
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header"><div><h3 class="ff-card-title">Membresias</h3><p class="ff-card-subtitle">Precio, duracion y estado del catalogo.</p></div></div>
+                    <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="membresiasTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="membresiasEstadoFiltro">Estado</label>
+                                <select id="membresiasEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="status">
+                                    <option value="all">Todas</option>
+                                    <option value="activa">Activas</option>
+                                    <option value="inactiva">Inactivas</option>
+                                </select>
+                            </div>
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="membresiasTipoFiltro">Tipo</label>
+                                <select id="membresiasTipoFiltro" class="form-select form-select-sm" data-ff-filter-key="tipo">
+                                    <option value="all">Todos</option>
+                                    <option value="mensual">Mensual</option>
+                                    <option value="estudiante">Estudiante</option>
+                                    <option value="legacy">Legacy</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="membresiasTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar membresia...">
+                                <thead><tr><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Duracion</th><th>Estado</th><th data-orderable="false" data-searchable="false" class="text-end">Acciones</th></tr></thead>
+                                <tbody th:if="${not #lists.isEmpty(planes)}">
+                                <tr th:each="plan : ${planes}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/membresias/{id}(id=${plan.id})},data-ff-row='1',data-ff-status=${plan.activo == true ? 'activa' : 'inactiva'},data-ff-tipo=${plan.tipoMembresia != null ? ((plan.tipoMembresia.name() == 'MENSUAL' or plan.tipoMembresia.name() == 'ESTUDIANTE') ? #strings.toLowerCase(#strings.replace(plan.tipoMembresia.name(), '_', '-')) : 'legacy') : 'mensual'}">
+                                    <td><div class="ff-table-meta"><a class="ff-row-link ff-table-primary" th:href="@{/membresias/{id}(id=${plan.id})}" th:text="${plan.nombre}">Plan</a><span class="ff-table-secondary" th:text="${#strings.defaultString(plan.descripcion, 'Sin descripcion')}">Descripcion</span></div></td>
+                                    <td th:text="${plan.tipoMembresia != null ? #strings.replace(plan.tipoMembresia.name(), '_', ' ') : 'MENSUAL'}">MENSUAL</td>
+                                    <td th:text="${plan.precioMensual != null ? #numbers.formatDecimal(plan.precioMensual, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
+                                    <td th:text="${plan.duracionDias != null ? plan.duracionDias + ' dias' : '-'}">30 dias</td>
+                                    <td><span class="ff-status-badge" th:classappend="${plan.activo == true} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${plan.activo == true} ? 'Activa' : 'Inactiva'">Activa</span></td>
+                                    <td class="text-end"><div class="d-inline-flex gap-2"><a class="btn btn-outline-secondary btn-sm" th:href="@{/membresias/{id}/editar(id=${plan.id})}">Editar</a><form th:if="${plan.activo == true}" th:action="@{/membresias/{id}/desactivar(id=${plan.id})}" method="post"><button class="btn btn-outline-danger btn-sm" type="submit">Desactivar</button></form><form th:unless="${plan.activo == true}" th:action="@{/membresias/{id}/activar(id=${plan.id})}" method="post"><button class="btn btn-outline-success btn-sm" type="submit">Activar</button></form></div></td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(planes)}"><tr><td colspan="6" class="text-center ff-empty-state">Aun no hay planes en catalogo. Crea el primero para poder asignarlo despues desde las fichas de usuario. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/membresias/nueva}">Crear membresia</a></td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

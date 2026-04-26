@@ -1,0 +1,295 @@
+package com.flacofitness.app.service;
+
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import com.flacofitness.app.exception.BusinessValidationException;
+import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.dto.TrialConversionResult;
+import com.flacofitness.app.model.dto.TrialForm;
+import com.flacofitness.app.model.entity.MembresiaUsuario;
+import com.flacofitness.app.model.entity.Plan;
+import com.flacofitness.app.model.entity.Rol;
+import com.flacofitness.app.model.entity.StaffPerfil;
+import com.flacofitness.app.model.entity.Trial;
+import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoMembresia;
+import com.flacofitness.app.model.enums.EstadoTrial;
+import com.flacofitness.app.repository.MembresiaUsuarioRepository;
+import com.flacofitness.app.repository.RolRepository;
+import com.flacofitness.app.repository.StaffPerfilRepository;
+import com.flacofitness.app.repository.TrialRepository;
+import com.flacofitness.app.repository.UsuarioRepository;
+
+@Service
+@Transactional(readOnly = true)
+public class TrialService {
+
+    private static final String ROL_CLIENTE = "CLIENTE";
+    private static final List<EstadoMembresia> MEMBRESIAS_ACTIVAS = List.of(
+            EstadoMembresia.ACTIVA, EstadoMembresia.PENDIENTE, EstadoMembresia.PRUEBA);
+
+    private final TrialRepository trialRepository;
+    private final StaffPerfilRepository staffPerfilRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final RolRepository rolRepository;
+    private final MembresiaUsuarioRepository membresiaUsuarioRepository;
+    private final OperationalClockService operationalClockService;
+    private final PasswordEncoder passwordEncoder;
+
+    public TrialService(TrialRepository trialRepository,
+                        StaffPerfilRepository staffPerfilRepository,
+                        UsuarioRepository usuarioRepository,
+                        RolRepository rolRepository,
+                        MembresiaUsuarioRepository membresiaUsuarioRepository,
+                        OperationalClockService operationalClockService,
+                        PasswordEncoder passwordEncoder) {
+        this.trialRepository = trialRepository;
+        this.staffPerfilRepository = staffPerfilRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.rolRepository = rolRepository;
+        this.membresiaUsuarioRepository = membresiaUsuarioRepository;
+        this.operationalClockService = operationalClockService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public List<Trial> listarTodos() {
+        return trialRepository.findAllByOrderByFechaPruebaDescIdDesc();
+    }
+
+    public List<Trial> listarFiltrados(LocalDate desde, LocalDate hasta, EstadoTrial estado) {
+        if (desde != null && hasta != null) {
+            if (estado != null) {
+                return trialRepository.findAllByEstadoAndFechaPruebaBetweenOrderByFechaPruebaDescIdDesc(estado, desde, hasta);
+            }
+            return trialRepository.findAllByFechaPruebaBetweenOrderByFechaPruebaDescIdDesc(desde, hasta);
+        }
+        if (estado != null) {
+            return trialRepository.findAllByEstadoOrderByFechaPruebaDescIdDesc(estado);
+        }
+        return listarTodos();
+    }
+
+    public List<Trial> listarProximos() {
+        return trialRepository.findTop6ByFechaPruebaGreaterThanEqualOrderByFechaPruebaAscIdAsc(operationalClockService.today());
+    }
+
+    public Trial buscarPorId(Long id) {
+        return trialRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Trial no encontrado con id: " + id));
+    }
+
+    public long contarPendientes() {
+        return trialRepository.countByEstado(EstadoTrial.PENDIENTE);
+    }
+
+    public long contarHoy() {
+        return trialRepository.countByFechaPruebaAndEstado(operationalClockService.today(), EstadoTrial.PENDIENTE);
+    }
+
+    public long contarSemanaActual() {
+        LocalDate hoy = operationalClockService.today();
+        LocalDate inicioSemana = hoy.with(TemporalAdjusters.previousOrSame(java.time.DayOfWeek.MONDAY));
+        LocalDate finSemana = inicioSemana.plusDays(6);
+        return trialRepository.countByFechaPruebaBetween(inicioSemana, finSemana);
+    }
+
+    public long contarSinSeguimiento(int dias) {
+        LocalDate limite = operationalClockService.today().minusDays(Math.max(1, dias));
+        return trialRepository.countByEstadoAndFechaPruebaLessThanEqual(EstadoTrial.NO_ASISTIO, limite)
+                + trialRepository.countByEstadoAndFechaPruebaLessThanEqual(EstadoTrial.PENDIENTE, limite);
+    }
+
+    public List<Trial> listarSinSeguimiento(int dias) {
+        LocalDate limite = operationalClockService.today().minusDays(Math.max(1, dias));
+        return trialRepository.findByEstadoAndFechaPruebaLessThanEqualOrderByFechaPruebaAscIdAsc(EstadoTrial.PENDIENTE, limite);
+    }
+
+    @Transactional
+    public Trial guardar(Trial trial) {
+        normalizar(trial);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial guardar(TrialForm form) {
+        Trial trial = new Trial();
+        aplicarFormulario(trial, form);
+        normalizar(trial);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial actualizar(Long id, Trial trialActualizado) {
+        Trial trial = buscarPorId(id);
+        trial.setNombre(trialActualizado.getNombre());
+        trial.setApellidos(trialActualizado.getApellidos());
+        trial.setTelefono(trialActualizado.getTelefono());
+        trial.setEmail(trialActualizado.getEmail());
+        trial.setOrigen(trialActualizado.getOrigen());
+        trial.setFechaPrueba(trialActualizado.getFechaPrueba());
+        trial.setEstado(trialActualizado.getEstado());
+        trial.setStaffResponsable(trialActualizado.getStaffResponsable());
+        trial.setObservaciones(trialActualizado.getObservaciones());
+        normalizar(trial);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial actualizar(Long id, TrialForm form) {
+        Trial trial = buscarPorId(id);
+        aplicarFormulario(trial, form);
+        normalizar(trial);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial actualizarEstado(Long id, EstadoTrial estado) {
+        Trial trial = buscarPorId(id);
+        trial.setEstado(estado != null ? estado : EstadoTrial.PENDIENTE);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Trial marcarAsistencia(Long id, boolean asistio) {
+        Trial trial = buscarPorId(id);
+        trial.setEstado(asistio ? EstadoTrial.ASISTIO : EstadoTrial.NO_ASISTIO);
+        return trialRepository.save(trial);
+    }
+
+    @Transactional
+    public Usuario convertirAUsuario(Long trialId) {
+        return convertirAUsuarioConCredenciales(trialId).usuario();
+    }
+
+    @Transactional
+    public TrialConversionResult convertirAUsuarioConCredenciales(Long trialId) {
+        Trial trial = buscarPorId(trialId);
+        if (trial.getEmail() == null || trial.getEmail().isBlank()) {
+            throw new BusinessValidationException("Para convertir un trial a usuario debe tener email");
+        }
+
+        String emailNormalizado = trial.getEmail().trim();
+        var usuarioExistenteOpt = usuarioRepository.findByEmailIgnoreCase(emailNormalizado);
+        boolean usuarioExistente = usuarioExistenteOpt.isPresent();
+        TrialConversionResult conversion = usuarioExistenteOpt
+                .map(usuario -> new TrialConversionResult(usuario, null, false))
+                .orElseGet(() -> crearUsuarioDesdeTrial(trial));
+        Usuario usuario = conversion.usuario();
+
+        if (!usuarioExistente && usuario.getPlan() != null) {
+            boolean tieneMembresia = membresiaUsuarioRepository
+                    .findTopByUsuarioIdAndEstadoInOrderByFechaInicioDescIdDesc(usuario.getId(), MEMBRESIAS_ACTIVAS)
+                    .isPresent();
+            if (!tieneMembresia) {
+                crearMembresiaDesdeConversion(usuario, usuario.getPlan());
+            }
+        }
+
+        trial.setUsuarioConvertido(usuario);
+        trial.setEstado(EstadoTrial.CONVERTIDO);
+        trialRepository.save(trial);
+        return conversion;
+    }
+
+    private void crearMembresiaDesdeConversion(Usuario usuario, Plan plan) {
+        MembresiaUsuario m = new MembresiaUsuario();
+        m.setUsuario(usuario);
+        m.setPlan(plan);
+        m.setFechaInicio(operationalClockService.today());
+        m.setEstado(EstadoMembresia.ACTIVA);
+        m.setOrigen("CONVERSION_TRIAL");
+        // @PrePersist calculates precioSnapshot and fechaFin automatically
+        membresiaUsuarioRepository.save(m);
+    }
+
+    private TrialConversionResult crearUsuarioDesdeTrial(Trial trial) {
+        Usuario usuario = new Usuario();
+        usuario.setNombre(trial.getNombre());
+        usuario.setApellidos(trial.getApellidos());
+        usuario.setEmail(trial.getEmail().trim());
+        usuario.setTelefono(trial.getTelefono());
+        usuario.setActivo(true);
+        usuario.setUsername(generarUsernameUnico(trial));
+        String temporal = generarPasswordTemporal();
+        usuario.setPasswordHash(passwordEncoder.encode(temporal));
+        usuario.setMustChangePassword(true);
+        Rol rolCliente = rolRepository.findByNombre(ROL_CLIENTE).orElse(null);
+        usuario.setRol(rolCliente);
+        Usuario guardado = usuarioRepository.save(usuario);
+        return new TrialConversionResult(guardado, temporal, true);
+    }
+
+    private void aplicarFormulario(Trial trial, TrialForm form) {
+        trial.setNombre(form.getNombre());
+        trial.setApellidos(form.getApellidos());
+        trial.setTelefono(form.getTelefono());
+        trial.setEmail(form.getEmail());
+        trial.setOrigen(form.getOrigen());
+        trial.setFechaPrueba(form.getFechaPrueba());
+        trial.setEstado(form.getEstado());
+        trial.setObservaciones(form.getObservaciones());
+        if (form.getStaffResponsableId() != null) {
+            StaffPerfil staff = new StaffPerfil();
+            staff.setId(form.getStaffResponsableId());
+            trial.setStaffResponsable(staff);
+        } else {
+            trial.setStaffResponsable(null);
+        }
+    }
+
+    private void normalizar(Trial trial) {
+        if (trial.getFechaPrueba() == null) {
+            trial.setFechaPrueba(operationalClockService.today());
+        }
+        if (trial.getEstado() == null) {
+            trial.setEstado(EstadoTrial.PENDIENTE);
+        }
+        if (trial.getStaffResponsable() != null && trial.getStaffResponsable().getId() != null) {
+            StaffPerfil staff = staffPerfilRepository.findById(trial.getStaffResponsable().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Staff no encontrado con id: " + trial.getStaffResponsable().getId()));
+            trial.setStaffResponsable(staff);
+        } else {
+            trial.setStaffResponsable(null);
+        }
+    }
+
+    private String generarPasswordTemporal() {
+        return "FF-" + UUID.randomUUID().toString().substring(0, 8);
+    }
+
+    private String generarUsernameUnico(Trial trial) {
+        String base = trial.getEmail();
+        if (StringUtils.hasText(base) && base.contains("@")) {
+            base = base.substring(0, base.indexOf('@'));
+        } else if (StringUtils.hasText(trial.getNombre())) {
+            base = trial.getNombre();
+        } else {
+            base = "cliente";
+        }
+
+        String normalizado = base.toLowerCase(Locale.ROOT)
+                .replaceAll("[^a-z0-9._-]", "")
+                .replaceAll("^[._-]+|[._-]+$", "");
+        if (normalizado.isBlank()) {
+            normalizado = "cliente";
+        }
+
+        String candidato = normalizado;
+        int suffix = 2;
+        while (usuarioRepository.existsByUsernameIgnoreCase(candidato)) {
+            candidato = normalizado + suffix;
+            suffix++;
+        }
+        return candidato;
+    }
+}

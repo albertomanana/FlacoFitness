@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Formulario staff')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Staff', 'Alta y mantenimiento del equipo interno.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Staff</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Actualizar perfil interno' : 'Alta de staff'}">Alta de staff</h2>
+                        <p class="ff-section-subtitle">Conecta al usuario correcto con rol interno, agenda y operaciones financieras.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="@{/staff}">Volver</a>
+                </section>
+
+                <section class="row g-4 ff-form-layout">
+                    <div class="col-12 col-xl-8">
+                        <section class="ff-surface-card">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Perfil de staff</h3>
+                                    <p class="ff-card-subtitle">Busca usuario, define el rol y deja preparada su operativa.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <form th:object="${staff}"
+                                      th:action="${modoEdicion ? '/staff/' + staff.id : '/staff'}"
+                                      method="post"
+                                      class="d-flex flex-column gap-4">
+                                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger mb-0" role="alert">
+                                        <ul class="mb-0">
+                                            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                                        </ul>
+                                    </div>
+
+                                    <section class="ff-form-section">
+                                        <div class="ff-form-section-header">
+                                            <h4 class="ff-form-section-title">Cuenta vinculada</h4>
+                                            <p class="ff-form-section-text">Busca por nombre, email o username para localizar rapido al usuario correcto.</p>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label" for="staffUserSearch">Buscador de usuario</label>
+                                                <input id="staffUserSearch"
+                                                       type="search"
+                                                       class="form-control"
+                                                       placeholder="Escribe nombre, email o username"
+                                                       data-ff-select-search
+                                                       data-select-search-target="usuario"
+                                                       data-no-results="No hay coincidencias para la busqueda actual">
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label" for="usuario">Usuario</label>
+                                                <select id="usuario" class="form-select form-select-lg" th:field="*{usuario.id}">
+                                                    <option value="">Seleccionar usuario</option>
+                                                    <option th:each="u : ${usuariosActivos}"
+                                                            th:value="${u.id}"
+                                                            th:text="${u.nombre + (u.apellidos != null && !u.apellidos.isBlank() ? ' ' + u.apellidos : '') + ' - ' + u.email + (u.username != null && !u.username.isBlank() ? ' - @' + u.username : '')}">Usuario</option>
+                                                </select>
+                                                <div class="form-text">El selector filtra en vivo pero mantiene la lista real del sistema.</div>
+                                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('usuario')}" th:errors="*{usuario}">Error</div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section class="ff-form-section">
+                                        <div class="ff-form-section-header">
+                                            <h4 class="ff-form-section-title">Rol y disponibilidad</h4>
+                                            <p class="ff-form-section-text">Determina si entrena, si opera internamente y desde cuando forma parte del equipo.</p>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="rolStaff">Rol interno</label>
+                                                <select id="rolStaff" class="form-select" th:field="*{rolStaff}">
+                                                    <option th:each="rol : ${rolesStaff}"
+                                                            th:value="${rol}"
+                                                            th:text="${#strings.replace(rol.name(), '_', ' ')}">Rol</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="fechaAlta">Fecha alta</label>
+                                                <input id="fechaAlta" class="form-control" type="date" th:field="*{fechaAlta}">
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label" for="especialidad">Especialidad</label>
+                                                <input id="especialidad" class="form-control" type="text" th:field="*{especialidad}" placeholder="Fuerza, recepcion, coordinacion...">
+                                            </div>
+                                            <div class="col-md-6 d-flex flex-column gap-3 justify-content-center">
+                                                <div class="form-check form-switch">
+                                                    <input id="puedeImpartirClases" class="form-check-input" type="checkbox" th:field="*{puedeImpartirClases}">
+                                                    <label class="form-check-label" for="puedeImpartirClases">Puede impartir clases</label>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input id="activo" class="form-check-input" type="checkbox" th:field="*{activo}">
+                                                    <label class="form-check-label" for="activo">Activo</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section class="ff-form-section">
+                                        <div class="ff-form-section-header">
+                                            <h4 class="ff-form-section-title">Observaciones</h4>
+                                            <p class="ff-form-section-text">Anota contexto operativo util para nominas, clases o coordinacion interna.</p>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-12">
+                                                <label class="form-label" for="observaciones">Observaciones</label>
+                                                <textarea id="observaciones" class="form-control" rows="4" th:field="*{observaciones}" placeholder="Notas de coordinacion, disponibilidad o contexto interno"></textarea>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <div class="ff-form-actions">
+                                        <p class="ff-form-actions-note">Desde la ficha del staff podras saltar a nominas, gastos y programacion y piso.</p>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success" type="submit">Guardar</button>
+                                            <a class="btn btn-outline-secondary" th:href="@{/staff}">Cancelar</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Resumen operativo</h3>
+                                        <p class="ff-card-subtitle">Que quedara listo al guardar este perfil.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-side-list">
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Modo</span>
+                                            <span class="ff-side-value" th:text="${modoEdicion ? 'Edicion' : 'Alta inicial'}">Alta inicial</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Agenda</span>
+                                            <span class="ff-side-value">Clases, sesiones y asistencias</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Finanzas</span>
+                                            <span class="ff-side-value">Nominas y gastos relacionados</span>
+                                        </div>
+                                        <div class="ff-side-item">
+                                            <span class="ff-side-label">Programacion y piso</span>
+                                            <span class="ff-side-value">Accesos directos desde la ficha</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -14,7 +14,7 @@
                     <div>
                         <span class="ff-section-eyebrow">Consulta</span>
                         <h2 class="ff-section-title" th:text="${rutina.nombre}">Rutina</h2>
-                        <p class="ff-section-subtitle">Objetivo, tipo y usuarios.</p>
+                        <p class="ff-section-subtitle">Tipo y usuarios.</p>
                     </div>
                     <div class="d-flex gap-2">
                         <a class="btn btn-success" th:href="@{/rutinas/{id}/editar(id=${rutina.id})}">Editar</a>
@@ -24,12 +24,17 @@
 
                 <section class="row g-4 ff-detail-layout">
                     <div class="col-12 col-xl-8">
-                        <article class="ff-surface-card">
+                        <article class="ff-surface-card h-100">
                             <div class="ff-card-body d-flex flex-column gap-4">
                                 <div class="ff-detail-hero">
-                                    <div>
-                                        <h3 class="ff-detail-hero-title">Resumen de la rutina</h3>
-                                        <p class="ff-detail-hero-text">Vista general de la rutina.</p>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="ff-avatar-placeholder bg-success-subtle text-success fs-3 rounded-3 d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                            <i class="fas fa-dumbbell"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="ff-detail-hero-title m-0" th:text="${rutina.nombre}">Nombre Rutina</h3>
+                                            <p class="ff-detail-hero-text mt-1 m-0">Detalles principales y descripcion general.</p>
+                                        </div>
                                     </div>
                                     <span class="ff-status-badge"
                                           th:classappend="${rutina.activa} ? ' ff-status-active' : ' ff-status-inactive'"
@@ -37,40 +42,34 @@
                                 </div>
 
                                 <div class="ff-detail-grid">
-                                    <div class="ff-detail-item">
-                                        <span class="ff-detail-label">Nombre</span>
-                                        <span class="ff-detail-value" th:text="${rutina.nombre}">Nombre</span>
-                                    </div>
-                                    <div class="ff-detail-item">
-                                        <span class="ff-detail-label">Objetivo</span>
-                                        <span class="ff-detail-value"
-                                              th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : '-'}">Objetivo</span>
-                                    </div>
-                                    <div class="ff-detail-item">
-                                        <span class="ff-detail-label">Tipo de rutina</span>
-                                        <span class="ff-detail-value"
-                                              th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : '-'}">Tipo</span>
-                                    </div>
-                                    <div class="ff-detail-item">
-                                        <span class="ff-detail-label">Fecha de creacion</span>
-                                        <span class="ff-detail-value"
-                                              th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</span>
-                                    </div>
                                     <div class="ff-detail-item ff-detail-full">
-                                        <span class="ff-detail-label">Usuarios asociados</span>
-                                        <span class="ff-detail-value">
+                                        <span class="ff-detail-label">Descripcion de la rutina</span>
+                                        <span class="ff-detail-value"
+                                              th:classappend="${rutina.descripcion == null or rutina.descripcion.isBlank()} ? 'ff-text-muted' : ''"
+                                              th:text="${rutina.descripcion != null and !rutina.descripcion.isBlank() ? rutina.descripcion : 'Sin descripcion detallada.'}">Descripcion</span>
+                                    </div>
+
+                                    <div class="ff-detail-item ff-detail-full mt-3 border-top pt-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="ff-detail-label m-0 fs-6 user-select-none">Usuarios Asignados</span>
+                                            <span class="badge bg-secondary rounded-pill" th:text="${rutina.usuarios != null ? rutina.usuarios.size() : 0}">0</span>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
                                             <th:block th:if="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">
-                                                <th:block th:each="usuario, stat : ${rutina.usuarios}">
-                                                    <span th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '') + (stat.last ? '' : ', ')}">Usuario</span>
-                                                </th:block>
+                                                <a th:each="usuario : ${rutina.usuarios}" th:href="@{/usuarios/{id}(id=${usuario.id})}" class="text-decoration-none">
+                                                    <span class="badge rounded-pill bg-light text-dark border px-3 py-2 d-inline-flex align-items-center gap-2 hover-shadow-sm transition-all" style="font-weight: 500;">
+                                                        <i class="fas fa-user-circle text-secondary"></i>
+                                                        <span th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</span>
+                                                    </span>
+                                                </a>
                                             </th:block>
-                                            <th:block th:unless="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">Sin usuarios asociados</th:block>
-                                        </span>
-                                    </div>
-                                    <div class="ff-detail-item ff-detail-full">
-                                        <span class="ff-detail-label">Descripcion</span>
-                                        <span class="ff-detail-value ff-detail-value-muted"
-                                              th:text="${#strings.defaultString(rutina.descripcion, '-')}">Descripcion</span>
+                                            <th:block th:unless="${rutina.usuarios != null and !rutina.usuarios.isEmpty()}">
+                                                <div class="p-3 bg-light rounded text-muted w-100 text-center border-dashed">
+                                                    <i class="fas fa-ghost mb-2 d-block fs-4"></i>
+                                                    No hay ningun usuario asignado a esta rutina actualmente.
+                                                </div>
+                                            </th:block>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -78,27 +77,40 @@
                     </div>
 
                     <div class="col-12 col-xl-4">
-                        <aside class="ff-surface-card ff-side-card">
-                            <div class="ff-card-header">
+                        <aside class="ff-surface-card ff-side-card h-100">
+                            <div class="ff-card-header bg-light border-bottom">
                                 <div>
-                                    <h3 class="ff-card-title">Resumen</h3>
-                                    <p class="ff-card-subtitle">Datos clave.</p>
+                                    <h3 class="ff-card-title m-0">Especificaciones</h3>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-side-list">
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Estado</span>
-                                        <span class="ff-side-value" th:text="${rutina.activa} ? 'Disponible para uso' : 'Desactivada para historico'">Estado</span>
+                                    <div class="ff-side-item d-flex flex-column gap-1">
+                                        <span class="ff-side-label text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Sistema de Trabajo</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-project-diagram text-info"></i>
+                                            <span class="ff-side-value fw-medium"
+                                                  th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin definir'}">Tipo</span>
+                                        </div>
                                     </div>
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Tipo</span>
-                                        <span class="ff-side-value"
-                                              th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin definir'}">Tipo</span>
+                                    <div class="ff-side-item d-flex flex-column gap-1 border-top pt-3 mt-2">
+                                        <span class="ff-side-label text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Fecha de Creacion</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="far fa-calendar-alt text-secondary"></i>
+                                            <span class="ff-side-value"
+                                                  th:text="${rutina.fechaCreacion != null ? #temporals.format(rutina.fechaCreacion, 'dd MMM yyyy') : '-'}">Fecha</span>
+                                        </div>
                                     </div>
-                                    <div class="ff-side-item">
-                                        <span class="ff-side-label">Usuarios</span>
-                                        <span class="ff-side-value" th:text="${rutina.usuarios != null ? rutina.usuarios.size() : 0} + ' asociado(s)'">0 asociado(s)</span>
+                                    <div class="ff-side-item d-flex flex-column gap-1 border-top pt-3 mt-2">
+                                        <span class="ff-side-label text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Staff responsable</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-user-tie text-success"></i>
+                                            <a class="ff-side-value"
+                                               th:if="${rutina.staffResponsable != null}"
+                                               th:href="@{/staff/{id}(id=${rutina.staffResponsable.id})}"
+                                               th:text="${rutina.staffResponsable.usuario != null ? rutina.staffResponsable.usuario.nombre : 'Staff'}">Staff</a>
+                                            <span class="ff-side-value" th:if="${rutina.staffResponsable == null}">Sin responsable</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -27,13 +27,16 @@ public class UsuarioControlCenterService {
     private final AsistenciaService asistenciaService;
     private final PagoService pagoService;
     private final RutinaService rutinaService;
+    private final OperationalClockService operationalClockService;
 
     public UsuarioControlCenterService(AsistenciaService asistenciaService,
                                        PagoService pagoService,
-                                       RutinaService rutinaService) {
+                                       RutinaService rutinaService,
+                                       OperationalClockService operationalClockService) {
         this.asistenciaService = asistenciaService;
         this.pagoService = pagoService;
         this.rutinaService = rutinaService;
+        this.operationalClockService = operationalClockService;
     }
 
     public UsuarioControlCenterView construirVista(Usuario usuario) {
@@ -51,7 +54,7 @@ public class UsuarioControlCenterService {
                 .orElse(null);
 
         Long diasSinAsistencia = ultimaAsistencia != null
-                ? ChronoUnit.DAYS.between(ultimaAsistencia, LocalDate.now())
+                ? ChronoUnit.DAYS.between(ultimaAsistencia, operationalClockService.today())
                 : null;
 
         boolean actividadReciente = usuario.getActivo() && diasSinAsistencia != null && diasSinAsistencia <= DIAS_ACTIVIDAD_RECIENTE;
@@ -64,12 +67,17 @@ public class UsuarioControlCenterService {
         String segmento = resolverSegmento(usuario, actividadReciente, pagosPendientes, pagosVencidos);
         int score = calcularScore(usuario, totalAsistencias, diasSinAsistencia, pagosPendientes, pagosVencidos);
 
+        int rachaActual = asistenciaService.calcularRachaActual(usuario.getId());
+        boolean enRiesgo = asistenciaService.esUsuarioEnRiesgo(usuario.getId());
+
         return new UsuarioControlCenterView(
                 totalAsistencias,
                 ultimaAsistencia,
                 diasSinAsistencia,
                 actividadReciente,
                 estadoActividad,
+                rachaActual,
+                enRiesgo,
                 pagosPendientes,
                 pagosVencidos,
                 pagosAlDia,

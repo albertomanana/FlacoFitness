@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Gasto')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('gastos')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Gasto', 'Registro financiero interno.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Editar gasto' : 'Nuevo gasto'}">Nuevo gasto</h2>
+                        <p class="ff-section-subtitle">Registra concepto, categoria y relacion operativa.</p>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-body">
+                        <form th:action="${modoEdicion ? '/gastos/' + gasto.id : '/gastos'}" th:object="${gasto}" method="post" class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label" for="concepto">Concepto</label>
+                                <input id="concepto" type="text" class="form-control" th:field="*{concepto}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="categoria">Categoria</label>
+                                <select id="categoria" class="form-select" th:field="*{categoria}" required>
+                                    <option value="">Selecciona...</option>
+                                    <option th:each="cat : ${categoriasGasto}" th:value="${cat}" th:text="${#strings.replace(cat.name(), '_', ' ')}">Categoria</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="importe">Importe</label>
+                                <input id="importe" type="number" step="0.01" min="0.01" class="form-control" th:field="*{importe}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="fecha">Fecha</label>
+                                <input id="fecha" type="date" class="form-control" th:field="*{fecha}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="proveedor">Proveedor</label>
+                                <input id="proveedor" type="text" class="form-control" th:field="*{proveedor}">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label" for="estado">Estado</label>
+                                <select id="estado" class="form-select" th:field="*{estado}" required>
+                                    <option value="">Selecciona...</option>
+                                    <option th:each="estado : ${T(com.flacofitness.app.model.enums.EstadoGasto).values()}" th:value="${estado}" th:text="${#strings.replace(estado.name(), '_', ' ')}">Estado</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label" for="staffResponsable">Staff responsable</label>
+                                <select id="staffResponsable" class="form-select" th:field="*{staffResponsable.id}">
+                                    <option value="">Sin relacion</option>
+                                    <option th:each="staff : ${staffActivos}" th:value="${staff.id}" th:text="${staff.usuario.nombre + (staff.usuario.apellidos != null and !staff.usuario.apellidos.isBlank() ? ' ' + staff.usuario.apellidos : '')}">Staff</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="maquina">Maquina relacionada</label>
+                                <select id="maquina" class="form-select" th:field="*{maquina.id}">
+                                    <option value="">Sin relacion</option>
+                                    <option th:each="maquina : ${maquinasActivas}" th:value="${maquina.id}" th:text="${maquina.nombre}">Maquina</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" for="material">Material relacionado</label>
+                                <select id="material" class="form-select" th:field="*{material.id}">
+                                    <option value="">Sin relacion</option>
+                                    <option th:each="material : ${materialesActivos}" th:value="${material.id}" th:text="${material.nombre}">Material</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label" for="observaciones">Observaciones</label>
+                                <textarea id="observaciones" rows="4" class="form-control" th:field="*{observaciones}"></textarea>
+                            </div>
+
+                            <div class="col-12 d-flex gap-2">
+                                <button type="submit" class="btn btn-success">Guardar</button>
+                                <a class="btn btn-outline-secondary" th:href="@{/gastos}">Cancelar</a>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

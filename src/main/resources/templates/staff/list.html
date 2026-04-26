@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Staff')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Staff', 'Equipo operativo.')}"></div>
+        <main class="ff-content">
+            <div class="ff-content-stack ff-command-stack" data-module-key="staff">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="staff">
+                    <div>
+                        <span class="ff-section-eyebrow">Staff</span>
+                        <h3 class="ff-card-title mt-1">Modela el equipo con criterio operativo</h3>
+                        <p class="ff-card-subtitle">Define quien entrena, quien recepciona y quien gestiona para que clases, nominas y gastos queden conectados.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Gestion</span>
+                        <h2 class="ff-section-title">Staff</h2>
+                        <p class="ff-section-subtitle">Entrenadores, recepcion y responsables internos.</p>
+                    </div>
+                    <a class="btn btn-success" th:href="@{/staff/nuevo}">Nuevo staff</a>
+                </section>
+                <section class="row g-3 ff-animate-in">
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Perfiles</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(staff)}">0</p>
+                            <p class="ff-stat-note">Equipo registrado</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Activos</p>
+                            <p class="ff-stat-value" th:text="${staff.?[activo == true].size()}">0</p>
+                            <p class="ff-stat-note">Disponibles para sesiones</p>
+                        </article>
+                    </div>
+                </section>
+                <section class="ff-surface-card ff-animate-in">
+                    <div class="ff-card-header">
+                        <div>
+                            <h3 class="ff-card-title">Equipo operativo</h3>
+                            <p class="ff-card-subtitle">Fila clicable, busqueda y acciones basicas.</p>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="ff-table-filters" data-ff-table-filters data-target-table="staffTable">
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="staffEstadoFiltro">Estado</label>
+                                <select id="staffEstadoFiltro" class="form-select form-select-sm" data-ff-filter-key="status">
+                                    <option value="all">Todos</option>
+                                    <option value="activo">Activos</option>
+                                    <option value="inactivo">Inactivos</option>
+                                </select>
+                            </div>
+                            <div class="ff-table-filter-field">
+                                <label class="ff-table-filter-label" for="staffRolFiltro">Rol</label>
+                                <select id="staffRolFiltro" class="form-select form-select-sm" data-ff-filter-key="rol">
+                                    <option value="all">Todos</option>
+                                    <option value="entrenador">Entrenador</option>
+                                    <option value="recepcion">Recepcion</option>
+                                    <option value="gerente">Gerente</option>
+                                    <option value="administracion">Administracion</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table id="staffTable" class="table table-hover align-middle" data-ff-datatable data-page-length="10" data-search-placeholder="Buscar staff...">
+                                <thead>
+                                <tr>
+                                    <th>Staff</th>
+                                    <th>Rol interno</th>
+                                    <th>Especialidad</th>
+                                    <th>Clases</th>
+                                    <th>Alta</th>
+                                    <th>Estado</th>
+                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
+                                </tr>
+                                </thead>
+                                <tbody th:if="${not #lists.isEmpty(staff)}">
+                                <tr th:each="perfil : ${staff}" class="ff-clickable-row" tabindex="0" th:attr="data-row-href=@{/staff/{id}(id=${perfil.id})},data-ff-row='1',data-ff-status=${perfil.activo == true ? 'activo' : 'inactivo'},data-ff-rol=${perfil.rolStaff != null ? #strings.toLowerCase(#strings.replace(perfil.rolStaff.name(), '_', '-')) : 'sin-rol'}">
+                                    <td>
+                                        <div class="ff-user-cell">
+                                            <img class="ff-avatar" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(perfil.usuario != null ? perfil.usuario.fotoPath : null)}" alt="Avatar staff">
+                                            <div class="ff-user-cell-body ff-table-meta">
+                                                <a class="ff-row-link ff-table-primary" th:href="@{/staff/{id}(id=${perfil.id})}" th:text="${perfil.usuario != null ? perfil.usuario.nombre + (perfil.usuario.apellidos != null && !perfil.usuario.apellidos.isBlank() ? ' ' + perfil.usuario.apellidos : '') : 'Sin usuario'}">Staff</a>
+                                                <span class="ff-table-secondary" th:text="${perfil.usuario != null ? perfil.usuario.email : '-'}">email</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td th:text="${perfil.rolStaff != null ? #strings.replace(perfil.rolStaff.name(), '_', ' ') : '-'}">ENTRENADOR</td>
+                                    <td th:text="${#strings.defaultString(perfil.especialidad, '-')}">Especialidad</td>
+                                    <td>
+                                        <span class="ff-status-badge"
+                                              th:classappend="${perfil.puedeImpartirClases == true} ? ' ff-status-active' : ' ff-status-inactive'"
+                                              th:text="${perfil.puedeImpartirClases == true} ? 'Autorizado' : 'No imparte'">Autorizado</span>
+                                    </td>
+                                    <td th:text="${perfil.fechaAlta != null ? #temporals.format(perfil.fechaAlta, 'dd/MM/yyyy') : '-'}">Fecha</td>
+                                    <td><span class="ff-status-badge" th:classappend="${perfil.activo == true} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${perfil.activo == true} ? 'Activo' : 'Inactivo'">Activo</span></td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <form th:if="${perfil.activo == true}" th:action="@{/staff/{id}/desactivar(id=${perfil.id})}" method="post"><button class="btn btn-outline-danger btn-sm" type="submit">Desactivar</button></form>
+                                            <form th:unless="${perfil.activo == true}" th:action="@{/staff/{id}/activar(id=${perfil.id})}" method="post"><button class="btn btn-outline-success btn-sm" type="submit">Activar</button></form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                                <tbody th:if="${#lists.isEmpty(staff)}">
+                                <tr><td colspan="7" class="text-center ff-empty-state">No hay perfiles de staff todavia. Crea el primero para conectar sesiones, nominas y operativa interna. <a class="btn btn-sm btn-outline-success ms-2" th:href="@{/staff/nuevo}">Crear perfil</a></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

@@ -12,15 +12,17 @@
             <script id="dashboardInitialStats" type="application/json" th:text="${dashboardStatsJson}">
                 {}
             </script>
-            <div class="ff-content-stack"
+
+            <div class="ff-content-stack ff-command-stack"
                  data-dashboard
+                 data-module-key="dashboard"
                  th:attr="data-stats-dashboard-url=@{/stats/dashboard},data-default-range=${dashboardRangoDias}">
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Dashboard</span>
-                        <h2 class="ff-section-title">Operacion del gimnasio</h2>
-                        <p class="ff-section-subtitle">Indicadores, cobros y actividad reciente.</p>
+                        <h2 class="ff-section-title">Panel operativo del gimnasio</h2>
+                        <p class="ff-section-subtitle">Una vista mas limpia para controlar negocio, actividad y alertas sin ruido visual.</p>
                     </div>
                     <div class="ff-dashboard-controls">
                         <label class="ff-dashboard-filter">
@@ -37,53 +39,194 @@
                     </div>
                 </section>
 
-                <section class="ff-kpi-grid ff-animate-in">
-                    <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Usuarios totales</p>
-                        <p class="ff-stat-value" data-stat="totalUsuarios" data-stat-kind="integer" th:text="${usuariosTotales}">0</p>
-                        <p class="ff-stat-note">Base registrada</p>
-                    </a>
+                <section class="ff-onboarding-tip ff-animate-in"
+                         th:if="${dashboardUxState != null and !dashboardUxState.tooltipSeen()}"
+                         data-ux-tooltip
+                         data-module-key="dashboard">
+                    <div>
+                        <span class="ff-section-eyebrow">Primer uso</span>
+                        <h3 class="ff-card-title mt-1">Empieza por tres pasos simples</h3>
+                        <p class="ff-card-subtitle">Crea cliente, conecta membresia y registra el primer pago para que el panel empiece a trabajar contigo.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-ux-tooltip-dismiss>Entendido</button>
+                </section>
+
+                <section class="ff-dashboard-rail-panel ff-animate-in"
+                         th:if="${shellNotifications != null and !#lists.isEmpty(shellNotifications)}">
+                    <div class="ff-card-header">
+                        <div>
+                            <p class="ff-section-eyebrow mb-0">Alertas conectadas</p>
+                            <h3 class="ff-card-title mt-1">Lo que requiere accion ahora</h3>
+                            <p class="ff-card-subtitle">El rail unifica cobros, renovaciones, trials, maquinaria e inventario en una sola lectura.</p>
+                        </div>
+                        <div class="ff-dashboard-rail-toolbar">
+                            <span class="ff-notification-pill" th:text="${shellNotificationCount}">0</span>
+                            <div class="ff-dashboard-rail-actions">
+                                <button type="button"
+                                        class="ff-icon-button"
+                                        data-scroll-rail-prev
+                                        data-scroll-rail-target="dashboardAlertsRail"
+                                        aria-label="Desplazar alertas a la izquierda">
+                                    <span aria-hidden="true">&larr;</span>
+                                </button>
+                                <button type="button"
+                                        class="ff-icon-button"
+                                        data-scroll-rail-next
+                                        data-scroll-rail-target="dashboardAlertsRail"
+                                        aria-label="Desplazar alertas a la derecha">
+                                    <span aria-hidden="true">&rarr;</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="ff-dashboard-rail" id="dashboardAlertsRail" data-scroll-rail>
+                            <a class="ff-dashboard-alert-card"
+                               th:each="notification : ${shellNotifications}"
+                               th:classappend="' is-' + ${notification.tone}"
+                               th:href="${notification.actionUrl}">
+                                <span class="ff-dashboard-alert-mark" aria-hidden="true"></span>
+                                <div class="ff-dashboard-alert-body">
+                                    <span class="ff-dashboard-alert-eyebrow" th:text="${notification.actionLabel}">Abrir modulo</span>
+                                    <strong class="ff-dashboard-alert-title" th:text="${notification.title}">Pago vencido</strong>
+                                    <span class="ff-dashboard-alert-text" th:text="${notification.description}">Revisa el estado del cobro.</span>
+                                </div>
+                                <span class="ff-dashboard-alert-link" th:text="${notification.actionLabel}">Abrir</span>
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="row g-4 ff-animate-in">
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Requiere atencion</p>
+                                    <h3 class="ff-card-title mt-1">Prioridades operativas del dia</h3>
+                                    <p class="ff-card-subtitle">Senales unificadas de clientes, cobros, mantenimiento e inventario.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body pt-0">
+                                <div class="ff-attention-grid" th:if="${attentionItems != null and !#lists.isEmpty(attentionItems)}">
+                                    <a class="ff-attention-card"
+                                       th:each="item : ${attentionItems}"
+                                       th:href="${item.url}"
+                                       th:classappend="' is-' + ${item.tone}">
+                                        <div class="ff-attention-icon"><i class="fa-solid" th:classappend="${item.icon}"></i></div>
+                                        <div class="ff-attention-body">
+                                            <span class="ff-attention-title" th:text="${item.title}">Usuarios en riesgo</span>
+                                            <strong class="ff-attention-count" th:text="${item.count}">0</strong>
+                                            <span class="ff-attention-text" th:text="${item.description}">Descripcion</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-12 col-xl-4">
+                        <article class="ff-surface-card h-100"
+                                 data-ux-empty-state
+                                 data-module-key="dashboard">
+                            <div class="ff-card-header">
+                                <div class="d-flex justify-content-between align-items-start gap-3 w-100">
+                                    <div>
+                                        <p class="ff-section-eyebrow mb-0">Onboarding</p>
+                                        <h3 class="ff-card-title mt-1">Guia inicial</h3>
+                                        <p class="ff-card-subtitle">La app se explica sola para que el arranque no tenga friccion.</p>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary"
+                                            type="button"
+                                            data-ux-empty-dismiss
+                                            th:if="${dashboardGuide != null and !dashboardGuide.completed() and !dashboardGuide.dismissed()}">Ocultar</button>
+                                </div>
+                            </div>
+                            <div class="ff-card-body" th:if="${dashboardGuide != null and !dashboardGuide.dismissed()}">
+                                <div class="ff-guide-list" th:if="${dashboardGuide != null}">
+                                    <a class="ff-guide-step"
+                                       th:each="step : ${dashboardGuide.steps}"
+                                       th:href="${step.url}"
+                                        th:classappend="${step.completed} ? ' is-complete' : ''">
+                                        <span class="ff-guide-step-mark">
+                                            <i class="fa-solid" th:classappend="${step.completed} ? ' fa-circle-check' : ' fa-circle'"></i>
+                                        </span>
+                                        <span class="ff-guide-step-body">
+                                            <strong th:text="${step.title}">Crear cliente</strong>
+                                            <span th:text="${step.description}">Descripcion</span>
+                                        </span>
+                                    </a>
+                                </div>
+                                <div class="ff-empty-inline" th:if="${dashboardGuide != null and dashboardGuide.completed()}">
+                                    El onboarding operativo ya esta completado. Puedes ocultar este bloque y apoyarte en el panel de atencion.
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-kpi-grid ff-kpi-grid-priority ff-animate-in">
                     <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Usuarios activos</p>
                         <p class="ff-stat-value" data-stat="usuariosActivos" data-stat-kind="integer" th:text="${usuariosActivos}">0</p>
-                        <p class="ff-stat-note">Miembros en curso</p>
+                        <p class="ff-stat-note">Base activa del negocio</p>
                     </a>
-                    <a th:href="@{/asistencias}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Asistencias de hoy</p>
-                        <p class="ff-stat-value" data-stat="asistenciasHoy" data-stat-kind="integer" th:text="${asistenciasHoy}">0</p>
-                        <p class="ff-stat-note">Check-ins del dia</p>
-                    </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/pagos}"
+                       th:if="${accessProfile.canSeeSection('pagos')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Pagos pendientes</p>
                         <p class="ff-stat-value" data-stat="pagosPendientes" data-stat-kind="integer" th:text="${pagosPendientes}">0</p>
-                        <p class="ff-stat-note">Cobros a seguir</p>
+                        <p class="ff-stat-note">Cobros a gestionar</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Pagos vencidos</p>
-                        <p class="ff-stat-value" data-stat="pagosVencidos" data-stat-kind="integer" th:text="${pagosVencidos}">0</p>
-                        <p class="ff-stat-note">Requieren accion</p>
-                    </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                    <a th:href="@{/pagos}"
+                       th:if="${accessProfile.canSeeSection('pagos')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Ingresos del mes</p>
                         <p class="ff-stat-value" data-stat="ingresosMensuales" data-stat-kind="currency"
                            th:text="${#numbers.formatDecimal(ingresosMensuales, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
-                        <p class="ff-stat-note">Mes actual</p>
+                        <p class="ff-stat-note">Caja operativa mensual</p>
                     </a>
-                    <a th:href="@{/pagos}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Ingresos totales</p>
-                        <p class="ff-stat-value" data-stat="ingresosTotales" data-stat-kind="currency"
-                           th:text="${#numbers.formatDecimal(ingresosRegistrados, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
-                        <p class="ff-stat-note">Historico consolidado</p>
+                    <a th:href="@{/gastos}"
+                       th:if="${accessProfile.canSeeSection('gastos')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Gastos del mes</p>
+                        <p class="ff-stat-value" data-stat="gastoMesActual" data-stat-kind="currency"
+                           th:text="${#numbers.formatDecimal(gastoMesActual, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
+                        <p class="ff-stat-note">Carga operativa actual</p>
+                    </a>
+                    <a th:href="@{/gastos}"
+                       th:if="${accessProfile.canSeeSection('gastos') and accessProfile.canSeeSection('pagos')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none"
+                       th:attr="data-kpi-profit=${beneficioEstimado != null and beneficioEstimado.signum() >= 0} ? 'positive' : 'negative'">
+                        <p class="ff-stat-label">Beneficio estimado</p>
+                        <p class="ff-stat-value" data-stat="beneficioEstimado" data-stat-kind="currency"
+                           th:text="${#numbers.formatDecimal(beneficioEstimado, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0.00 EUR</p>
+                        <p class="ff-stat-note">Ingresos menos gastos del mes</p>
                     </a>
                     <a th:href="@{/usuarios}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
                         <p class="ff-stat-label">Renovaciones proximas</p>
                         <p class="ff-stat-value" data-stat="renovacionesProximas" data-stat-kind="integer" th:text="${renovacionesProximas}">0</p>
                         <p class="ff-stat-note">Siguientes 7 dias</p>
                     </a>
-                    <a th:href="@{/rutinas}" class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
-                        <p class="ff-stat-label">Rutinas activas</p>
-                        <p class="ff-stat-value" data-stat="rutinasActivas" data-stat-kind="integer" th:text="${rutinasActivas}">0</p>
-                        <p class="ff-stat-note">Programas vigentes</p>
+                    <a th:href="@{/trials}"
+                       th:if="${accessProfile.canSeeSection('trials')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Trials pendientes</p>
+                        <p class="ff-stat-value" data-stat="trialsPendientes" data-stat-kind="integer" th:text="${trialsPendientes}">0</p>
+                        <p class="ff-stat-note">Leads por convertir</p>
+                    </a>
+                    <a th:href="@{/maquinas}"
+                       th:if="${accessProfile.canSeeSection('maquinas')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Maquinas fuera de servicio</p>
+                        <p class="ff-stat-value" data-stat="maquinasFueraServicio" data-stat-kind="integer" th:text="${maquinasFueraServicio}">0</p>
+                        <p class="ff-stat-note">Operacion con riesgo tecnico</p>
+                    </a>
+                    <a th:href="@{/materiales}"
+                       th:if="${accessProfile.canSeeSection('materiales')}"
+                       class="ff-surface-card ff-stat-card ff-kpi-card text-decoration-none">
+                        <p class="ff-stat-label">Stock bajo</p>
+                        <p class="ff-stat-value" data-stat="materialesBajoStock" data-stat-kind="integer" th:text="${materialesBajoStock}">0</p>
+                        <p class="ff-stat-note">Reposicion recomendada</p>
                     </a>
                 </section>
 
@@ -95,30 +238,31 @@
                 </section>
 
                 <section class="row g-4 ff-animate-in">
-                    <div class="col-xl-8">
+                    <div class="col-xl-8" th:if="${accessProfile.canSeeSection('pagos')}">
                         <article class="ff-surface-card ff-chart-card h-100">
                             <div class="ff-card-header">
                                 <div>
-                                    <p class="ff-section-eyebrow mb-0">Cobros</p>
-                                    <h3 class="ff-card-title mt-1">Ingresos por mes</h3>
-                                    <p class="ff-card-subtitle">Evolucion de la facturacion.</p>
+                                    <p class="ff-section-eyebrow mb-0">Finanzas</p>
+                                    <h3 class="ff-card-title mt-1">Ingresos vs gastos</h3>
+                                    <p class="ff-card-subtitle">Comparativa mensual para leer margen, tension y ritmo de caja.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
                                 <div class="ff-chart-canvas-wrap ff-chart-canvas-wrap-wide">
-                                    <canvas id="ingresosChart" aria-label="Grafico de ingresos mensuales" role="img"></canvas>
+                                    <canvas id="ingresosGastosChart" aria-label="Grafico de ingresos y gastos mensuales" role="img"></canvas>
                                 </div>
-                                <p class="ff-chart-empty d-none" data-chart-empty="ingresos">No hay datos de ingresos suficientes para el grafico.</p>
+                                <p class="ff-chart-empty d-none" data-chart-empty="ingresosGastos">No hay datos financieros suficientes para el grafico.</p>
                             </div>
                         </article>
                     </div>
-                    <div class="col-xl-4">
+
+                    <div class="col-xl-4" th:if="${accessProfile.canSeeSection('membresias')}">
                         <article class="ff-surface-card ff-chart-card ff-chart-card-compact h-100">
                             <div class="ff-card-header">
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Membresias</p>
                                     <h3 class="ff-card-title mt-1">Usuarios por plan</h3>
-                                    <p class="ff-card-subtitle">Distribucion actual.</p>
+                                    <p class="ff-card-subtitle">Distribucion actual de la cartera activa.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
@@ -129,37 +273,21 @@
                             </div>
                         </article>
                     </div>
-                    <div class="col-xl-7">
+
+                    <div class="col-12">
                         <article class="ff-surface-card ff-chart-card h-100">
                             <div class="ff-card-header">
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Actividad</p>
                                     <h3 class="ff-card-title mt-1">Asistencias recientes</h3>
-                                    <p class="ff-card-subtitle">Ultimos <span data-dashboard-range-label th:text="${dashboardRangoDias}">30</span> dias.</p>
+                                    <p class="ff-card-subtitle">Ultimos <span data-dashboard-range-label th:text="${dashboardRangoDias}">30</span> dias de afluencia para seguimiento operativo.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">
-                                <div class="ff-chart-canvas-wrap">
+                                <div class="ff-chart-canvas-wrap ff-chart-canvas-wrap-wide">
                                     <canvas id="asistenciasChart" aria-label="Grafico de asistencias recientes" role="img"></canvas>
                                 </div>
                                 <p class="ff-chart-empty d-none" data-chart-empty="asistencias">No hay asistencias recientes para representar.</p>
-                            </div>
-                        </article>
-                    </div>
-                    <div class="col-xl-5">
-                        <article class="ff-surface-card ff-chart-card ff-chart-card-compact h-100">
-                            <div class="ff-card-header">
-                                <div>
-                                    <p class="ff-section-eyebrow mb-0">Altas</p>
-                                    <h3 class="ff-card-title mt-1">Nuevos usuarios</h3>
-                                    <p class="ff-card-subtitle">Evolucion de altas.</p>
-                                </div>
-                            </div>
-                            <div class="ff-card-body">
-                                <div class="ff-chart-canvas-wrap">
-                                    <canvas id="altasChart" aria-label="Grafico de altas recientes" role="img"></canvas>
-                                </div>
-                                <p class="ff-chart-empty d-none" data-chart-empty="altas">No hay altas suficientes para el grafico.</p>
                             </div>
                         </article>
                     </div>
@@ -173,7 +301,7 @@
                                     <div>
                                         <p class="ff-section-eyebrow mb-0">Usuarios</p>
                                         <h3 class="ff-card-title mt-1">Ultimos usuarios registrados</h3>
-                                        <p class="ff-card-subtitle">Actividad reciente de miembros.</p>
+                                        <p class="ff-card-subtitle">Una sola tabla para ver altas recientes y saltar directo a cada ficha.</p>
                                     </div>
                                     <span class="ff-card-toolbar-note">Busqueda y orden.</span>
                                 </div>
@@ -181,8 +309,11 @@
                             <div class="ff-card-body pt-0">
                                 <div class="table-responsive">
                                     <table class="table table-hover align-middle ff-recent-table"
-                                           data-ff-datatable data-page-length="5" data-length-change="false"
-                                           data-order-column="3" data-order-direction="desc"
+                                           data-ff-datatable
+                                           data-page-length="5"
+                                           data-length-change="false"
+                                           data-order-column="3"
+                                           data-order-direction="desc"
                                            data-search-placeholder="Buscar usuario reciente...">
                                         <thead>
                                         <tr>
@@ -191,7 +322,6 @@
                                             <th>Plan</th>
                                             <th>Registro</th>
                                             <th>Estado</th>
-                                            <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                         </tr>
                                         </thead>
                                         <tbody th:if="${not #lists.isEmpty(ultimosUsuarios)}">
@@ -201,7 +331,9 @@
                                             th:attr="data-row-href=@{/usuarios/{id}(id=${usuario.id})}">
                                             <td>
                                                 <div class="ff-user-cell">
-                                                    <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" th:alt="${'Avatar de ' + usuario.nombre}">
+                                                    <img class="ff-avatar ff-avatar-sm"
+                                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                         th:alt="${'Avatar de ' + usuario.nombre}">
                                                     <div class="ff-user-cell-body">
                                                         <a class="ff-row-link ff-table-primary"
                                                            th:href="@{/usuarios/{id}(id=${usuario.id})}"
@@ -213,12 +345,17 @@
                                             <td th:text="${usuario.rol != null ? usuario.rol.nombre : '-'}">Rol</td>
                                             <td th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</td>
                                             <td th:text="${usuario.fechaRegistro != null ? #temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</td>
-                                            <td><span class="ff-status-badge" th:classappend="${usuario.activo} ? ' ff-status-active' : ' ff-status-inactive'" th:text="${usuario.activo} ? 'Activo' : 'Inactivo'">Activo</span></td>
-                                            <td class="text-end"><a class="btn btn-outline-secondary btn-sm" th:href="@{/usuarios/{id}(id=${usuario.id})}">Ver</a></td>
+                                            <td>
+                                                <span class="ff-status-badge"
+                                                      th:classappend="${usuario.activo} ? ' ff-status-active' : ' ff-status-inactive'"
+                                                      th:text="${usuario.activo} ? 'Activo' : 'Inactivo'">Activo</span>
+                                            </td>
                                         </tr>
                                         </tbody>
                                         <tbody th:if="${#lists.isEmpty(ultimosUsuarios)}">
-                                        <tr><td colspan="6" class="text-center ff-empty-state">No hay usuarios recientes para mostrar todavia.</td></tr>
+                                        <tr>
+                                            <td colspan="5" class="text-center ff-empty-state">No hay usuarios recientes para mostrar todavia.</td>
+                                        </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -231,31 +368,59 @@
                             <article class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
-                                        <p class="ff-section-eyebrow mb-0">Renovaciones</p>
-                                        <h3 class="ff-card-title mt-1">Proximos vencimientos</h3>
-                                        <p class="ff-card-subtitle">Miembros con cobro proximo.</p>
+                                        <p class="ff-section-eyebrow mb-0">Memoria de trabajo</p>
+                                        <h3 class="ff-card-title mt-1">Ultimos visitados</h3>
+                                        <p class="ff-card-subtitle">Retoma fichas recientes sin buscar otra vez.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">
-                                        <div class="ff-timeline-list" th:if="${not #lists.isEmpty(proximosCobros)}">
-                                            <div class="ff-timeline-item" th:each="usuario : ${proximosCobros}">
-                                                <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}" th:alt="${'Avatar de ' + usuario.nombre}">
+                                    <div class="ff-action-list" th:if="${recentVisits != null and !#lists.isEmpty(recentVisits)}">
+                                        <a class="ff-action-link" th:each="visit : ${recentVisits}" th:href="${visit.url}">
+                                            <div>
+                                                <strong th:text="${visit.title}">Visita</strong>
+                                                <span th:text="${visit.visitedAtLabel}">23/04 11:30</span>
+                                            </div>
+                                            <span class="ff-kpi-highlight" th:text="${visit.entityType}">usuario</span>
+                                        </a>
+                                    </div>
+                                    <div class="ff-empty-inline" th:if="${recentVisits == null or #lists.isEmpty(recentVisits)}">Todavia no hay visitas recientes guardadas.</div>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <p class="ff-section-eyebrow mb-0">Renovaciones</p>
+                                        <h3 class="ff-card-title mt-1">Proximos vencimientos</h3>
+                                        <p class="ff-card-subtitle">Miembros con cobro o renovacion cercana.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-timeline-list" th:if="${not #lists.isEmpty(proximosCobros)}">
+                                        <div class="ff-timeline-item" th:each="usuario : ${proximosCobros}">
+                                            <img class="ff-avatar ff-avatar-sm"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                 th:alt="${'Avatar de ' + usuario.nombre}">
                                             <div class="ff-timeline-body">
-                                                <a class="ff-table-primary text-decoration-none" th:href="@{/usuarios/{id}(id=${usuario.id})}" th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</a>
+                                                <a class="ff-table-primary text-decoration-none"
+                                                   th:href="@{/usuarios/{id}(id=${usuario.id})}"
+                                                   th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</a>
                                                 <span class="ff-table-secondary" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</span>
                                             </div>
-                                            <div class="ff-timeline-meta" th:text="${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'dd/MM') : '-'}">08/04</div>
+                                            <div class="ff-timeline-meta"
+                                                 th:text="${usuario.fechaProximoPago != null ? #temporals.format(usuario.fechaProximoPago, 'dd/MM') : '-'}">08/04</div>
                                         </div>
                                     </div>
                                     <div class="ff-empty-inline" th:if="${#lists.isEmpty(proximosCobros)}">No hay renovaciones proximas pendientes.</div>
                                 </div>
                             </article>
+
                             <article class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
                                         <p class="ff-section-eyebrow mb-0">Rutinas</p>
                                         <h3 class="ff-card-title mt-1">Rutinas activas</h3>
-                                        <p class="ff-card-subtitle">Acceso directo a las fichas.</p>
+                                        <p class="ff-card-subtitle">Accesos directos a programas vigentes.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">
@@ -265,7 +430,7 @@
                                            th:href="@{/rutinas/{id}(id=${rutina.id})}">
                                             <div>
                                                 <strong th:text="${rutina.nombre}">Rutina</strong>
-                                                <span th:text="${rutina.objetivo != null ? #strings.replace(rutina.objetivo.name(), '_', ' ') : 'Sin objetivo'}">Objetivo</span>
+                                                <span th:text="${rutina.tipoRutina != null ? #strings.replace(rutina.tipoRutina.name(), '_', ' ') : 'Sin tipo'}">Tipo</span>
                                             </div>
                                             <span class="ff-kpi-highlight"
                                                   th:text="${rutina.usuarios != null ? rutina.usuarios.size() + ' usr.' : '0 usr.'}">0 usr.</span>
@@ -274,20 +439,33 @@
                                     <div class="ff-empty-inline" th:if="${#lists.isEmpty(rutinasDestacadas)}">No hay rutinas activas destacadas todavia.</div>
                                 </div>
                             </article>
+
                             <article class="ff-surface-card">
                                 <div class="ff-card-header">
                                     <div>
                                         <p class="ff-section-eyebrow mb-0">Operativa</p>
                                         <h3 class="ff-card-title mt-1">Acciones rapidas</h3>
-                                        <p class="ff-card-subtitle">Accesos directos del sistema.</p>
+                                        <p class="ff-card-subtitle">Atajos utiles para el trabajo diario.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">
                                     <div class="ff-action-list">
-                                        <a class="ff-action-link" th:href="@{/usuarios/nuevo}"><div><strong>Registrar usuario</strong><span>Alta de miembro.</span></div><span class="ff-kpi-highlight">Usuarios</span></a>
-                                        <a class="ff-action-link" th:href="@{/rutinas/nueva}"><div><strong>Crear rutina</strong><span>Nueva planificacion.</span></div><span class="ff-kpi-highlight">Rutinas</span></a>
-                                        <a class="ff-action-link" th:href="@{/pagos/nuevo}"><div><strong>Registrar pago</strong><span>Cobro manual.</span></div><span class="ff-kpi-highlight">Pagos</span></a>
-                                        <a class="ff-action-link" th:href="@{/asistencias/nueva}"><div><strong>Nueva asistencia</strong><span>Check-in rapido.</span></div><span class="ff-kpi-highlight">Asistencia</span></a>
+                                        <a class="ff-action-link" th:href="@{/usuarios/nuevo}">
+                                            <div><strong>Registrar usuario</strong><span>Alta de miembro.</span></div>
+                                            <span class="ff-kpi-highlight">Usuarios</span>
+                                        </a>
+                                        <a class="ff-action-link" th:href="@{/rutinas/nueva}">
+                                            <div><strong>Crear rutina</strong><span>Nueva planificacion.</span></div>
+                                            <span class="ff-kpi-highlight">Rutinas</span>
+                                        </a>
+                                        <a class="ff-action-link" th:href="@{/pagos/nuevo}" th:if="${accessProfile.canSeeSection('pagos')}">
+                                            <div><strong>Registrar pago</strong><span>Cobro manual.</span></div>
+                                            <span class="ff-kpi-highlight">Pagos</span>
+                                        </a>
+                                        <a class="ff-action-link" th:href="@{/asistencias/nueva}" th:if="${accessProfile.canSeeSection('asistencias')}">
+                                            <div><strong>Nueva asistencia</strong><span>Check-in rapido.</span></div>
+                                            <span class="ff-kpi-highlight">Asistencia</span>
+                                        </a>
                                     </div>
                                 </div>
                             </article>
@@ -295,13 +473,74 @@
                     </div>
                 </section>
 
-                <section class="ff-surface-card ff-animate-in">
+                <section class="row g-4 ff-animate-in">
+                    <div class="col-12 col-xl-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Hoy</p>
+                                    <h3 class="ff-card-title mt-1">Pulso diario</h3>
+                                    <p class="ff-card-subtitle">Lo inmediato del negocio: sesiones, trials y actividad actual.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-mini-kpi-grid">
+                                    <a class="ff-mini-kpi" th:href="@{/sesiones}">
+                                        <span class="ff-mini-kpi-label">Sesiones hoy</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${sesionesHoy}">0</strong>
+                                    </a>
+                                    <a class="ff-mini-kpi" th:href="@{/trials}" th:if="${accessProfile.canSeeSection('trials')}">
+                                        <span class="ff-mini-kpi-label">Trials hoy</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${trialsHoy}">0</strong>
+                                    </a>
+                                    <a class="ff-mini-kpi" th:href="@{/asistencias}" th:if="${accessProfile.canSeeSection('asistencias')}">
+                                        <span class="ff-mini-kpi-label">Asistencias hoy</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${asistenciasHoy}">0</strong>
+                                    </a>
+                                    <a class="ff-mini-kpi" th:href="@{/staff}" th:if="${accessProfile.canSeeSection('staff')}">
+                                        <span class="ff-mini-kpi-label">Staff activo</span>
+                                        <strong class="ff-mini-kpi-value" th:text="${staffActivos}">0</strong>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-12 col-xl-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <p class="ff-section-eyebrow mb-0">Actividad reciente</p>
+                                    <h3 class="ff-card-title mt-1">Registro operativo</h3>
+                                    <p class="ff-card-subtitle">Acciones recientes del sistema para dar sensacion de producto vivo.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-timeline-list" th:if="${recentActivity != null and !#lists.isEmpty(recentActivity)}">
+                                    <article class="ff-timeline-item" th:each="item : ${recentActivity}">
+                                        <div class="ff-timeline-dot"></div>
+                                        <div class="ff-timeline-body">
+                                            <div class="ff-timeline-meta">
+                                                <span class="ff-soft-badge" th:text="${item.actorProfileLabel}">ADMIN</span>
+                                                <span th:text="${item.occurredAtLabel}">23/04/2026 12:00</span>
+                                            </div>
+                                            <strong th:text="${item.title}">Pago registrado</strong>
+                                            <p th:text="${item.description}">Descripcion</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div class="ff-empty-inline" th:if="${recentActivity == null or #lists.isEmpty(recentActivity)}">Todavia no hay actividad operativa reciente registrada.</div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="ff-surface-card ff-animate-in" th:if="${accessProfile.canSeeSection('pagos')}">
                     <div class="ff-card-header">
                         <div class="ff-card-toolbar w-100">
                             <div>
                                 <p class="ff-section-eyebrow mb-0">Pagos</p>
                                 <h3 class="ff-card-title mt-1">Ultimos pagos registrados</h3>
-                                <p class="ff-card-subtitle">Seguimiento rapido de cobros.</p>
+                                <p class="ff-card-subtitle">Seguimiento rapido de cobros con acceso natural al detalle.</p>
                             </div>
                             <span class="ff-card-toolbar-note">Actividad reciente.</span>
                         </div>
@@ -309,8 +548,11 @@
                     <div class="ff-card-body pt-0">
                         <div class="table-responsive">
                             <table class="table table-hover align-middle ff-recent-table"
-                                   data-ff-datatable data-page-length="5" data-length-change="false"
-                                   data-order-column="0" data-order-direction="desc"
+                                   data-ff-datatable
+                                   data-page-length="5"
+                                   data-length-change="false"
+                                   data-order-column="0"
+                                   data-order-direction="desc"
                                    data-search-placeholder="Buscar pago reciente...">
                                 <thead>
                                 <tr>
@@ -319,17 +561,24 @@
                                     <th>Plan</th>
                                     <th>Monto</th>
                                     <th>Estado</th>
-                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(ultimosPagos)}">
-                                <tr th:each="pago : ${ultimosPagos}">
+                                <tr th:each="pago : ${ultimosPagos}"
+                                    class="ff-clickable-row"
+                                    tabindex="0"
+                                    th:attr="data-row-href=@{/pagos/{id}(id=${pago.id})}">
                                     <td th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : '-'}">Fecha</td>
                                     <td>
                                         <div class="ff-user-cell">
-                                            <img class="ff-avatar ff-avatar-sm" th:src="${@userPhotoUrlResolver.resolvePhotoUrl(pago.usuario != null ? pago.usuario.fotoPath : null)}" alt="Avatar">
+                                            <img class="ff-avatar ff-avatar-sm"
+                                                 th:src="${@userPhotoUrlResolver.resolvePhotoUrl(pago.usuario != null ? pago.usuario.fotoPath : null)}"
+                                                 alt="Avatar">
                                             <div class="ff-user-cell-body">
-                                                <a class="ff-table-primary text-decoration-none" th:if="${pago.usuario != null}" th:href="@{/usuarios/{id}(id=${pago.usuario.id})}" th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null && !pago.usuario.apellidos.isBlank() ? ' ' + pago.usuario.apellidos : '') : '-'}">Usuario</a>
+                                                <a class="ff-table-primary text-decoration-none"
+                                                   th:if="${pago.usuario != null}"
+                                                   th:href="@{/usuarios/{id}(id=${pago.usuario.id})}"
+                                                   th:text="${pago.usuario != null ? pago.usuario.nombre + (pago.usuario.apellidos != null && !pago.usuario.apellidos.isBlank() ? ' ' + pago.usuario.apellidos : '') : '-'}">Usuario</a>
                                                 <span class="ff-table-primary" th:if="${pago.usuario == null}">-</span>
                                                 <a class="ff-table-secondary text-decoration-none"
                                                    th:href="@{/pagos/{id}(id=${pago.id})}"
@@ -339,12 +588,17 @@
                                     </td>
                                     <td th:text="${pago.plan != null ? pago.plan.nombre : 'Sin plan'}">Plan</td>
                                     <td th:text="${pago.monto != null ? #numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '-'}">0.00 EUR</td>
-                                    <td><span class="ff-status-badge" th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')" th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">Estado</span></td>
-                                    <td class="text-end"><a class="btn btn-outline-secondary btn-sm" th:href="@{/pagos/{id}(id=${pago.id})}">Ver</a></td>
+                                    <td>
+                                        <span class="ff-status-badge"
+                                              th:classappend="${pago.estado != null && pago.estado.name() == 'PAGADO'} ? ' ff-status-paid' : (${pago.estado != null && pago.estado.name() == 'VENCIDO'} ? ' ff-status-overdue' : ' ff-status-pending')"
+                                              th:text="${pago.estado != null ? #strings.replace(pago.estado.name(), '_', ' ') : '-'}">Estado</span>
+                                    </td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(ultimosPagos)}">
-                                <tr><td colspan="6" class="text-center ff-empty-state">No hay pagos recientes para mostrar.</td></tr>
+                                <tr>
+                                    <td colspan="5" class="text-center ff-empty-state">No hay pagos recientes para mostrar.</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>

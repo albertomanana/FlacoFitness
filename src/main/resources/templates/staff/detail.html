@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle staff')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Detalle staff', 'Perfil operativo del equipo interno.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Staff</span>
+                        <h2 class="ff-section-title"
+                            th:text="${staff.usuario != null ? staff.usuario.nombre + (staff.usuario.apellidos != null && !staff.usuario.apellidos.isBlank() ? ' ' + staff.usuario.apellidos : '') : 'Perfil interno'}">
+                            Perfil interno
+                        </h2>
+                        <p class="ff-section-subtitle">Centro operativo del staff con agenda, actividad y trazabilidad financiera.</p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-success" th:href="@{/staff/{id}/editar(id=${staff.id})}">Editar</a>
+                        <a class="btn btn-outline-success" th:if="${staff.usuario != null}" th:href="@{/usuarios/{id}(id=${staff.usuario.id})}">Abrir usuario</a>
+                        <form th:if="${staff.activo}" th:action="@{/staff/{id}/desactivar(id=${staff.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
+                            <button class="btn btn-outline-danger" type="submit">Desactivar</button>
+                        </form>
+                        <form th:unless="${staff.activo}" th:action="@{/staff/{id}/activar(id=${staff.id})}" method="post" class="m-0">
+                            <input type="hidden" name="returnTo" value="detail">
+                            <button class="btn btn-outline-success" type="submit">Activar</button>
+                        </form>
+                        <a class="btn btn-outline-secondary" th:href="@{/staff}">Volver</a>
+                    </div>
+                </section>
+
+                <section class="row g-4 ff-detail-layout">
+                    <div class="col-12 col-xl-8">
+                        <div class="d-flex flex-column gap-4">
+                            <article class="ff-surface-card">
+                                <div class="ff-card-body d-flex flex-column gap-4">
+                                    <div class="ff-detail-hero">
+                                        <div class="ff-photo-inline">
+                                            <span class="ff-avatar-ring">
+                                                <img class="ff-avatar ff-avatar-xl"
+                                                     th:src="${@userPhotoUrlResolver.resolvePhotoUrl(staff.usuario != null ? staff.usuario.fotoPath : null)}"
+                                                     alt="Avatar del staff">
+                                            </span>
+                                            <div class="ff-photo-inline-body">
+                                                <h3 class="ff-detail-hero-title">Panel de actividad del staff</h3>
+                                                <p class="ff-detail-hero-text">Una sola ficha para coordinar agenda, clases, clientes a reactivar y seguimiento economico.</p>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 justify-content-xl-end">
+                                            <span class="ff-status-badge"
+                                                  th:classappend="${staff.activo} ? ' ff-status-active' : ' ff-status-inactive'"
+                                                  th:text="${staff.activo ? 'Activo' : 'Inactivo'}">Activo</span>
+                                            <span class="ff-status-badge"
+                                                  th:classappend="${staff.puedeImpartirClases == true} ? ' ff-status-active' : ' ff-status-pending'"
+                                                  th:text="${staff.puedeImpartirClases == true ? 'Imparte clases' : 'Perfil interno'}">Imparte clases</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="row g-3">
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Sesiones hoy</span>
+                                                <strong class="ff-user-kpi-value" th:text="${#lists.size(sesionesHoy)}">0</strong>
+                                                <span class="ff-user-kpi-meta">Agenda operativa</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Miembros hoy</span>
+                                                <strong class="ff-user-kpi-value" th:text="${miembrosAsignadosHoy}">0</strong>
+                                                <span class="ff-user-kpi-meta">Reservas y asistencias</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Nominas</span>
+                                                <strong class="ff-user-kpi-value" th:text="${#lists.size(nominasRecientes)}">0</strong>
+                                                <span class="ff-user-kpi-meta">Ultimos cierres</span>
+                                            </article>
+                                        </div>
+                                        <div class="col-sm-6 col-xxl-3">
+                                            <article class="ff-surface-subcard ff-user-kpi">
+                                                <span class="ff-detail-label">Clientes a reactivar</span>
+                                                <strong class="ff-user-kpi-value" th:text="${#lists.size(clientesInactivos)}">0</strong>
+                                                <span class="ff-user-kpi-meta">Sin check-in reciente</span>
+                                            </article>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Ficha operativa</h3>
+                                        <p class="ff-card-subtitle">Identidad, rol interno y configuracion de trabajo.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-detail-grid">
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Email</span><span class="ff-detail-value" th:text="${staff.usuario != null ? staff.usuario.email : '-'}">email</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Telefono</span><span class="ff-detail-value" th:text="${staff.usuario != null ? #strings.defaultString(staff.usuario.telefono, '-') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Rol staff</span><span class="ff-detail-value" th:text="${staff.rolStaff != null ? #strings.replace(staff.rolStaff.name(), '_', ' ') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Especialidad</span><span class="ff-detail-value" th:text="${#strings.defaultString(staff.especialidad, '-')}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Fecha alta</span><span class="ff-detail-value" th:text="${staff.fechaAlta != null ? #temporals.format(staff.fechaAlta, 'dd/MM/yyyy') : '-'}">-</span></div>
+                                        <div class="ff-detail-item"><span class="ff-detail-label">Estado</span><span class="ff-detail-value" th:text="${staff.activo ? 'Activo' : 'Inactivo'}">Activo</span></div>
+                                        <div class="ff-detail-item ff-detail-full"><span class="ff-detail-label">Observaciones</span><span class="ff-detail-value ff-detail-value-muted" th:text="${#strings.defaultString(staff.observaciones, 'Sin observaciones registradas')}">Sin observaciones registradas</span></div>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <div class="row g-4">
+                                <div class="col-12 col-lg-6">
+                                    <article class="ff-surface-card h-100">
+                                        <div class="ff-card-header">
+                                            <div>
+                                                <h3 class="ff-card-title">Sesiones de hoy</h3>
+                                                <p class="ff-card-subtitle">Acceso directo a la agenda del staff.</p>
+                                            </div>
+                                        </div>
+                                        <div class="ff-card-body">
+                                            <div th:if="${not #lists.isEmpty(sesionesHoy)}" class="ff-compact-list">
+                                                <article class="ff-compact-list-item ff-clickable-row"
+                                                         th:each="sesion : ${sesionesHoy}"
+                                                         tabindex="0"
+                                                         th:attr="data-row-href=@{/sesiones/{id}(id=${sesion.id})}">
+                                                    <div>
+                                                        <strong th:text="${sesion.clase != null ? sesion.clase.nombre : 'Sesion'}">Sesion</strong>
+                                                        <p th:text="${(sesion.fecha != null ? #temporals.format(sesion.fecha, 'dd/MM/yyyy') : '-') + ' | ' + (sesion.horaInicio != null ? #temporals.format(sesion.horaInicio, 'HH:mm') : '-')}">Horario</p>
+                                                    </div>
+                                                </article>
+                                            </div>
+                                            <div th:if="${#lists.isEmpty(sesionesHoy)}" class="ff-empty-inline">No tiene sesiones programadas para hoy.</div>
+                                        </div>
+                                    </article>
+                                </div>
+
+                                <div class="col-12 col-lg-6">
+                                    <article class="ff-surface-card h-100">
+                                        <div class="ff-card-header">
+                                            <div>
+                                                <h3 class="ff-card-title">Clientes inactivos</h3>
+                                                <p class="ff-card-subtitle">Miembros asignados que requieren seguimiento.</p>
+                                            </div>
+                                        </div>
+                                        <div class="ff-card-body">
+                                            <div th:if="${not #lists.isEmpty(clientesInactivos)}" class="ff-compact-list">
+                                                <article class="ff-compact-list-item ff-clickable-row"
+                                                         th:each="cliente : ${clientesInactivos}"
+                                                         tabindex="0"
+                                                         th:attr="data-row-href=@{/usuarios/{id}(id=${cliente.id})}">
+                                                    <div>
+                                                        <strong th:text="${cliente.nombre + (cliente.apellidos != null && !cliente.apellidos.isBlank() ? ' ' + cliente.apellidos : '')}">Cliente</strong>
+                                                        <p th:text="${#strings.defaultString(cliente.email, 'Sin email registrado')}">email</p>
+                                                    </div>
+                                                </article>
+                                            </div>
+                                            <div th:if="${#lists.isEmpty(clientesInactivos)}" class="ff-empty-inline">No hay clientes inactivos vinculados a este staff.</div>
+                                        </div>
+                                    </article>
+                                </div>
+                            </div>
+
+                            <article class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Actividad del sistema</h3>
+                                        <p class="ff-card-subtitle">Cambios relevantes registrados sobre el perfil interno.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div th:if="${activityTimeline != null and !#lists.isEmpty(activityTimeline)}" class="ff-timeline-list">
+                                        <article class="ff-timeline-item" th:each="item : ${activityTimeline}">
+                                            <div class="ff-timeline-dot"></div>
+                                            <div class="ff-timeline-body">
+                                                <div class="ff-timeline-meta">
+                                                    <span class="ff-soft-badge" th:text="${item.actorProfileLabel}">ADMIN</span>
+                                                    <span th:text="${item.occurredAtLabel}">23/04/2026 12:00</span>
+                                                </div>
+                                                <strong th:text="${item.title}">Accion</strong>
+                                                <p th:text="${item.description}">Descripcion</p>
+                                            </div>
+                                        </article>
+                                    </div>
+                                    <div th:if="${activityTimeline == null or #lists.isEmpty(activityTimeline)}" class="ff-empty-inline">Todavia no hay actividad interna registrada sobre este perfil.</div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Accesos rapidos</h3>
+                                        <p class="ff-card-subtitle">Salta a la operativa relacionada sin volver al menu.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-quick-links d-flex flex-column gap-2">
+                                        <a class="btn btn-success w-100" th:href="@{/staff/{id}/editar(id=${staff.id})}">Editar perfil</a>
+                                        <a class="btn btn-outline-secondary w-100" th:if="${staff.usuario != null}" th:href="@{/usuarios/{id}(id=${staff.usuario.id})}">Ficha de usuario</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/nominas/nueva(staffId=${staff.id})}">Nueva nomina</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/nominas(staffId=${staff.id})}">Ver nominas</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/gastos(staffId=${staff.id})}">Ver gastos</a>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Programacion y piso</h3>
+                                        <p class="ff-card-subtitle">Bloque operativo para agenda, rutinas y seguimiento del dia a dia.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-quick-links d-flex flex-column gap-2">
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/sesiones}">Sesiones</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/clases}">Clases</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/rutinas}">Rutinas</a>
+                                        <a class="btn btn-outline-secondary w-100" th:href="@{/asistencias}">Asistencias</a>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Nominas recientes</h3>
+                                        <p class="ff-card-subtitle">Ultimos cierres ligados al staff.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div th:if="${not #lists.isEmpty(nominasRecientes)}" class="ff-chip-list">
+                                        <a th:each="nomina : ${nominasRecientes}" class="ff-soft-link-card" th:href="@{/nominas/{id}(id=${nomina.id})}">
+                                            <span class="ff-soft-link-title" th:text="${nomina.periodo}">2026-01</span>
+                                            <span class="ff-soft-link-meta" th:text="${nomina.salarioNeto != null ? #numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : 'Sin neto'}">0.00 EUR</span>
+                                        </a>
+                                    </div>
+                                    <div th:if="${#lists.isEmpty(nominasRecientes)}" class="ff-empty-inline">Todavia no hay nominas asociadas a este staff.</div>
+                                </div>
+                            </aside>
+
+                            <aside class="ff-surface-card">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Gastos relacionados</h3>
+                                        <p class="ff-card-subtitle">Costes operativos ligados al perfil.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div th:if="${not #lists.isEmpty(gastosRelacionados)}" class="ff-chip-list">
+                                        <a th:each="gasto : ${gastosRelacionados}" class="ff-soft-link-card" th:href="@{/gastos/{id}(id=${gasto.id})}">
+                                            <span class="ff-soft-link-title" th:text="${gasto.concepto}">Gasto</span>
+                                            <span class="ff-soft-link-meta" th:text="${gasto.importe != null ? #numbers.formatDecimal(gasto.importe, 1, 'POINT', 2, 'COMMA') + ' EUR' : 'Sin importe'}">0.00 EUR</span>
+                                        </a>
+                                    </div>
+                                    <div th:if="${#lists.isEmpty(gastosRelacionados)}" class="ff-empty-inline">No hay gastos asociados a este staff.</div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

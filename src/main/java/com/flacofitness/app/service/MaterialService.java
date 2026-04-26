@@ -1,0 +1,164 @@
+package com.flacofitness.app.service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import com.flacofitness.app.exception.BusinessValidationException;
+import com.flacofitness.app.exception.ResourceNotFoundException;
+import com.flacofitness.app.model.entity.Material;
+import com.flacofitness.app.model.enums.CategoriaMaterial;
+import com.flacofitness.app.model.enums.EstadoMaterial;
+import com.flacofitness.app.repository.MaterialRepository;
+
+@Service
+@Transactional(readOnly = true)
+public class MaterialService {
+
+    private final MaterialRepository materialRepository;
+    private final GastoService gastoService;
+
+    public MaterialService(MaterialRepository materialRepository,
+                           GastoService gastoService) {
+        this.materialRepository = materialRepository;
+        this.gastoService = gastoService;
+    }
+
+    public List<Material> listarFiltrados(EstadoMaterial estado, CategoriaMaterial categoria) {
+        if (estado != null && categoria != null) {
+            return materialRepository.findByActivoTrueAndEstadoAndCategoriaOrderByNombreAsc(estado, categoria);
+        }
+
+        if (estado != null) {
+            return materialRepository.findByActivoTrueAndEstadoOrderByNombreAsc(estado);
+        }
+
+        if (categoria != null) {
+            return materialRepository.findByActivoTrueAndCategoriaOrderByNombreAsc(categoria);
+        }
+
+        return materialRepository.findByActivoTrueOrderByNombreAsc();
+    }
+
+    public Material buscarPorId(Long id) {
+        return materialRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado con id: " + id));
+    }
+
+    public long contarActivos() {
+        return materialRepository.countByActivoTrue();
+    }
+
+    public long contarBajoStock() {
+        return materialRepository.countBajoStock();
+    }
+
+    public List<Material> listarBajoStock() {
+        return materialRepository.findBajoStock();
+    }
+
+    public List<Material> listarNecesitanReposicion() {
+        return materialRepository.findBajoStock();
+    }
+
+    @Transactional
+    public int procesarStockBajo() {
+        List<Material> activos = materialRepository.findByActivoTrueOrderByNombreAsc();
+        int actualizados = 0;
+
+        for (Material material : activos) {
+            EstadoMaterial estadoAnterior = material.getEstado();
+            normalizar(material);
+            if (estadoAnterior != material.getEstado()) {
+                materialRepository.save(material);
+                actualizados++;
+            }
+        }
+
+        return actualizados;
+    }
+
+    @Transactional
+    public Material guardar(Material material) {
+        normalizar(material);
+        Material guardado = materialRepository.save(material);
+        if (guardado.getCosteUnitario() != null
+                && guardado.getCosteUnitario().compareTo(BigDecimal.ZERO) > 0
+                && guardado.getStock() != null
+                && guardado.getStock() > 0) {
+            gastoService.crearGastoCompraMaterial(guardado);
+        }
+        return guardado;
+    }
+
+    @Transactional
+    public Material actualizar(Long id, Material materialActualizado) {
+        Material material = buscarPorId(id);
+        material.setNombre(materialActualizado.getNombre());
+        material.setCategoria(materialActualizado.getCategoria());
+        material.setStock(materialActualizado.getStock());
+        material.setStockMinimo(materialActualizado.getStockMinimo());
+        material.setUbicacion(materialActualizado.getUbicacion());
+        material.setEstado(materialActualizado.getEstado());
+        material.setCosteUnitario(materialActualizado.getCosteUnitario());
+        material.setProveedor(materialActualizado.getProveedor());
+        material.setObservaciones(materialActualizado.getObservaciones());
+        material.setActivo(materialActualizado.getActivo());
+        normalizar(material);
+        return materialRepository.save(material);
+    }
+
+    @Transactional
+    public void desactivar(Long id) {
+        Material material = buscarPorId(id);
+        material.setActivo(false);
+        materialRepository.save(material);
+    }
+
+    @Transactional
+    public void activar(Long id) {
+        Material material = buscarPorId(id);
+        material.setActivo(true);
+        if (material.getEstado() == EstadoMaterial.INACTIVO) {
+            material.setEstado(EstadoMaterial.DISPONIBLE);
+        }
+        materialRepository.save(material);
+    }
+
+    private void normalizar(Material material) {
+        if (!StringUtils.hasText(material.getNombre())) {
+            throw new BusinessValidationException("Debes indicar el nombre del material");
+        }
+        if (material.getCategoria() == null) {
+            material.setCategoria(CategoriaMaterial.ENTRENAMIENTO);
+        }
+        if (material.getStock() == null || material.getStock() < 0) {
+            throw new BusinessValidationException("El stock no puede ser negativo");
+        }
+        if (material.getStockMinimo() == null || material.getStockMinimo() < 0) {
+            throw new BusinessValidationException("El stock minimo no puede ser negativo");
+        }
+        if (material.getCosteUnitario() != null && material.getCosteUnitario().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessValidationException("El coste unitario no puede ser negativo");
+        }
+        if (material.getActivo() == null) {
+            material.setActivo(true);
+        }
+
+        if (!material.getActivo()) {
+            material.setEstado(EstadoMaterial.INACTIVO);
+            return;
+        }
+
+        if (material.getStock() <= 0) {
+            material.setEstado(EstadoMaterial.AGOTADO);
+        } else if (material.getStock() <= material.getStockMinimo()) {
+            material.setEstado(EstadoMaterial.BAJO_STOCK);
+        } else if (material.getEstado() == null || material.getEstado() == EstadoMaterial.INACTIVO) {
+            material.setEstado(EstadoMaterial.DISPONIBLE);
+        }
+    }
+}

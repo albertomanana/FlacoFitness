@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Nómina')}"></head>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('nominas')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Nómina', 'Documento salarial interno con borrador, emisión y cierre.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <section class="ff-section-header ff-animate-in">
+                    <div>
+                        <span class="ff-section-eyebrow">Finanzas</span>
+                        <h2 class="ff-section-title" th:text="${modoEdicion ? 'Editar nómina' : 'Nueva nómina'}">Nueva nómina</h2>
+                        <p class="ff-section-subtitle">Prepara el borrador, revisa el neto y emite la pieza contable solo cuando el cierre este listo.</p>
+                    </div>
+                    <a class="btn btn-outline-secondary" th:href="${modoEdicion ? '/nominas/' + nomina.id : '/nominas'}">Volver</a>
+                </section>
+
+                <section class="row g-4 ff-form-layout" data-payroll-builder>
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card ff-animate-in">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Constructor de nomina</h3>
+                                    <p class="ff-card-subtitle">Un flujo claro para staff, periodo, importes y trazabilidad.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <form th:action="${modoEdicion ? '/nominas/' + nomina.id : '/nominas'}"
+                                      th:object="${nominaForm}"
+                                      method="post"
+                                      class="d-flex flex-column gap-4">
+                                    <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger" role="alert">
+                                        <ul class="mb-0">
+                                            <li th:each="err : ${#fields.globalErrors()}" th:text="${err}">Error</li>
+                                        </ul>
+                                    </div>
+
+                                    <section class="ff-form-section">
+                                        <div class="ff-form-section-header">
+                                            <h4 class="ff-form-section-title">Staff y periodo</h4>
+                                            <p class="ff-form-section-text">La combinacion de staff y periodo debe ser unica.</p>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-lg-8">
+                                                <label class="form-label" for="staffPerfil">Staff</label>
+                                                <select id="staffPerfil"
+                                                        class="form-select form-select-lg"
+                                                        th:classappend="${#fields.hasErrors('staffPerfilId')} ? ' is-invalid' : ''"
+                                                        th:field="*{staffPerfilId}"
+                                                        required>
+                                                    <option value="">Selecciona un perfil de staff</option>
+                                                    <option th:each="staff : ${staffActivos}"
+                                                            th:value="${staff.id}"
+                                                            th:with="staffName=${staff.usuario != null ? staff.usuario.nombre + (staff.usuario.apellidos != null and !staff.usuario.apellidos.isBlank() ? ' ' + staff.usuario.apellidos : '') : 'Staff #' + staff.id}"
+                                                            th:data-display-name="${staffName}"
+                                                            th:data-role="${staff.rolStaff != null ? #strings.replace(staff.rolStaff.name(), '_', ' ') : 'STAFF'}"
+                                                            th:data-base="${staff.salarioBaseMensual}"
+                                                            th:data-bonus="${staff.bonusMensual}"
+                                                            th:data-deducciones="${staff.deduccionesMensuales}"
+                                                            th:text="${staffName + ' - ' + (staff.rolStaff != null ? #strings.replace(staff.rolStaff.name(), '_', ' ') : 'STAFF')}">Staff</option>
+                                                </select>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('staffPerfilId')}" th:errors="*{staffPerfilId}">Error</div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <label class="form-label" for="periodo">Periodo</label>
+                                                <input id="periodo" type="month" class="form-control form-control-lg"
+                                                       th:classappend="${#fields.hasErrors('periodo')} ? ' is-invalid' : ''"
+                                                       th:field="*{periodo}" required>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('periodo')}" th:errors="*{periodo}">Error</div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section class="ff-form-section">
+                                        <div class="ff-form-section-header">
+                                            <h4 class="ff-form-section-title">Desglose economico</h4>
+                                            <p class="ff-form-section-text">El neto se recalcula en vivo a partir de base, bonus y deducciones.</p>
+                                        </div>
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <label class="form-label" for="salarioBase">Salario base</label>
+                                                <input id="salarioBase" type="number" step="0.01" min="0.01"
+                                                       class="form-control form-control-lg"
+                                                       th:classappend="${#fields.hasErrors('salarioBase')} ? ' is-invalid' : ''"
+                                                       th:field="*{salarioBase}" required data-payroll-base>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('salarioBase')}" th:errors="*{salarioBase}">Error</div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label" for="bonus">Bonus</label>
+                                                <input id="bonus" type="number" step="0.01" min="0"
+                                                       class="form-control form-control-lg"
+                                                       th:classappend="${#fields.hasErrors('bonus')} ? ' is-invalid' : ''"
+                                                       th:field="*{bonus}" data-payroll-bonus>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('bonus')}" th:errors="*{bonus}">Error</div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label" for="deducciones">Deducciones</label>
+                                                <input id="deducciones" type="number" step="0.01" min="0"
+                                                       class="form-control form-control-lg"
+                                                       th:classappend="${#fields.hasErrors('deducciones')} ? ' is-invalid' : ''"
+                                                       th:field="*{deducciones}" data-payroll-deductions>
+                                                <div class="invalid-feedback" th:if="${#fields.hasErrors('deducciones')}" th:errors="*{deducciones}">Error</div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <div class="ff-form-actions">
+                                        <p class="ff-form-actions-note"
+                                           th:text="${modoEdicion ? 'Solo los borradores se pueden editar. Emitir crea la nómina definitiva y su gasto de categoría NOMINA.' : 'Guardar borrador no genera gasto. Emitir ahora crea la nómina y su gasto de categoría NOMINA.'}">
+                                            Guardar borrador no genera gasto. Emitir ahora crea la nomina y su gasto de categoria NOMINA.
+                                        </p>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <button type="submit"
+                                                    class="btn btn-outline-secondary"
+                                                    name="action"
+                                                    value="borrador"
+                                                    th:text="${modoEdicion ? 'Guardar cambios' : 'Guardar borrador'}">Guardar borrador</button>
+                                            <button type="submit"
+                                                    class="btn btn-success"
+                                                    name="action"
+                                                    value="emitir"
+                                                    th:text="${modoEdicion ? 'Guardar y emitir' : 'Emitir nómina'}">Emitir nómina</button>
+                                            <a class="btn btn-outline-secondary"
+                                               th:href="${modoEdicion ? '/nominas/' + nomina.id : '/nominas'}">Cancelar</a>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-side-stack ff-side-stack-sticky">
+                            <aside class="ff-surface-card ff-payroll-preview-card ff-animate-in">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <p class="ff-section-eyebrow mb-0">Preview</p>
+                                        <h3 class="ff-card-title mt-1">Resumen en vivo</h3>
+                                        <p class="ff-card-subtitle">Lectura rapida antes de emitir el documento.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <div class="ff-payroll-preview-staff">
+                                        <span class="ff-soft-badge" data-payroll-role
+                                              th:text="${nomina.staffPerfil != null and nomina.staffPerfil.rolStaff != null ? #strings.replace(nomina.staffPerfil.rolStaff.name(), '_', ' ') : 'STAFF'}">STAFF</span>
+                                        <strong data-payroll-name
+                                                th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? nomina.staffPerfil.usuario.nombre + (nomina.staffPerfil.usuario.apellidos != null and !nomina.staffPerfil.usuario.apellidos.isBlank() ? ' ' + nomina.staffPerfil.usuario.apellidos : '') : 'Selecciona un staff'}">Selecciona un staff</strong>
+                                        <span class="ff-table-secondary" data-payroll-period th:text="${nomina.periodo != null ? nomina.periodo : 'Periodo sin definir'}">Periodo</span>
+                                    </div>
+                                    <div class="ff-payroll-breakdown mt-4">
+                                        <div class="ff-payroll-breakdown-row">
+                                            <span>Base</span>
+                                            <strong data-payroll-base-text th:text="${nomina.salarioBase != null ? #numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0,00 EUR'}">0,00 EUR</strong>
+                                        </div>
+                                        <div class="ff-payroll-breakdown-row">
+                                            <span>Bonus</span>
+                                            <strong data-payroll-bonus-text th:text="${nomina.bonus != null ? #numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0,00 EUR'}">0,00 EUR</strong>
+                                        </div>
+                                        <div class="ff-payroll-breakdown-row ff-payroll-breakdown-row-negative">
+                                            <span>Deducciones</span>
+                                            <strong data-payroll-deductions-text th:text="${nomina.deducciones != null ? #numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0,00 EUR'}">0,00 EUR</strong>
+                                        </div>
+                                        <div class="ff-payroll-breakdown-total">
+                                            <span>Neto final</span>
+                                            <strong data-payroll-net-text th:text="${nomina.salarioNeto != null ? #numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : '0,00 EUR'}">0,00 EUR</strong>
+                                        </div>
+                                    </div>
+                                    <div class="ff-inline-note mt-4">
+                                        Referencia automatica prevista: <strong data-payroll-reference th:text="${nomina.referencia != null ? nomina.referencia : 'se genera al guardar'}">se genera al guardar</strong>
+                                    </div>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+</body>
+</html>

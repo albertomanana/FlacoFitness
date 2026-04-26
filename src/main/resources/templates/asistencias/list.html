@@ -9,45 +9,225 @@
         <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Asistencias'}, ${subtituloListado ?: 'Control de accesos.'})}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack">
+            <div class="ff-content-stack ff-command-stack">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Asistencias</span>
                         <h2 class="ff-section-title">Registro de entradas</h2>
-                        <p class="ff-section-subtitle">Entradas recientes y detalle por usuario.</p>
+                        <p class="ff-section-subtitle">Check-in rapido, calendario de actividad y seguimiento por usuario.</p>
                     </div>
-                    <a class="btn btn-success" th:href="@{/asistencias/nueva}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
-                             fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"/>
-                            <line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
-                        Nueva asistencia
-                    </a>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a class="btn btn-outline-secondary" th:href="@{/asistencias(fecha=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}, mes=${mesFiltro})}">
+                            Ver hoy
+                        </a>
+                        <a class="btn btn-success" th:href="@{/asistencias/nueva}">
+                            Nueva asistencia
+                        </a>
+                    </div>
                 </section>
 
                 <section class="row g-3 ff-animate-in">
-                    <div class="col-sm-6 col-xl-4">
-                        <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Asistencias totales</p>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card border-left-success">
+                            <p class="ff-stat-label text-success fw-bold">Registros visibles</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias)}">0</p>
-                            <p class="ff-stat-note">Registros totales</p>
+                            <p class="ff-stat-note">Resultado del filtro actual</p>
                         </article>
                     </div>
-                    <div class="col-sm-6 col-xl-4">
-                        <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Con hora de entrada</p>
-                            <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[horaEntrada != null])}">0</p>
-                            <p class="ff-stat-note">Con hora</p>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card border-left-primary">
+                            <p class="ff-stat-label text-primary fw-bold">Check-ins hoy</p>
+                            <p class="ff-stat-value" th:text="${checkInsHoy}">0</p>
+                            <p class="ff-stat-note">Entradas confirmadas hoy</p>
                         </article>
                     </div>
-                    <div class="col-sm-6 col-xl-4">
-                        <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Con observaciones</p>
-                            <p class="ff-stat-value" th:text="${#lists.size(asistencias.?[observaciones != null and !observaciones.isBlank()])}">0</p>
-                            <p class="ff-stat-note">Con observaciones</p>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card border-left-warning">
+                            <p class="ff-stat-label text-warning fw-bold">Usuarios activos</p>
+                            <p class="ff-stat-value" th:text="${usuariosAsistenciaActivos}">0</p>
+                            <p class="ff-stat-note">Con asistencia en los ultimos 7 dias</p>
+                        </article>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <article class="ff-surface-card ff-stat-card border-left-danger">
+                            <p class="ff-stat-label text-danger fw-bold">Usuarios inactivos</p>
+                            <p class="ff-stat-value" th:text="${usuariosAsistenciaInactivos}">0</p>
+                            <p class="ff-stat-note">Cuentas activas sin uso reciente</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="row g-4 ff-animate-in">
+                    <div class="col-12 col-xl-4">
+                        <div class="ff-assist-stack">
+                            <article class="ff-surface-card h-100">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Check-in rapido</h3>
+                                        <p class="ff-card-subtitle">Seleccion multiple, observacion opcional y bloqueo de duplicados del dia.</p>
+                                    </div>
+                                    <span class="ff-card-toolbar-note" data-checkin-count>0 seleccionados</span>
+                                </div>
+                                <div class="ff-card-body" data-checkin-panel>
+                                    <form th:action="@{/asistencias/rapido}" method="post" class="d-flex flex-column gap-4">
+                                        <div class="ff-checkin-toolbar">
+                                            <div class="ff-checkin-search">
+                                                <input type="search"
+                                                       data-checkin-search
+                                                       class="form-control"
+                                                       placeholder="Buscar usuario activo por nombre o email">
+                                            </div>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-checkin-select-visible>
+                                                    Seleccionar visibles
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" data-checkin-clear>
+                                                    Limpiar
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="ff-checkin-grid" th:if="${not #lists.isEmpty(usuariosCheckIn)}">
+                                            <label class="ff-checkin-card"
+                                                   th:each="usuario : ${usuariosCheckIn}"
+                                                   data-checkin-item
+                                                   th:attr="data-search-text=${(usuario.nombre + ' ' + #strings.defaultString(usuario.apellidos, '') + ' ' + usuario.email).toLowerCase()}">
+                                                <input type="checkbox"
+                                                       name="usuarioIds"
+                                                       th:value="${usuario.id}"
+                                                       class="ff-checkin-checkbox"
+                                                       data-checkin-user>
+                                                <span class="ff-checkin-card-body">
+                                                    <img class="ff-avatar ff-avatar-md"
+                                                         th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
+                                                         th:alt="${'Avatar de ' + usuario.nombre}">
+                                                    <span class="ff-checkin-card-copy">
+                                                        <strong th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Usuario</strong>
+                                                        <small th:text="${usuario.email}">correo@ejemplo.com</small>
+                                                    </span>
+                                                    <span class="ff-soft-badge" th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</span>
+                                                </span>
+                                            </label>
+                                        </div>
+
+                                        <div class="ff-empty-inline" th:if="${#lists.isEmpty(usuariosCheckIn)}">
+                                            No hay usuarios activos disponibles para el check-in rapido.
+                                        </div>
+
+                                        <details class="ff-checkin-notes">
+                                            <summary>Anadir observacion opcional</summary>
+                                            <textarea class="form-control"
+                                                      name="observaciones"
+                                                      rows="3"
+                                                      placeholder="Ejemplo: acceso con invitado, incidencia en recepcion o observacion puntual."></textarea>
+                                        </details>
+
+                                        <div class="ff-form-actions pt-0">
+                                            <p class="ff-form-actions-note">Si un usuario ya tiene asistencia hoy, el sistema lo omite para evitar duplicados.</p>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button type="submit" class="btn btn-success" data-checkin-submit disabled>
+                                                    Registrar seleccionados
+                                                </button>
+                                                <a class="btn btn-outline-secondary" th:href="@{/asistencias/nueva}">Registro manual</a>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </article>
+
+                            <article class="ff-surface-card h-100">
+                                <div class="ff-card-header">
+                                    <div>
+                                        <h3 class="ff-card-title">Filtros</h3>
+                                        <p class="ff-card-subtitle">Consulta por fecha y usuario sin salir del modulo.</p>
+                                    </div>
+                                </div>
+                                <div class="ff-card-body">
+                                    <form class="d-flex flex-column gap-3" th:action="@{/asistencias}" method="get">
+                                        <input type="hidden" name="mes" th:value="${mesFiltro}">
+                                        <div>
+                                            <label class="form-label" for="fechaFiltro">Fecha</label>
+                                            <input id="fechaFiltro"
+                                                   type="date"
+                                                   name="fecha"
+                                                   class="form-control"
+                                                   th:value="${fechaFiltro}">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="usuarioFiltro">Usuario</label>
+                                            <select id="usuarioFiltro" name="usuarioId" class="form-select">
+                                                <option value="">Todos los usuarios</option>
+                                                <option th:each="usuario : ${usuariosFiltro}"
+                                                        th:value="${usuario.id}"
+                                                        th:selected="${usuarioFiltroId != null and usuarioFiltroId == usuario.id}"
+                                                        th:text="${usuario.nombre + (usuario.apellidos != null && !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">
+                                                    Usuario
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="sesionFiltro">Sesion</label>
+                                            <select id="sesionFiltro" name="sesionId" class="form-select">
+                                                <option value="">Todas las sesiones</option>
+                                                <option th:each="sesion : ${sesionesFiltro}"
+                                                        th:value="${sesion.id}"
+                                                        th:selected="${sesionFiltroId != null and sesionFiltroId == sesion.id}"
+                                                        th:text="${(sesion.clase != null ? sesion.clase.nombre : 'Sesion') + ' - ' + (sesion.fecha != null ? #temporals.format(sesion.fecha, 'dd/MM/yyyy') : '-')}">
+                                                    Sesion
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <button type="submit" class="btn btn-success">Aplicar filtros</button>
+                                            <a class="btn btn-outline-secondary" th:href="@{/asistencias(mes=${mesFiltro})}">Limpiar</a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-xl-8">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div class="ff-card-toolbar w-100">
+                                    <div>
+                                        <h3 class="ff-card-title">Calendario de actividad</h3>
+                                        <p class="ff-card-subtitle">Pulsa un dia para abrir el listado filtrado.</p>
+                                    </div>
+                                    <div class="ff-calendar-nav">
+                                        <a class="btn btn-outline-secondary btn-sm"
+                                           th:href="${usuarioFiltroId != null} ? @{/asistencias(usuarioId=${usuarioFiltroId}, mes=${calendarView.mesAnterior})} : @{/asistencias(mes=${calendarView.mesAnterior})}">
+                                            Anterior
+                                        </a>
+                                        <span class="ff-card-toolbar-note" th:text="${calendarView.etiquetaMes}">Abril 2026</span>
+                                        <a class="btn btn-outline-secondary btn-sm"
+                                           th:href="${usuarioFiltroId != null} ? @{/asistencias(usuarioId=${usuarioFiltroId}, mes=${calendarView.mesSiguiente})} : @{/asistencias(mes=${calendarView.mesSiguiente})}">
+                                            Siguiente
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ff-card-body">
+                                <div class="ff-calendar">
+                                    <div class="ff-calendar-weekdays">
+                                        <span class="ff-calendar-weekday"
+                                              th:each="diaSemana : ${calendarView.diasSemana}"
+                                              th:text="${diaSemana}">Lun</span>
+                                    </div>
+                                    <div class="ff-calendar-grid">
+                                        <a class="ff-calendar-day"
+                                           th:each="dia : ${calendarView.dias}"
+                                           th:classappend="${(!dia.perteneceAlMesActivo() ? ' is-outside' : '') + (dia.esHoy() ? ' is-today' : '') + (dia.estaSeleccionado() ? ' is-selected' : '') + (dia.totalAsistencias() > 0 ? ' has-data' : '')}"
+                                           th:href="${usuarioFiltroId != null} ? @{/asistencias(usuarioId=${usuarioFiltroId}, fecha=${dia.fecha}, mes=${calendarView.mes})} : @{/asistencias(fecha=${dia.fecha}, mes=${calendarView.mes})}">
+                                            <span class="ff-calendar-day-number" th:text="${dia.numeroDia()}">1</span>
+                                            <span class="ff-calendar-day-total" th:text="${dia.totalAsistencias() + ' check-in(s)'}">0 check-in(s)</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </article>
                     </div>
                 </section>
@@ -57,7 +237,7 @@
                         <div class="ff-card-toolbar w-100">
                             <div>
                                 <h3 class="ff-card-title">Historial de asistencias</h3>
-                                <p class="ff-card-subtitle">Busqueda, orden y detalle.</p>
+                                <p class="ff-card-subtitle">Fila clicable, acceso al usuario y filtros combinados.</p>
                             </div>
                             <span class="ff-card-toolbar-note">DataTable activo.</span>
                         </div>
@@ -69,19 +249,29 @@
                                    data-page-length="10"
                                    data-order-column="0"
                                    data-order-direction="desc"
-                                   data-search-placeholder="Buscar asistencia o usuario...">
+                                   data-search-placeholder="Buscar asistencia, usuario u observacion...">
                                 <thead>
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Hora</th>
                                     <th>Usuario</th>
+                                    <th>Sesion</th>
                                     <th>Observaciones</th>
-                                    <th data-orderable="false" data-searchable="false" class="text-end">Acciones</th>
                                 </tr>
                                 </thead>
                                 <tbody th:if="${not #lists.isEmpty(asistencias)}">
-                                <tr th:each="asistencia : ${asistencias}">
-                                    <td th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">Fecha</td>
+                                <tr th:each="asistencia : ${asistencias}"
+                                    class="ff-clickable-row"
+                                    tabindex="0"
+                                    th:attr="data-row-href=@{/asistencias/{id}(id=${asistencia.id})}">
+                                    <td>
+                                        <div class="ff-table-meta">
+                                            <span class="ff-table-primary"
+                                                  th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">Fecha</span>
+                                            <span class="ff-table-secondary"
+                                                  th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'EEEE') : '-'}">Dia</span>
+                                        </div>
+                                    </td>
                                     <td th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">Hora</td>
                                     <td>
                                         <div class="ff-user-cell">
@@ -89,30 +279,29 @@
                                                  th:src="${@userPhotoUrlResolver.resolvePhotoUrl(asistencia.usuario != null ? asistencia.usuario.fotoPath : null)}"
                                                  alt="Avatar del usuario">
                                             <div class="ff-user-cell-body ff-table-meta">
-                                                <span class="ff-table-primary"
-                                                      th:text="${asistencia.usuario != null ? asistencia.usuario.nombre + (asistencia.usuario.apellidos != null && !asistencia.usuario.apellidos.isBlank() ? ' ' + asistencia.usuario.apellidos : '') : '-'}">Usuario</span>
+                                                <a class="ff-row-link ff-table-primary"
+                                                   th:if="${asistencia.usuario != null}"
+                                                   th:href="@{/usuarios/{id}(id=${asistencia.usuario.id})}"
+                                                   th:text="${asistencia.usuario.nombre + (asistencia.usuario.apellidos != null && !asistencia.usuario.apellidos.isBlank() ? ' ' + asistencia.usuario.apellidos : '')}">Usuario</a>
+                                                <span class="ff-table-primary" th:if="${asistencia.usuario == null}">-</span>
                                                 <span class="ff-table-secondary"
                                                       th:text="${asistencia.usuario != null ? asistencia.usuario.email : 'Sin email'}">email</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</td>
-                                    <td class="text-end">
-                                        <a class="btn btn-outline-secondary btn-sm ff-btn-icon"
-                                           th:href="@{/asistencias/{id}(id=${asistencia.id})}"
-                                           title="Ver detalle">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                                <circle cx="12" cy="12" r="3"/>
-                                            </svg>
-                                        </a>
+                                    <td>
+                                        <a th:if="${asistencia.sesionClase != null}"
+                                           class="ff-table-primary"
+                                           th:href="@{/sesiones/{id}(id=${asistencia.sesionClase.id})}"
+                                           th:text="${asistencia.sesionClase.clase != null ? asistencia.sesionClase.clase.nombre : 'Sesion'}">Sesion</a>
+                                        <span th:if="${asistencia.sesionClase == null}" class="ff-table-secondary">Check-in libre</span>
                                     </td>
+                                    <td th:text="${#strings.defaultString(asistencia.observaciones, '-')}">Observaciones</td>
                                 </tr>
                                 </tbody>
                                 <tbody th:if="${#lists.isEmpty(asistencias)}">
                                 <tr>
-                                    <td colspan="5" class="text-center ff-empty-state">Todavia no hay asistencias registradas.</td>
+                                    <td colspan="5" class="text-center ff-empty-state">No hay asistencias para el filtro actual.</td>
                                 </tr>
                                 </tbody>
                             </table>

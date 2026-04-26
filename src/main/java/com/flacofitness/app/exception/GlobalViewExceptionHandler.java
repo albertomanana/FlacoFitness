@@ -1,6 +1,7 @@
 package com.flacofitness.app.exception;
 
 import com.flacofitness.app.controller.AsistenciaController;
+import com.flacofitness.app.controller.AccessController;
 import com.flacofitness.app.controller.PagoController;
 import com.flacofitness.app.controller.RutinaController;
 import com.flacofitness.app.controller.UsuarioController;
@@ -9,16 +10,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.Objects;
 
 @ControllerAdvice(assignableTypes = {
         ViewController.class,
         UsuarioController.class,
         PagoController.class,
         RutinaController.class,
-        AsistenciaController.class
+        AsistenciaController.class,
+        AccessController.class
 })
 public class GlobalViewExceptionHandler {
 
@@ -29,12 +34,14 @@ public class GlobalViewExceptionHandler {
                                        HttpServletRequest request,
                                        HttpServletResponse response) {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+        String message = Objects.requireNonNullElse(ex.getMessage(), "El recurso solicitado no esta disponible.");
+        String requestUri = Objects.requireNonNullElse(request.getRequestURI(), "/");
         return construirVistaError(
                 "error/404",
                 "Recurso no encontrado",
-                ex.getMessage(),
+                message,
                 "La ruta o el registro solicitado no esta disponible.",
-                request.getRequestURI()
+                requestUri
         );
     }
 
@@ -43,12 +50,14 @@ public class GlobalViewExceptionHandler {
                                                  HttpServletRequest request,
                                                  HttpServletResponse response) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        String message = Objects.requireNonNullElse(ex.getMessage(), "La operacion no pudo completarse.");
+        String requestUri = Objects.requireNonNullElse(request.getRequestURI(), "/");
         return construirVistaError(
                 "error/400",
                 "Operacion no valida",
-                ex.getMessage(),
+                message,
                 "Revisa la informacion enviada y vuelve a intentarlo.",
-                request.getRequestURI()
+                requestUri
         );
     }
 
@@ -56,22 +65,23 @@ public class GlobalViewExceptionHandler {
     public ModelAndView handleGeneric(Exception ex,
                                       HttpServletRequest request,
                                       HttpServletResponse response) {
-        LOGGER.error("Error no controlado en una vista MVC. Ruta: {}", request.getRequestURI(), ex);
+        String requestUri = Objects.requireNonNullElse(request.getRequestURI(), "/");
+        LOGGER.error("Error no controlado en una vista MVC. Ruta: {}", requestUri, ex);
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         return construirVistaError(
                 "error/500",
                 "Se produjo un error interno",
                 "La aplicacion encontro un problema al procesar la solicitud.",
                 "Puedes volver al dashboard o reintentar la operacion desde el modulo correspondiente.",
-                request.getRequestURI()
+                requestUri
         );
     }
 
-    private ModelAndView construirVistaError(String vista,
-                                             String titulo,
-                                             String mensaje,
-                                             String ayuda,
-                                             String ruta) {
+        private ModelAndView construirVistaError(@NonNull String vista,
+                                                                                         @NonNull String titulo,
+                                                                                         @NonNull String mensaje,
+                                                                                         @NonNull String ayuda,
+                                                                                         @NonNull String ruta) {
         ModelAndView modelAndView = new ModelAndView(vista);
         modelAndView.addObject("errorTitle", titulo);
         modelAndView.addObject("errorMessage", mensaje);
