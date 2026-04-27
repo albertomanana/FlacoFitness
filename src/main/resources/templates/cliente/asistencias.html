@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mis asistencias')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('cliente-asistencias')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Mis asistencias', 'Historial de check-in y participación.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+            <section class="row g-4">
+                <!-- Historial -->
+                <div class="col-lg-8">
+                    <article class="ff-surface-card">
+                        <div class="ff-card-header">
+                            <div>
+                                <h2 class="ff-card-title">Historial de asistencias</h2>
+                                <p class="ff-card-subtitle mb-0">Todos tus check-ins registrados.</p>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <div th:if="${not #lists.isEmpty(asistencias)}">
+                                <div class="table-responsive">
+                                    <table class="table ff-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha</th>
+                                                <th>Hora entrada</th>
+                                                <th>Clase / Sesión</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="asistencia : ${asistencias}">
+                                                <td><strong th:text="${asistencia.fecha != null ? #temporals.format(asistencia.fecha, 'dd/MM/yyyy') : '-'}">Fecha</strong></td>
+                                                <td th:text="${asistencia.horaEntrada != null ? #temporals.format(asistencia.horaEntrada, 'HH:mm') : '-'}">Hora</td>
+                                                <td th:text="${asistencia.sesionClase != null and asistencia.sesionClase.clase != null ? asistencia.sesionClase.clase.nombre : 'Check-in libre'}">Clase</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <p class="ff-empty-state" th:if="${#lists.isEmpty(asistencias)}">No tienes asistencias registradas aún.</p>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Panel lateral -->
+                <div class="col-lg-4">
+                    <!-- Check-in rápido -->
+                    <article class="ff-surface-card mb-4">
+                        <div class="ff-card-header">
+                            <div>
+                                <h3 class="ff-card-title">Check-in rápido</h3>
+                                <p class="ff-card-subtitle mb-0">Registra tu entrada al gimnasio.</p>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <form th:action="@{/cliente/checkin}" method="post" class="m-0">
+                                <button type="submit" class="btn btn-success w-100 d-flex justify-content-between align-items-center fw-bold py-2 shadow-sm">
+                                    <span>Registrar entrada</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+
+                    <!-- Estadísticas -->
+                    <article class="ff-surface-card">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Mis estadísticas</h3>
+                        </div>
+                        <div class="ff-card-body">
+                            <div class="vstack gap-3">
+                                <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                    <span class="text-muted">Total asistencias</span>
+                                    <strong class="text-success fs-5" th:text="${totalAsistencias}">0</strong>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center py-2">
+                                    <span class="text-muted">Asistencia este mes</span>
+                                    <strong th:text="${asistenciasMes != null ? asistenciasMes : 0}">0</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/js/cliente-panel.js"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@
                     <div class="row g-4 align-items-center">
                         <div class="col-lg-5 d-flex align-items-center gap-3">
                             <div class="position-relative">
-                                <img class="ff-avatar ff-avatar-xl border border-3 shadow-sm animate__animated animate__pulse animate__infinite"
+                                <img class="ff-avatar ff-avatar-xl border border-3 shadow-sm"
                                      style="border-color: var(--ff-primary) !important;"
                                      th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
                                      alt="Foto de perfil">
@@ -39,7 +39,7 @@
                                 <div class="col-sm-4">
                                     <div class="p-3 bg-white rounded-3 shadow-sm text-center h-100 border" th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'border-danger' : 'border-success'}">
                                         <span class="ff-stat-label d-block mb-1 text-muted">Estado Pagos</span>
-                                        <strong class="d-block fs-5" th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'text-danger animate__animated animate__headShake animate__infinite' : 'text-success'}" 
+                                        <strong class="d-block fs-5" th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'text-danger fw-bold' : 'text-success'}"
                                                 th:text="${deudaTotal != null and deudaTotal.signum() > 0 ? deudaTotal + ' EUR' : 'Al día'}">Al día</strong>
                                         <small class="text-muted fw-bold" th:text="${controlCenter.estadoPago}">Estado</small>
                                     </div>
@@ -152,8 +152,8 @@
                                     <span>Check-in ahora</span> <i class="fas fa-qrcode"></i>
                                 </button>
                             </form>
-                            <a class="btn btn-danger w-100 d-flex justify-content-between align-items-center fw-bold py-2 shadow-sm animate__animated animate__pulse animate__infinite" 
-                               th:if="${deudaTotal != null and deudaTotal.signum() > 0}" 
+                            <a class="btn btn-danger w-100 d-flex justify-content-between align-items-center fw-bold py-2 shadow-sm"
+                               th:if="${deudaTotal != null and deudaTotal.signum() > 0}"
                                th:href="@{/cliente/pagos}">
                                 <span>Pagar Membresía</span> <i class="fas fa-credit-card"></i>
                             </a>

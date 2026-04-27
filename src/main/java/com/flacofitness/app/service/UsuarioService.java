@@ -5,10 +5,14 @@ import com.flacofitness.app.exception.ResourceNotFoundException;
 import com.flacofitness.app.exception.BusinessValidationException;
 import com.flacofitness.app.model.dto.PlanDistribucionStatsItem;
 import com.flacofitness.app.model.dto.UsuarioAltaMensualStatsItem;
+import com.flacofitness.app.model.entity.Pago;
 import com.flacofitness.app.model.entity.Plan;
 import com.flacofitness.app.model.entity.Trial;
 import com.flacofitness.app.model.entity.Usuario;
+import com.flacofitness.app.model.enums.EstadoPago;
 import com.flacofitness.app.model.enums.EstadoTrial;
+import com.flacofitness.app.model.enums.MetodoPago;
+import com.flacofitness.app.repository.PagoRepository;
 import com.flacofitness.app.repository.TrialRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,15 +33,18 @@ import java.util.UUID;
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
+    private final PagoRepository pagoRepository;
     private final TrialRepository trialRepository;
     private final OperationalClockService operationalClockService;
     private final PasswordEncoder passwordEncoder;
 
     public UsuarioService(UsuarioRepository usuarioRepository,
+                          PagoRepository pagoRepository,
                           TrialRepository trialRepository,
                           OperationalClockService operationalClockService,
                           PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
+        this.pagoRepository = pagoRepository;
         this.trialRepository = trialRepository;
         this.operationalClockService = operationalClockService;
         this.passwordEncoder = passwordEncoder;
@@ -104,7 +111,26 @@ public class UsuarioService {
         inicializarFechaProximoPago(usuario);
         Usuario guardado = usuarioRepository.save(usuario);
         cerrarTrialsPendientesPorEmail(guardado);
+        generarPagoInicialSiCorresponde(guardado);
         return guardado;
+    }
+
+    private void generarPagoInicialSiCorresponde(Usuario usuario) {
+        Plan plan = usuario.getPlan();
+        if (plan == null || plan.getPrecioMensual() == null || !Boolean.TRUE.equals(plan.getActivo())) {
+            return;
+        }
+        LocalDate hoy = operationalClockService.today();
+        int duracionDias = plan.getDuracionDias() != null ? plan.getDuracionDias() : 30;
+        LocalDate fechaVencimiento = hoy.plusDays(duracionDias);
+
+        Pago pago = new Pago();
+        pago.setUsuario(usuario);
+        pago.setPlan(plan);
+        pago.setFechaVencimiento(fechaVencimiento);
+        pago.setMetodoPago(MetodoPago.TRANSFERENCIA);
+        pago.setEstado(EstadoPago.PENDIENTE);
+        pagoRepository.save(pago);
     }
 
     @Transactional

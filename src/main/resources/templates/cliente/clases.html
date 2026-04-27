@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Clases disponibles')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('cliente-clases')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar(${tituloListado}, ${subtituloListado})}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+            <section class="row g-4">
+                <div class="col-12">
+                    <article class="ff-surface-card">
+                        <div class="ff-card-header">
+                            <h2 class="ff-card-title" th:text="${tituloListado}">Listado</h2>
+                            <p class="ff-card-subtitle" th:text="${subtituloListado}">Descripción</p>
+                        </div>
+                        <div class="ff-card-body">
+                            <div th:if="${not #lists.isEmpty(sesionesProximas)}">
+                                <div class="table-responsive">
+                                    <table class="table ff-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Clase</th>
+                                                <th>Fecha</th>
+                                                <th>Hora</th>
+                                                <th>Instructor</th>
+                                                <th>Cupo</th>
+                                                <th class="text-end">Accion</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="sesion : ${sesionesProximas}">
+                                                <td><strong th:text="${sesion.clase.nombre}">Clase</strong></td>
+                                                <td th:text="#temporals.format(${sesion.fecha}, 'dd/MM/yyyy')">Fecha</td>
+                                                <td th:text="#temporals.format(${sesion.horaInicio}, 'HH:mm')">Hora</td>
+                                                <td th:text="${sesion.staffResponsable != null} ? ${sesion.staffResponsable.usuario.nombre} : 'Sin instructor'">Instructor</td>
+                                                <td>
+                                                    <span class="badge rounded-pill"
+                                                          th:classappend="${sesion.cupoDisponible > 0 ? ' text-bg-info' : ' text-bg-secondary'}"
+                                                          th:text="${sesion.cupoDisponible > 0 ? sesion.cupoDisponible + ' plazas' : 'Completo'}">Cupo</span>
+                                                </td>
+                                                <td class="text-end" style="white-space: nowrap;">
+                                                    <button type="button" class="btn btn-sm btn-success" 
+                                                            th:onclick="'reservarSesion(' + ${sesion.id} + ', \'' + ${sesion.clase.nombre} + '\')'">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-right: 0.3rem;">
+                                                            <path d="M12 5v14M5 12h14"/>
+                                                        </svg>
+                                                        Reservar
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <p class="ff-empty-state" th:if="${#lists.isEmpty(sesionesProximas)}">No hay clases próximas disponibles.</p>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/js/cliente-panel.js"></script>
+</body>
+</html>
+

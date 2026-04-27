@@ -145,9 +145,10 @@ public class AsistenciaController {
         List<Asistencia> asistencias = obtenerAsistenciasFiltradas(fecha, usuarioId, sesionId);
 
         model.addAttribute("asistencias", asistencias);
-        model.addAttribute("usuariosCheckIn", usuarioService.listarActivos());
-        model.addAttribute("usuariosFiltro", usuarioService.listarTodos());
-        model.addAttribute("sesionesFiltro", sesionClaseService.listarTodas());
+        List<Usuario> activos = usuarioService.listarActivos();
+        model.addAttribute("usuariosCheckIn", activos.size() > 50 ? activos.subList(0, 50) : activos);
+        model.addAttribute("usuariosFiltro", activos);
+        model.addAttribute("sesionesFiltro", sesionClaseService.listarProximas());
         model.addAttribute("usuarioFiltroId", usuarioId);
         model.addAttribute("sesionFiltroId", sesionId);
         model.addAttribute("usuarioFiltro", usuarioFiltro);

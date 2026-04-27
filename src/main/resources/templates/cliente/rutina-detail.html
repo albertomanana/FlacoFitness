@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mi rutina')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('cliente-rutinas')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Mi rutina', 'Detalle de entrenamiento asignado.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <section class="ff-section-header">
+                <div>
+                    <span class="ff-section-eyebrow">Rutina asignada</span>
+                    <h2 class="ff-section-title" th:text="${rutina.nombre}">Rutina</h2>
+                    <p class="ff-section-subtitle mb-0" th:text="${rutina.descripcion}">Descripcion</p>
+                </div>
+                <a class="btn btn-outline-secondary" th:href="@{/cliente/rutinas}">Mis rutinas</a>
+            </section>
+            <section class="ff-surface-card">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <span class="ff-stat-label">Tipo</span>
+                        <p class="ff-stat-value fs-4" th:text="${rutina.tipoRutina}">GENERAL</p>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="ff-stat-label">Estado</span>
+                        <span class="badge rounded-pill" th:classappend="${rutina.activa} ? ' text-bg-success' : ' text-bg-secondary'" th:text="${rutina.activa} ? 'Activa' : 'Inactiva'">Activa</span>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="ff-stat-label">Entrenador</span>
+                        <p class="mb-0" th:text="${rutina.staffResponsable != null ? rutina.staffResponsable.usuario.nombre : 'Por asignar'}">Entrenador</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

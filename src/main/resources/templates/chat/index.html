@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Ayuda rápida')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Ayuda rápida', 'Consultas sencillas sobre tu cuenta y el gimnasio.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <section class="ff-section-header">
+                <div>
+                    <span class="ff-section-eyebrow">Ayuda</span>
+                    <h2 class="ff-section-title">Pregunta algo concreto</h2>
+                    <p class="ff-section-subtitle">El asistente usa datos del sistema y solo muestra enlaces permitidos para tu perfil.</p>
+                </div>
+            </section>
+
+            <section class="ff-surface-card" data-internal-chat data-chat-page>
+                <div class="ff-card-body">
+                    <div class="ff-chat-messages mb-3" data-chat-messages>
+                        <div class="ff-chat-message">Prueba con: mis pagos, mis rutinas, clases de hoy, mis nominas o automatizar.</div>
+                    </div>
+                    <form class="d-flex gap-2" data-chat-form>
+                        <input class="form-control form-control-lg" type="text" data-chat-input
+                               placeholder="Escribe tu consulta">
+                        <button class="btn btn-success btn-lg" type="submit">Enviar</button>
+                    </form>
+                </div>
+            </section>
+            <div th:replace="~{fragments/footer :: footer}"></div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

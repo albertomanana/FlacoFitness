@@ -195,7 +195,8 @@ function parseActiveFilters(raw) {
 
 function rowMatchesFilters(row, activeFilters) {
     return Object.entries(activeFilters).every(([key, expected]) => {
-        const datasetKey = key.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
+        const fullKey = "ff-" + key;
+        const datasetKey = fullKey.replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase());
         const actualValue = String(row.dataset[datasetKey] || "").trim().toLowerCase();
 
         if (!actualValue) {

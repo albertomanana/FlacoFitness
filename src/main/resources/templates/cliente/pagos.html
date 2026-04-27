@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mis pagos')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('cliente-pagos')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Mis pagos', 'Historial de transacciones y deuda.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+            <section class="row g-4">
+                <!-- Tabla de pagos -->
+                <div class="col-lg-8">
+                    <article class="ff-surface-card">
+                        <div class="ff-card-header">
+                            <div>
+                                <h2 class="ff-card-title">Mis pagos</h2>
+                                <p class="ff-card-subtitle mb-0">Historial completo de transacciones.</p>
+                            </div>
+                        </div>
+                        <div class="ff-card-body">
+                            <div th:if="${not #lists.isEmpty(pagos)}">
+                                <div class="table-responsive">
+                                    <table class="table ff-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Monto</th>
+                                                <th>Vencimiento</th>
+                                                <th>Concepto</th>
+                                                <th>Estado</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="pago : ${pagos}">
+                                                <td><strong th:text="${pago.monto != null ? pago.monto + ' EUR' : '-'}">Monto</strong></td>
+                                                <td th:text="${pago.fechaVencimiento != null ? #temporals.format(pago.fechaVencimiento, 'dd/MM/yyyy') : '-'}">Fecha</td>
+                                                <td th:text="${pago.concepto != null ? pago.concepto : 'Membresía'}">Concepto</td>
+                                                <td>
+                                                    <span class="badge rounded-pill"
+                                                          th:classappend="${pago.estado.name() == 'PAGADO'} ? ' text-bg-success' : (${pago.estado.name() == 'VENCIDO'} ? ' text-bg-danger' : ' text-bg-warning')"
+                                                          th:text="${pago.estado}">Estado</span>
+                                                </td>
+                                                <td class="text-end">
+                                                    <a th:href="@{/cliente/pagos/{id}(id=${pago.id})}" class="btn btn-sm btn-outline-secondary">Ver</a>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <p class="ff-empty-state" th:if="${#lists.isEmpty(pagos)}">No tienes pagos registrados.</p>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Panel lateral -->
+                <div class="col-lg-4">
+                    <!-- Deuda -->
+                    <article class="ff-surface-card mb-4" th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'border-danger border' : ''}">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Estado de cuenta</h3>
+                        </div>
+                        <div class="ff-card-body">
+                            <div th:if="${deudaTotal != null and deudaTotal.signum() > 0}" class="text-center py-2">
+                                <p class="text-muted mb-1 small">Deuda pendiente</p>
+                                <p class="display-6 fw-bold text-danger mb-3" th:text="${deudaTotal} + ' EUR'">0 EUR</p>
+                                <p class="text-muted small mb-3">Para liquidar esta deuda, dirígete a recepción o contacta con el gimnasio.</p>
+                                <a class="btn btn-danger w-100 fw-bold" th:href="@{/cliente/membresia}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:.4rem">
+                                        <rect x="3" y="5" width="18" height="14" rx="2"/>
+                                        <path d="M7 9h10"/><path d="M7 13h6"/>
+                                    </svg>
+                                    Ver membresía
+                                </a>
+                            </div>
+                            <div th:unless="${deudaTotal != null and deudaTotal.signum() > 0}" class="text-center py-2">
+                                <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle mb-3" style="width:3rem;height:3rem">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </div>
+                                <p class="fw-bold text-success mb-0">Estás al día</p>
+                                <p class="text-muted small mt-1">No tienes deuda pendiente.</p>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Acciones -->
+                    <article class="ff-surface-card">
+                        <div class="ff-card-header">
+                            <h3 class="ff-card-title">Accesos rápidos</h3>
+                        </div>
+                        <div class="ff-card-body d-grid gap-2">
+                            <a class="btn btn-outline-secondary d-flex justify-content-between align-items-center" th:href="@{/cliente/membresia}">
+                                <span>Ver membresía</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </a>
+                            <a class="btn btn-outline-secondary d-flex justify-content-between align-items-center" th:href="@{/cliente}">
+                                <span>Mi panel</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="/js/cliente-panel.js"></script>
+</body>
+</html>

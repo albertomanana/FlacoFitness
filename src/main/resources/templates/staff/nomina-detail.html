@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Detalle nomina')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Detalle nomina', 'Documento interno de consulta.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <section class="ff-section-header">
+                <div>
+                    <span class="ff-section-eyebrow">Nomina</span>
+                    <h2 class="ff-section-title" th:text="${nomina.periodo}">2026-04</h2>
+                    <p class="ff-section-subtitle mb-0" th:text="${nomina.referencia}">Referencia</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline-secondary" th:href="@{/staff/nominas}">Mis nominas</a>
+                    <a class="btn btn-success"
+                       target="_blank"
+                       rel="noopener"
+                       th:href="@{/staff/nominas/{id}/pdf(id=${nomina.id})}">Descargar PDF</a>
+                </div>
+            </section>
+
+            <section class="ff-surface-card">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <span class="ff-section-eyebrow">Staff</span>
+                        <h3 class="ff-card-title" th:text="${nomina.staffPerfil.usuario.nombre}">Staff</h3>
+                        <p class="ff-card-subtitle" th:text="${nomina.staffPerfil.rolStaff}">Rol</p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row g-3">
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="ff-empty-inline">
+                                    <span class="ff-stat-label">Base</span>
+                                    <strong th:text="${#numbers.formatDecimal(nomina.salarioBase, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</strong>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="ff-empty-inline">
+                                    <span class="ff-stat-label">Bonus</span>
+                                    <strong th:text="${#numbers.formatDecimal(nomina.bonus, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</strong>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="ff-empty-inline">
+                                    <span class="ff-stat-label">Deducciones</span>
+                                    <strong th:text="${#numbers.formatDecimal(nomina.deducciones, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</strong>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <div class="ff-empty-inline">
+                                    <span class="ff-stat-label">Neto</span>
+                                    <strong th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

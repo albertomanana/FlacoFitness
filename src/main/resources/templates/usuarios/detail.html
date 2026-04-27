@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Detalle de usuario')}"></head>
 <body class="ff-app">
@@ -53,7 +53,7 @@
                                                   th:classappend="${usuario.activo} ? ' ff-status-active' : ' ff-status-inactive'"
                                                   th:text="${usuario.activo ? 'Cuenta activa' : 'Cuenta inactiva'}">Activa</span>
                                             
-                                            <div th:if="${deudaTotalUsuario != null and deudaTotalUsuario > 0}" class="bg-danger text-white px-3 py-1 fw-bold rounded-pill d-inline-flex align-items-center gap-2 shadow-sm animate__animated animate__pulse animate__infinite">
+                                            <div th:if="${deudaTotalUsuario != null and deudaTotalUsuario > 0}" class="bg-danger text-white px-3 py-1 fw-bold rounded-pill d-inline-flex align-items-center gap-2 shadow-sm">
                                                 <i class="fas fa-exclamation-triangle"></i> DEUDA ACTIVA: <span th:text="${#numbers.formatDecimal(deudaTotalUsuario, 1, 'POINT', 2, 'COMMA')}">0</span> EUR
                                             </div>
                                             <div th:unless="${deudaTotalUsuario != null and deudaTotalUsuario > 0}" class="bg-success text-white px-3 py-1 fw-bold rounded-pill d-inline-flex align-items-center gap-2 shadow-sm">
@@ -86,7 +86,7 @@
                                             <article class="ff-surface-subcard ff-user-kpi" th:classappend="${controlCenter.enRiesgo} ? 'border-left-danger' : 'border-left-primary'">
                                                 <span class="ff-detail-label">Racha / Total</span>
                                                 <strong class="ff-user-kpi-value" th:text="${controlCenter.rachaActual} + ' dias / ' + ${controlCenter.totalAsistencias}">0</strong>
-                                                <span class="ff-user-kpi-meta text-danger fw-bold animate__animated animate__headShake animate__infinite" th:if="${controlCenter.enRiesgo}"><i class="fas fa-exclamation-circle"></i> Alto Riesgo de Abandono</span>
+                                                <span class="ff-user-kpi-meta text-danger fw-bold" th:if="${controlCenter.enRiesgo}"><i class="fas fa-exclamation-circle"></i> Alto Riesgo de Abandono</span>
                                                 <span class="ff-user-kpi-meta text-success" th:unless="${controlCenter.enRiesgo}" th:text="${controlCenter.estadoActividad}">Actividad</span>
                                             </article>
                                         </div>

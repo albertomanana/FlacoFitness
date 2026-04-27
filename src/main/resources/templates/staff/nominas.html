@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head('Mis nominas')}"></head>
+<body class="ff-app-shell">
+<div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
+<div class="ff-main">
+    <div th:replace="~{fragments/topbar :: topbar('Mis nominas', 'Consulta privada de nominas del staff.')}"></div>
+    <main class="ff-content">
+        <div class="ff-content-stack ff-page-stack">
+            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+            <section class="ff-section-header">
+                <div>
+                    <span class="ff-section-eyebrow">Staff</span>
+                    <h2 class="ff-section-title">Mis nominas</h2>
+                    <p class="ff-section-subtitle mb-0">Solo se muestran las nominas asociadas a tu perfil.</p>
+                </div>
+                <a class="btn btn-outline-secondary" th:href="@{/staff/dashboard}">Volver al panel</a>
+            </section>
+
+            <section class="ff-surface-card">
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                        <tr>
+                            <th>Periodo</th>
+                            <th>Referencia</th>
+                            <th>Fecha</th>
+                            <th>Neto</th>
+                            <th>Estado</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="nomina : ${nominas}">
+                            <td th:text="${nomina.periodo}">2026-04</td>
+                            <td th:text="${nomina.referencia}">NOM-001</td>
+                            <td th:text="${nomina.fechaEmision != null ? #temporals.format(nomina.fechaEmision, 'dd/MM/yyyy') : '-'}">-</td>
+                            <td th:text="${#numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</td>
+                            <td><span class="badge rounded-pill text-bg-secondary" th:text="${nomina.estado}">BORRADOR</span></td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/staff/nominas/{id}(id=${nomina.id})}">Ver</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(nominas)}">
+                            <td colspan="6">
+                                <div class="ff-empty-state">Aun no hay nominas asociadas a tu perfil.</div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

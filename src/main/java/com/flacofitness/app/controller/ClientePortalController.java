@@ -33,6 +33,7 @@ public class ClientePortalController {
     private final SesionClaseService sesionClaseService;
     private final MembresiaService membresiaService;
     private final OperationalClockService operationalClockService;
+    private final PlanService planService;
 
     public ClientePortalController(AccessSessionService accessSessionService,
                                    UsuarioControlCenterService usuarioControlCenterService,
@@ -42,7 +43,8 @@ public class ClientePortalController {
                                    RutinaService rutinaService,
                                    SesionClaseService sesionClaseService,
                                    MembresiaService membresiaService,
-                                   OperationalClockService operationalClockService) {
+                                   OperationalClockService operationalClockService,
+                                   PlanService planService) {
         this.accessSessionService = accessSessionService;
         this.usuarioControlCenterService = usuarioControlCenterService;
         this.pagoService = pagoService;
@@ -52,6 +54,7 @@ public class ClientePortalController {
         this.sesionClaseService = sesionClaseService;
         this.membresiaService = membresiaService;
         this.operationalClockService = operationalClockService;
+        this.planService = planService;
     }
 
     @GetMapping
@@ -174,8 +177,9 @@ public class ClientePortalController {
                 .orElse(null);
         model.addAttribute("usuario", usuario);
         model.addAttribute("membresia", membresia);
+        model.addAttribute("planesDisponibles", planService.listarActivos());
         model.addAttribute("tituloListado", "Mi membresía");
-        model.addAttribute("subtituloListado", "Estado de suscripción y renovación.");
+        model.addAttribute("subtituloListado", "Estado de suscripción y planes disponibles.");
         return "cliente/membresia";
     }
 
@@ -216,6 +220,7 @@ public class ClientePortalController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("asistencias", asistencias);
         model.addAttribute("totalAsistencias", asistencias.size());
+        model.addAttribute("asistenciasMes", asistenciaService.contarAsistenciasMesActual(usuario.getId()));
         model.addAttribute("tituloListado", "Mis asistencias");
         model.addAttribute("subtituloListado", "Historial de check-in y participación.");
         return "cliente/asistencias";
