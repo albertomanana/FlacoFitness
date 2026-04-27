@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Mi membresía')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('cliente-membresia')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar('Mi membresía', 'Estado de tu suscripción y planes disponibles.')}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('cliente-membresia')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Mi membresía', 'Estado de tu suscripción y planes disponibles.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
             <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
             <!-- Membresía activa -->
@@ -127,10 +130,12 @@
                     </div>
                 </div>
             </section>
+
+            <div th:replace="~{fragments/footer :: footer}"></div>
         </div>
     </main>
 </div>
-<div th:replace="~{fragments/footer :: footer}"></div>
-<script src="/js/cliente-panel.js"></script>
+</div>
+<script th:src="@{/js/cliente-panel.js}"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
         <div th:replace="~{fragments/topbar :: topbar('Centro financiero', 'Caja, deuda, gastos y nóminas conectadas.')}"></div>
 
         <main class="ff-content">
-            <script id="financialCenterStats" type="application/json" th:text="${financialStatsJson}">
+            <script id="financialCenterStats" type="application/json" th:utext="${financialStatsJson}">
                 {}
             </script>
 
@@ -157,7 +157,7 @@
                                 </div>
                             </div>
                             <div class="ff-card-body">
-                                <div class="ff-chart-canvas-wrap" style="min-height: 200px;">
+                                <div class="ff-chart-canvas-wrap">
                                     <canvas data-finance-chart="cashflow" aria-label="Gráfico de ingresos vs gastos" role="img"></canvas>
                                 </div>
                             </div>
@@ -172,7 +172,7 @@
                                 </div>
                             </div>
                             <div class="ff-card-body">
-                                <div class="ff-chart-canvas-wrap" style="min-height: 200px;">
+                                <div class="ff-chart-canvas-wrap">
                                     <canvas data-finance-chart="expenses" aria-label="Gráfico de gastos por categoría" role="img"></canvas>
                                 </div>
                             </div>

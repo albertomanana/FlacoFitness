@@ -114,7 +114,7 @@ function createChart(canvas, config) {
         ...config,
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             animation: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : {
                 duration: 700,
                 easing: "easeOutQuart",

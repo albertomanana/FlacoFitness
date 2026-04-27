@@ -1,179 +1,186 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Mi panel')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('cliente')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar('Mi panel', 'Tu actividad, pagos y próximas clases.')}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
-            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('cliente')}"></div>
 
-            <section class="ff-surface-card mb-4" style="background: linear-gradient(145deg, #ffffff, var(--ff-surface-subtle)); border-bottom: 3px solid var(--ff-primary); box-shadow: var(--ff-shadow-sm);">
-                <div class="ff-card-body">
-                    <div class="row g-4 align-items-center">
-                        <div class="col-lg-5 d-flex align-items-center gap-3">
-                            <div class="position-relative">
-                                <img class="ff-avatar ff-avatar-xl border border-3 shadow-sm"
-                                     style="border-color: var(--ff-primary) !important;"
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Mi panel', 'Tu actividad, pagos y próximas clases.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <!-- ═══ HERO ═══ -->
+                <section class="ff-surface-card ff-client-hero">
+                    <div class="ff-card-body">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-lg-5 d-flex align-items-center gap-3">
+                                <img class="ff-avatar ff-avatar-xl"
                                      th:src="${@userPhotoUrlResolver.resolvePhotoUrl(usuario.fotoPath)}"
                                      alt="Foto de perfil">
-                            </div>
-                            <div>
-                                <span class="ff-section-eyebrow text-success fw-bold" th:text="${controlCenter.estadoActividad}">Cliente</span>
-                                <h2 class="ff-section-title mb-1"
-                                    th:text="${usuario.nombre + (usuario.apellidos != null and !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Nombre</h2>
-                                <p class="ff-section-subtitle mb-0" th:text="'Miembro desde ' + ${#temporals.format(usuario.fechaRegistro, 'yyyy')}">Estado</p>
-                            </div>
-                        </div>
-                        <div class="col-lg-7">
-                            <div class="row g-3">
-                                <div class="col-sm-4">
-                                    <div class="p-3 bg-white rounded-3 shadow-sm text-center h-100 border">
-                                        <span class="ff-stat-label d-block mb-1 text-muted">Plan Actual</span>
-                                        <strong class="d-block text-primary fs-5" th:text="${membresiaActiva != null ? membresiaActiva.plan.nombre : (usuario.plan != null ? usuario.plan.nombre : 'Sin plan')}">Plan</strong>
-                                        <small class="text-muted fw-bold" th:if="${membresiaActiva != null}" th:text="'Vence ' + ${#temporals.format(membresiaActiva.fechaFin, 'dd/MM/yyyy')}">Vence</small>
-                                        <small class="text-danger fw-bold" th:unless="${membresiaActiva != null}">No activo</small>
-                                    </div>
+                                <div>
+                                    <span class="ff-section-eyebrow" th:text="${controlCenter.estadoActividad}">Cliente</span>
+                                    <h2 class="ff-section-title mb-1"
+                                        th:text="${usuario.nombre + (usuario.apellidos != null and !usuario.apellidos.isBlank() ? ' ' + usuario.apellidos : '')}">Nombre</h2>
+                                    <p class="ff-section-subtitle mb-0"
+                                       th:text="'Miembro desde ' + ${#temporals.format(usuario.fechaRegistro, 'yyyy')}">Miembro</p>
                                 </div>
-                                <div class="col-sm-4">
-                                    <div class="p-3 bg-white rounded-3 shadow-sm text-center h-100 border" th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'border-danger' : 'border-success'}">
-                                        <span class="ff-stat-label d-block mb-1 text-muted">Estado Pagos</span>
-                                        <strong class="d-block fs-5" th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'text-danger fw-bold' : 'text-success'}"
-                                                th:text="${deudaTotal != null and deudaTotal.signum() > 0 ? deudaTotal + ' EUR' : 'Al día'}">Al día</strong>
-                                        <small class="text-muted fw-bold" th:text="${controlCenter.estadoPago}">Estado</small>
-                                    </div>
-                                </div>
-                                <div class="col-sm-4">
-                                    <div class="p-3 bg-white rounded-3 shadow-sm text-center h-100 border" th:classappend="${controlCenter.rachaActual > 0 ? 'border-warning' : ''}">
-                                        <span class="ff-stat-label d-block mb-1 text-muted">Racha <i class="fas fa-fire text-warning animate__animated animate__pulse animate__infinite"></i></span>
-                                        <strong class="d-block fs-5 text-dark" th:text="${controlCenter.rachaActual} + ' días'">0</strong>
-                                        <small class="text-muted fw-bold" th:text="${totalAsistencias} + ' asistencias'">registros</small>
-                                    </div>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="ff-kpi-grid ff-kpi-grid-compact">
+                                    <article class="ff-stat-card">
+                                        <p class="ff-stat-label">Plan actual</p>
+                                        <p class="ff-stat-value ff-stat-value-sm"
+                                           th:text="${membresiaActiva != null ? membresiaActiva.plan.nombre : (usuario.plan != null ? usuario.plan.nombre : 'Sin plan')}">Plan</p>
+                                        <p class="ff-stat-note"
+                                           th:if="${membresiaActiva != null}"
+                                           th:text="'Vence ' + ${#temporals.format(membresiaActiva.fechaFin, 'dd/MM/yyyy')}">Vence</p>
+                                        <p class="ff-stat-note text-danger"
+                                           th:unless="${membresiaActiva != null}">No activo</p>
+                                    </article>
+                                    <article class="ff-stat-card">
+                                        <p class="ff-stat-label">Estado de pagos</p>
+                                        <p class="ff-stat-value ff-stat-value-sm"
+                                           th:classappend="${deudaTotal != null and deudaTotal.signum() > 0 ? 'text-danger' : 'text-success'}"
+                                           th:text="${deudaTotal != null and deudaTotal.signum() > 0 ? deudaTotal + ' EUR' : 'Al día'}">Al día</p>
+                                        <p class="ff-stat-note" th:text="${controlCenter.estadoPago}">Estado</p>
+                                    </article>
+                                    <article class="ff-stat-card">
+                                        <p class="ff-stat-label">Racha</p>
+                                        <p class="ff-stat-value ff-stat-value-sm" th:text="${controlCenter.rachaActual} + ' días'">0 días</p>
+                                        <p class="ff-stat-note" th:text="${totalAsistencias} + ' asistencias'">0 asistencias</p>
+                                    </article>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <section class="row g-4">
-                <div class="col-xl-6">
-                    <article class="ff-surface-card h-100">
-                        <div class="ff-card-header">
-                            <div>
-                                <h3 class="ff-card-title">Lo próximo</h3>
-                                <p class="ff-card-subtitle">Clases disponibles y reservas activas.</p>
+                <!-- ═══ PRÓXIMO + RUTINAS ═══ -->
+                <section class="row g-4">
+                    <div class="col-xl-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Lo próximo</h3>
+                                    <p class="ff-card-subtitle">Clases disponibles y reservas activas.</p>
+                                </div>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/cliente/clases}">Ver más</a>
                             </div>
-                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/cliente/clases}">Ver más</a>
-                        </div>
-                        <div class="ff-card-body ff-compact-list">
-                            <a class="ff-linked-row"
-                               th:each="sesion : ${sesionesProximas}"
-                               th:href="@{/cliente/clases}">
-                                <span>
-                                    <strong th:text="${sesion.clase != null ? sesion.clase.nombre : 'Clase'}">Clase</strong>
-                                    <small th:text="${#temporals.format(sesion.fecha, 'dd/MM')} + ' · ' + ${#temporals.format(sesion.horaInicio, 'HH:mm')}">Fecha</small>
-                                </span>
-                                <span class="badge rounded-pill text-bg-info" th:text="${sesion.cupoDisponible} + ' plazas'">Cupo</span>
-                            </a>
-                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(sesionesProximas)}">No hay clases próximas.</p>
-                            <div class="ff-card-footer-link" th:if="${not #lists.isEmpty(reservasActivas)}">
-                                <a class="btn btn-sm btn-outline-success" th:href="@{/cliente/asistencias}">Ver reservas</a>
+                            <div class="ff-card-body ff-compact-list">
+                                <a class="ff-linked-row"
+                                   th:each="sesion : ${sesionesProximas}"
+                                   th:href="@{/cliente/clases}">
+                                    <span>
+                                        <strong th:text="${sesion.clase != null ? sesion.clase.nombre : 'Clase'}">Clase</strong>
+                                        <small th:text="${#temporals.format(sesion.fecha, 'dd/MM')} + ' · ' + ${#temporals.format(sesion.horaInicio, 'HH:mm')}">Fecha</small>
+                                    </span>
+                                    <span class="badge rounded-pill text-bg-info" th:text="${sesion.cupoDisponible} + ' plazas'">Cupo</span>
+                                </a>
+                                <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(sesionesProximas)}">No hay clases próximas.</p>
                             </div>
-                        </div>
-                    </article>
-                </div>
+                        </article>
+                    </div>
 
-                <div class="col-xl-6">
-                    <article class="ff-surface-card h-100">
-                        <div class="ff-card-header">
-                            <div>
-                                <h3 class="ff-card-title">Mis rutinas</h3>
-                                <p class="ff-card-subtitle">Entrenamientos asignados.</p>
+                    <div class="col-xl-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Mis rutinas</h3>
+                                    <p class="ff-card-subtitle">Entrenamientos asignados.</p>
+                                </div>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/cliente/rutinas}">Ver más</a>
                             </div>
-                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/cliente/rutinas}">Ver más</a>
-                        </div>
-                        <div class="ff-card-body ff-compact-list">
-                            <a class="ff-linked-row"
-                               th:each="rutina : ${rutinasAsignadas}"
-                               th:href="@{/cliente/rutinas/{id}(id=${rutina.id})}">
-                                <span>
-                                    <strong th:text="${rutina.nombre}">Rutina</strong>
-                                    <small th:text="${rutina.tipoRutina != null ? rutina.tipoRutina : 'General'}">Tipo</small>
-                                </span>
-                                <span class="badge rounded-pill" th:classappend="${rutina.activa} ? ' text-bg-success' : ' text-bg-secondary'"
-                                      th:text="${rutina.activa} ? 'Activa' : 'Inactiva'">Activa</span>
-                            </a>
-                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(rutinasAsignadas)}">Todavía no tienes rutinas asignadas.</p>
-                        </div>
-                    </article>
-                </div>
-            </section>
-
-            <section class="row g-4">
-                <div class="col-xl-7">
-                    <article class="ff-surface-card h-100">
-                        <div class="ff-card-header">
-                            <div>
-                                <h3 class="ff-card-title">Mis pagos</h3>
-                                <p class="ff-card-subtitle">Últimos movimientos y deuda.</p>
+                            <div class="ff-card-body ff-compact-list">
+                                <a class="ff-linked-row"
+                                   th:each="rutina : ${rutinasAsignadas}"
+                                   th:href="@{/cliente/rutinas/{id}(id=${rutina.id})}">
+                                    <span>
+                                        <strong th:text="${rutina.nombre}">Rutina</strong>
+                                        <small th:text="${rutina.tipoRutina != null ? rutina.tipoRutina : 'General'}">Tipo</small>
+                                    </span>
+                                    <span class="badge rounded-pill"
+                                          th:classappend="${rutina.activa} ? ' text-bg-success' : ' text-bg-secondary'"
+                                          th:text="${rutina.activa} ? 'Activa' : 'Inactiva'">Activa</span>
+                                </a>
+                                <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(rutinasAsignadas)}">Todavía no tienes rutinas asignadas.</p>
                             </div>
-                            <a class="btn btn-sm btn-outline-secondary" th:href="@{/cliente/pagos}">Ver más</a>
-                        </div>
-                        <div class="ff-card-body ff-compact-list">
-                            <a class="ff-linked-row"
-                               th:each="pago : ${pagosRecientes}"
-                               th:href="@{/cliente/pagos/{id}(id=${pago.id})}">
-                                <span>
-                                    <strong th:text="${pago.monto != null ? pago.monto + ' EUR' : 'Pago'}">Pago</strong>
-                                    <small th:text="${pago.fechaVencimiento != null ? 'Vence ' + #temporals.format(pago.fechaVencimiento, 'dd/MM/yyyy') : 'Sin vencimiento'}">Fecha</small>
-                                </span>
-                                <span class="badge rounded-pill"
-                                      th:classappend="${pago.estado.name() == 'PAGADO'} ? ' text-bg-success' : (${pago.estado.name() == 'VENCIDO'} ? ' text-bg-danger' : ' text-bg-warning')"
-                                      th:text="${pago.estado}">Estado</span>
-                            </a>
-                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(pagosRecientes)}">No hay pagos registrados.</p>
-                        </div>
-                    </article>
-                </div>
+                        </article>
+                    </div>
+                </section>
 
-                <div class="col-xl-5">
-                    <article class="ff-surface-card h-100">
-                        <div class="ff-card-header">
-                            <div>
-                                <h3 class="ff-card-title">Acciones</h3>
-                                <p class="ff-card-subtitle">Lo más usado de tu cuenta.</p>
+                <!-- ═══ PAGOS + ACCIONES ═══ -->
+                <section class="row g-4">
+                    <div class="col-xl-7">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Mis pagos</h3>
+                                    <p class="ff-card-subtitle">Últimos movimientos y deuda.</p>
+                                </div>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/cliente/pagos}">Ver más</a>
                             </div>
-                        </div>
-                        <div class="ff-card-body d-grid gap-3">
-                            <form th:action="@{/cliente/checkin}" method="post" class="m-0">
-                                <button type="submit" class="btn btn-success w-100 d-flex justify-content-between align-items-center fw-bold py-2 shadow-sm">
-                                    <span>Check-in ahora</span> <i class="fas fa-qrcode"></i>
-                                </button>
-                            </form>
-                            <a class="btn btn-danger w-100 d-flex justify-content-between align-items-center fw-bold py-2 shadow-sm"
-                               th:if="${deudaTotal != null and deudaTotal.signum() > 0}"
-                               th:href="@{/cliente/pagos}">
-                                <span>Pagar Membresía</span> <i class="fas fa-credit-card"></i>
-                            </a>
-                            <a class="btn btn-primary w-100 d-flex justify-content-between align-items-center fw-bold py-2 shadow-sm" th:href="@{/cliente/clases}">
-                                <span>Apuntar a Clases</span> <i class="fas fa-calendar-alt"></i>
-                            </a>
-                            <a class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center" th:href="@{/cliente/membresia}">
-                                <span>Ver membresía</span> <i class="fas fa-id-card"></i>
-                            </a>
-                            <a class="btn btn-outline-secondary w-100 d-flex justify-content-between align-items-center" th:href="@{/cuenta/password}">
-                                <span>Cambiar contraseña</span> <i class="fas fa-key"></i>
-                            </a>
-                        </div>
-                    </article>
-                </div>
-            </section>
+                            <div class="ff-card-body ff-compact-list">
+                                <a class="ff-linked-row"
+                                   th:each="pago : ${pagosRecientes}"
+                                   th:href="@{/cliente/pagos/{id}(id=${pago.id})}">
+                                    <span>
+                                        <strong th:text="${pago.monto != null ? pago.monto + ' EUR' : 'Pago'}">Pago</strong>
+                                        <small th:text="${pago.fechaVencimiento != null ? 'Vence ' + #temporals.format(pago.fechaVencimiento, 'dd/MM/yyyy') : 'Sin vencimiento'}">Fecha</small>
+                                    </span>
+                                    <span class="badge rounded-pill"
+                                          th:classappend="${pago.estado.name() == 'PAGADO'} ? ' text-bg-success' : (${pago.estado.name() == 'VENCIDO'} ? ' text-bg-danger' : ' text-bg-warning')"
+                                          th:text="${pago.estado}">Estado</span>
+                                </a>
+                                <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(pagosRecientes)}">No hay pagos registrados.</p>
+                            </div>
+                        </article>
+                    </div>
 
-            <div th:replace="~{fragments/footer :: footer}"></div>
-        </div>
-    </main>
+                    <div class="col-xl-5">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Acciones</h3>
+                                    <p class="ff-card-subtitle">Lo más usado de tu cuenta.</p>
+                                </div>
+                            </div>
+                            <div class="ff-card-body d-grid gap-2">
+                                <form th:action="@{/cliente/checkin}" method="post" class="m-0">
+                                    <button type="submit" class="btn btn-success w-100 d-flex justify-content-between align-items-center">
+                                        <span>Check-in ahora</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                    </button>
+                                </form>
+                                <a class="btn btn-warning d-flex justify-content-between align-items-center"
+                                   th:if="${deudaTotal != null and deudaTotal.signum() > 0}"
+                                   th:href="@{/cliente/pagos}">
+                                    <span>Resolver deuda</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                                </a>
+                                <a class="btn btn-outline-secondary d-flex justify-content-between align-items-center" th:href="@{/cliente/clases}">
+                                    <span>Apuntarme a clases</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                                </a>
+                                <a class="btn btn-outline-secondary d-flex justify-content-between align-items-center" th:href="@{/cliente/membresia}">
+                                    <span>Ver membresía</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                                </a>
+                                <a class="btn btn-outline-secondary d-flex justify-content-between align-items-center" th:href="@{/cuenta/password}">
+                                    <span>Cambiar contraseña</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
 </div>
 <script th:src="@{/js/cliente-panel.js}"></script>
 </body>

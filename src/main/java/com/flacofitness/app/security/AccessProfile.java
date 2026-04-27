@@ -149,7 +149,9 @@ public enum AccessProfile {
         if (path.equals("/") || path.startsWith("/stats")) {
             return true;
         }
-        if (path.startsWith("/staff/dashboard") || path.startsWith("/api/staff")) {
+        if (path.startsWith("/staff/dashboard")
+                || path.startsWith("/staff/nominas")
+                || path.startsWith("/api/staff")) {
             return true;
         }
 

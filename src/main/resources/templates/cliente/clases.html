@@ -1,12 +1,15 @@
 ﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Clases disponibles')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('cliente-clases')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar(${tituloListado}, ${subtituloListado})}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('cliente-clases')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar(${tituloListado}, ${subtituloListado})}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
             <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
             <section class="row g-4">
@@ -33,18 +36,21 @@
                                         <tbody>
                                             <tr th:each="sesion : ${sesionesProximas}">
                                                 <td><strong th:text="${sesion.clase.nombre}">Clase</strong></td>
-                                                <td th:text="#temporals.format(${sesion.fecha}, 'dd/MM/yyyy')">Fecha</td>
-                                                <td th:text="#temporals.format(${sesion.horaInicio}, 'HH:mm')">Hora</td>
+                                                <td th:text="${#temporals.format(sesion.fecha, 'dd/MM/yyyy')}">Fecha</td>
+                                                <td th:text="${#temporals.format(sesion.horaInicio, 'HH:mm')}">Hora</td>
                                                 <td th:text="${sesion.staffResponsable != null} ? ${sesion.staffResponsable.usuario.nombre} : 'Sin instructor'">Instructor</td>
                                                 <td>
                                                     <span class="badge rounded-pill"
                                                           th:classappend="${sesion.cupoDisponible > 0 ? ' text-bg-info' : ' text-bg-secondary'}"
                                                           th:text="${sesion.cupoDisponible > 0 ? sesion.cupoDisponible + ' plazas' : 'Completo'}">Cupo</span>
                                                 </td>
-                                                <td class="text-end" style="white-space: nowrap;">
-                                                    <button type="button" class="btn btn-sm btn-success" 
-                                                            th:onclick="'reservarSesion(' + ${sesion.id} + ', \'' + ${sesion.clase.nombre} + '\')'">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-right: 0.3rem;">
+                                                <td class="text-end ff-nowrap">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-success"
+                                                            th:disabled="${sesion.cupoDisponible <= 0}"
+                                                            th:attr="data-sesion-id=${sesion.id}"
+                                                            onclick="reservarSesion(this.dataset.sesionId)">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="me-1">
                                                             <path d="M12 5v14M5 12h14"/>
                                                         </svg>
                                                         Reservar
@@ -60,11 +66,12 @@
                     </article>
                 </div>
             </section>
+
+            <div th:replace="~{fragments/footer :: footer}"></div>
         </div>
     </main>
 </div>
-<div th:replace="~{fragments/footer :: footer}"></div>
-<script src="/js/cliente-panel.js"></script>
+</div>
+<script th:src="@{/js/cliente-panel.js}"></script>
 </body>
 </html>
-

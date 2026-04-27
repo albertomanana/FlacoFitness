@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Mis pagos')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('cliente-pagos')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar('Mis pagos', 'Historial de transacciones y deuda.')}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('cliente-pagos')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Mis pagos', 'Historial de transacciones y deuda.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
             <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
             <section class="row g-4">
@@ -67,7 +70,7 @@
                                 <p class="text-muted mb-1 small">Deuda pendiente</p>
                                 <p class="display-6 fw-bold text-danger mb-3" th:text="${deudaTotal} + ' EUR'">0 EUR</p>
                                 <p class="text-muted small mb-3">Para liquidar esta deuda, dirígete a recepción o contacta con el gimnasio.</p>
-                                <a class="btn btn-danger w-100 fw-bold" th:href="@{/cliente/membresia}">
+                                <a class="btn btn-warning w-100 fw-bold" th:href="@{/cliente/membresia}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;margin-right:.4rem">
                                         <rect x="3" y="5" width="18" height="14" rx="2"/>
                                         <path d="M7 9h10"/><path d="M7 13h6"/>
@@ -109,10 +112,12 @@
                     </article>
                 </div>
             </section>
+
+            <div th:replace="~{fragments/footer :: footer}"></div>
         </div>
     </main>
 </div>
-<div th:replace="~{fragments/footer :: footer}"></div>
-<script src="/js/cliente-panel.js"></script>
+</div>
+<script th:src="@{/js/cliente-panel.js}"></script>
 </body>
 </html>

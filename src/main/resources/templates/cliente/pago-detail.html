@@ -1,43 +1,55 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Mi pago')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('cliente-pagos')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar('Mi pago', 'Detalle de pago propio.')}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
-            <section class="ff-section-header">
-                <div>
-                    <span class="ff-section-eyebrow">Pago</span>
-                    <h2 class="ff-section-title" th:text="${#numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</h2>
-                    <p class="ff-section-subtitle mb-0" th:text="${pago.referencia}">Referencia</p>
-                </div>
-                <a class="btn btn-outline-secondary" th:href="@{/cliente/pagos}">Mis pagos</a>
-            </section>
-            <section class="ff-surface-card">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <span class="ff-stat-label">Estado</span>
-                        <span class="badge rounded-pill" th:classappend="${pago.estado.name() == 'PAGADO'} ? ' text-bg-success' : (${pago.estado.name() == 'VENCIDO'} ? ' text-bg-danger' : ' text-bg-warning')" th:text="${pago.estado}">Estado</span>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('cliente-pagos')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Mi pago', 'Detalle de pago propio.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Pago</span>
+                        <h2 class="ff-section-title" th:text="${#numbers.formatDecimal(pago.monto, 1, 'POINT', 2, 'COMMA')} + ' EUR'">0 EUR</h2>
+                        <p class="ff-section-subtitle mb-0" th:text="${pago.referencia}">Referencia</p>
                     </div>
-                    <div class="col-md-3">
-                        <span class="ff-stat-label">Vencimiento</span>
-                        <p class="mb-0" th:text="${pago.fechaVencimiento != null ? #temporals.format(pago.fechaVencimiento, 'dd/MM/yyyy') : '-'}">Fecha</p>
+                    <a class="btn btn-outline-secondary" th:href="@{/cliente/pagos}">Mis pagos</a>
+                </section>
+
+                <section class="ff-surface-card">
+                    <div class="ff-card-body">
+                        <div class="row g-4">
+                            <div class="col-md-3">
+                                <span class="ff-stat-label">Estado</span>
+                                <div>
+                                    <span class="badge rounded-pill"
+                                          th:classappend="${pago.estado.name() == 'PAGADO'} ? ' text-bg-success' : (${pago.estado.name() == 'VENCIDO'} ? ' text-bg-danger' : ' text-bg-warning')"
+                                          th:text="${pago.estado}">Estado</span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="ff-stat-label">Vencimiento</span>
+                                <p class="mb-0" th:text="${pago.fechaVencimiento != null ? #temporals.format(pago.fechaVencimiento, 'dd/MM/yyyy') : '-'}">Fecha</p>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="ff-stat-label">Pago</span>
+                                <p class="mb-0" th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : 'Pendiente'}">Pendiente</p>
+                            </div>
+                            <div class="col-md-3">
+                                <span class="ff-stat-label">Plan</span>
+                                <p class="mb-0" th:text="${pago.plan != null ? pago.plan.nombre : 'Sin plan'}">Plan</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-3">
-                        <span class="ff-stat-label">Pago</span>
-                        <p class="mb-0" th:text="${pago.fechaPago != null ? #temporals.format(pago.fechaPago, 'dd/MM/yyyy') : 'Pendiente'}">Pendiente</p>
-                    </div>
-                    <div class="col-md-3">
-                        <span class="ff-stat-label">Plan</span>
-                        <p class="mb-0" th:text="${pago.plan != null ? pago.plan.nombre : 'Sin plan'}">Plan</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-    </main>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
 </div>
-<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

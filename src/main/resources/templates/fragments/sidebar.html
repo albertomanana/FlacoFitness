@@ -130,6 +130,28 @@
             </div>
         </nav>
 
+        <!-- ═══ MIS NOMINAS (STAFF no-gerente) ═══ -->
+        <nav class="ff-nav-section ff-nav-section-compact" aria-label="Mi nomina"
+             th:if="${accessProfile.name() == 'STAFF_ENTRENADOR' or accessProfile.name() == 'STAFF_RECEPCION'}">
+            <span class="ff-nav-section-label">Mi nómina</span>
+            <div class="ff-nav">
+                <a class="ff-nav-link"
+                   th:classappend="${activeSection == 'staff-nominas'} ? ' is-active' : ''"
+                   th:href="@{/staff/nominas}">
+                    <span class="ff-nav-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"/>
+                            <path d="M7 8h10"/>
+                            <path d="M7 12h10"/>
+                            <path d="M7 16h6"/>
+                        </svg>
+                    </span>
+                    <span class="ff-nav-label">Mis nóminas</span>
+                </a>
+            </div>
+        </nav>
+
         <!-- ═══ GESTION ═══ -->
         <nav class="ff-nav-section ff-nav-section-compact" aria-label="Gestion"
              th:if="${accessProfile.canSeeSection('usuarios') or accessProfile.canSeeSection('staff') or accessProfile.canSeeSection('membresias') or accessProfile.canSeeSection('trials')}">

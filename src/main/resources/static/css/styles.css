@@ -1325,31 +1325,9 @@ a { text-decoration: none; }
     gap: var(--space-3);
 }
 
-.ff-chart-canvas-wrap {
-    position: relative;
-    min-height: 220px;
-}
-
 .ff-chart-canvas-wrap canvas {
     display: block;
     width: 100% !important;
-    height: 100% !important;
-}
-
-@media (min-width: 768px) {
-    .ff-chart-canvas-wrap {
-        min-height: 260px;
-    }
-}
-
-.ff-chart-canvas-wrap-wide {
-    min-height: 240px;
-}
-
-@media (min-width: 768px) {
-    .ff-chart-canvas-wrap-wide {
-        min-height: 300px;
-    }
 }
 
 /* Chart loading skeleton */
@@ -5410,3 +5388,194 @@ img.ff-avatar-xxl,
     color: var(--ff-text-secondary);
 }
 .ff-stat-row:last-child { border-bottom: none; }
+
+/* ── Cliente / Staff: hero del panel personal ── */
+.ff-client-hero { border-left: 4px solid var(--ff-primary); }
+.ff-client-hero .ff-avatar-xl {
+    border: 3px solid var(--ff-primary);
+    box-shadow: var(--ff-shadow-sm);
+}
+
+/* ── KPI grid compacto (3 columnas en >=md, sin animación) ── */
+.ff-kpi-grid-compact {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+}
+@media (min-width: 576px) {
+    .ff-kpi-grid-compact { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.ff-kpi-grid-compact .ff-stat-card {
+    padding: var(--space-3);
+    border: 1px solid var(--ff-border);
+    border-radius: var(--radius-md);
+    background: var(--ff-surface);
+    box-shadow: none;
+    text-align: left;
+}
+.ff-kpi-grid-compact .ff-stat-card:hover { transform: none; }
+.ff-kpi-grid-compact .ff-stat-card::before { display: none; }
+
+/* ── Stat value compacto para hero ── */
+.ff-stat-value-sm {
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+/* ── Helper utilitario ── */
+.ff-nowrap { white-space: nowrap; }
+
+/* ── Linked row (item clickable con badge a la derecha) ── */
+.ff-linked-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--ff-border);
+    border-radius: var(--radius-md);
+    background: var(--ff-surface);
+    color: var(--ff-text);
+    text-decoration: none;
+    transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
+}
+.ff-linked-row + .ff-linked-row { margin-top: var(--space-2); }
+.ff-linked-row:hover {
+    border-color: var(--ff-primary);
+    box-shadow: var(--ff-shadow-sm);
+    transform: translateX(2px);
+}
+.ff-linked-row > span:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.ff-linked-row strong {
+    color: var(--ff-text);
+    font-weight: 600;
+    line-height: 1.25;
+}
+.ff-linked-row small {
+    color: var(--ff-text-muted);
+    font-size: var(--text-xs);
+}
+
+/* ── Card footer link genérico ── */
+.ff-card-footer-link {
+    margin-top: var(--space-3);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* ══════════════════════════════════════════════
+   FASE 2: LAYOUT REFINEMENTS — Spacing Perfection
+══════════════════════════════════════════════ */
+
+/* Ensure consistent card heights in 2-column grids */
+.row > .col-lg-6 > .ff-surface-card,
+.row > .col-xl-6 > .ff-surface-card,
+.row > .col-lg-7 > .ff-surface-card,
+.row > .col-xl-7 > .ff-surface-card,
+.row > .col-lg-5 > .ff-surface-card,
+.row > .col-xl-5 > .ff-surface-card {
+    display: flex;
+    flex-direction: column;
+}
+.row > .col-lg-6 > .ff-surface-card .ff-card-body,
+.row > .col-xl-6 > .ff-surface-card .ff-card-body,
+.row > .col-lg-7 > .ff-surface-card .ff-card-body,
+.row > .col-xl-7 > .ff-surface-card .ff-card-body,
+.row > .col-lg-5 > .ff-surface-card .ff-card-body,
+.row > .col-xl-5 > .ff-surface-card .ff-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* No bottom margin on last element in card bodies */
+.ff-card-body > *:last-child {
+    margin-bottom: 0;
+}
+
+/* Compact list proper spacing */
+.ff-compact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+.ff-compact-list .ff-linked-row {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+.ff-compact-list .ff-linked-row:last-child {
+    border-bottom: none;
+}
+
+/* Section spacing consistency */
+.ff-section-header + .ff-kpi-grid {
+    margin-top: 0;
+}
+.ff-content-stack > section {
+    margin: 0;
+}
+
+/* Ensure stat cards don't have gaps within KPI grids */
+.ff-kpi-grid {
+    margin: 0;
+    padding: 0;
+}
+
+/* Table wrapper proper sizing */
+.dt-container {
+    margin: 0;
+    padding: 0;
+}
+.dataTables_wrapper {
+    margin: 0;
+}
+
+/* Footer spacing */
+.ff-footer {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-5);
+}
+
+/* Topbar section spacing */
+.ff-topbar {
+    margin-bottom: 0;
+}
+
+/* Content main no extra margin */
+main.ff-content {
+    margin: 0;
+}
+
+/* No margin on ff-page-stack */
+.ff-page-stack,
+.ff-command-stack {
+    margin: 0;
+}
+
+/* Alert spacing proper */
+.ff-alerts {
+    margin: 0 0 var(--space-4) 0;
+}
+
+/* Form field spacing */
+.form-group,
+.mb-3 {
+    margin-bottom: var(--space-3);
+}
+.form-group:last-child,
+.mb-3:last-child {
+    margin-bottom: 0;
+}
+
+/* No padding on container rows */
+.row {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+}
+
