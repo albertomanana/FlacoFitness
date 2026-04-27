@@ -30,6 +30,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio encargado de la gestión de accesos y estadísticas de asistencia.
+ * Proporciona funcionalidades para el check-in (manual y rápido), cálculo de rachas
+ * de actividad y detección de socios en riesgo de abandono.
+ */
 @Service
 @Transactional(readOnly = true)
 public class AsistenciaService {
@@ -154,6 +159,12 @@ public class AsistenciaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Asistencia no encontrada con id: " + id));
     }
 
+    /**
+     * Registra una nueva entrada de un socio al gimnasio.
+     * Si no se especifica fecha u hora, se utilizan los valores actuales del sistema.
+     * @param asistencia Datos del registro de entrada.
+     * @return El registro de asistencia persistido.
+     */
     @Transactional
     public Asistencia registrar(Asistencia asistencia) {
         asistencia.setUsuario(obtenerUsuarioValido(asistencia.getUsuario()));
@@ -167,6 +178,13 @@ public class AsistenciaService {
         return asistenciaRepository.save(asistencia);
     }
 
+    /**
+     * Permite registrar la entrada de múltiples socios de forma simultánea.
+     * Útil para clases grupales o entradas masivas en recepción.
+     * @param usuarioIds Lista de identificadores de los socios.
+     * @param observaciones Notas comunes para el lote de registros.
+     * @return Resultado del proceso indicando cuántos fueron creados y cuántos omitidos (ej. por estar inactivos).
+     */
     @Transactional
     public AsistenciaCheckInBatchResult registrarCheckInRapido(List<Long> usuarioIds, String observaciones) {
         if (usuarioIds == null || usuarioIds.isEmpty()) {
@@ -224,6 +242,12 @@ public class AsistenciaService {
         return new AsistenciaCheckInBatchResult(creados, omitidos);
     }
 
+    /**
+     * Calcula la racha actual de días consecutivos asistiendo al centro.
+     * Se utiliza para gamificación y fidelización del socio.
+     * @param usuarioId ID del socio a evaluar.
+     * @return Número de días de la racha actual.
+     */
     public int calcularRachaActual(Long usuarioId) {
         List<Asistencia> asistencias = asistenciaRepository.findTop5ByUsuarioIdOrderByFechaDescHoraEntradaDescIdDesc(usuarioId);
         if (asistencias.isEmpty()) {
@@ -246,6 +270,12 @@ public class AsistenciaService {
         return racha;
     }
 
+    /**
+     * Identifica si un usuario está en riesgo de abandono basado en su inactividad.
+     * Se considera riesgo si el socio no ha asistido en los últimos 14 días.
+     * @param usuarioId ID del socio.
+     * @return Verdadero si el usuario está en riesgo.
+     */
     public boolean esUsuarioEnRiesgo(Long usuarioId) {
         Optional<Asistencia> ultima = buscarUltimaPorUsuario(usuarioId);
         if (ultima.isEmpty()) {

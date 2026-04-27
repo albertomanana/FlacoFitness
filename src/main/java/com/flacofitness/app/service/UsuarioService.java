@@ -28,6 +28,11 @@ import java.util.Optional;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Servicio encargado de la gestión integral de usuarios y socios.
+ * Proporciona lógica para altas, bajas, actualizaciones, gestión de credenciales
+ * y sincronización de fechas de pago.
+ */
 @Service
 @Transactional(readOnly = true)
 public class UsuarioService {
@@ -50,10 +55,18 @@ public class UsuarioService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Recupera todos los usuarios registrados en el sistema.
+     * @return Lista de entidades Usuario.
+     */
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
 
+    /**
+     * Filtra y devuelve únicamente los usuarios marcados como activos.
+     * @return Lista de usuarios activos.
+     */
     public List<Usuario> listarActivos() {
         return usuarioRepository.findByActivoTrue();
     }
@@ -103,6 +116,13 @@ public class UsuarioService {
                 .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id));
     }
 
+    /**
+     * Registra un nuevo usuario en el sistema.
+     * Realiza validaciones de duplicados, prepara credenciales, inicializa fechas de pago
+     * y genera el primer recibo si el usuario tiene un plan asignado.
+     * @param usuario Datos del nuevo usuario.
+     * @return El usuario guardado con su ID generado.
+     */
     @Transactional
     public Usuario guardar(Usuario usuario) {
         validarEmailDuplicado(usuario.getEmail(), null);
@@ -133,6 +153,13 @@ public class UsuarioService {
         pagoRepository.save(pago);
     }
 
+    /**
+     * Actualiza la información de un usuario existente.
+     * Gestiona el cambio de plan, sincronización de fechas y actualización de contraseñas.
+     * @param id Identificador del usuario.
+     * @param usuarioActualizado Nuevos datos a aplicar.
+     * @return El usuario actualizado.
+     */
     @Transactional
     public Usuario actualizar(Long id, Usuario usuarioActualizado) {
         Usuario usuarioExistente = buscarPorId(id);

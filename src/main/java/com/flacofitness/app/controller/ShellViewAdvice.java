@@ -69,24 +69,40 @@ public class ShellViewAdvice {
         this.uxMemoryStateService = uxMemoryStateService;
     }
 
+    private static final String ATTR_NOTIF_CACHE = "ff.shell.notifications.cache";
+    private static final String ATTR_NOTIF_CACHE_TS = "ff.shell.notifications.cacheTs";
+    private static final long NOTIF_TTL_MS = 120_000L; // 2 min
+
     @ModelAttribute("shellNotifications")
     public List<ShellNotificationItem> shellNotifications(HttpSession session) {
-        List<ShellNotificationItem> notifications = shellNotificationService.buildNotifications();
-        String currentSignature = shellNotificationService.buildSignature(notifications);
-
         if (session == null) {
-            return notifications;
+            return shellNotificationService.buildNotifications();
+        }
+
+        long now = System.currentTimeMillis();
+        Long cachedTs = session.getAttribute(ATTR_NOTIF_CACHE_TS) instanceof Long ts ? ts : null;
+        @SuppressWarnings("unchecked")
+        List<ShellNotificationItem> cached = session.getAttribute(ATTR_NOTIF_CACHE) instanceof List<?> l
+                ? (List<ShellNotificationItem>) l : null;
+
+        List<ShellNotificationItem> notifications;
+        if (cached != null && cachedTs != null && (now - cachedTs) < NOTIF_TTL_MS) {
+            notifications = cached;
+        } else {
+            notifications = shellNotificationService.buildNotifications();
+            session.setAttribute(ATTR_NOTIF_CACHE, notifications);
+            session.setAttribute(ATTR_NOTIF_CACHE_TS, now);
         }
 
         Object dismissedValue = session.getAttribute(ATTR_DISMISSED_SIGNATURE);
-        String dismissedSignature = dismissedValue instanceof String ? (String) dismissedValue : null;
-
-        if (dismissedSignature != null && !dismissedSignature.equals(currentSignature)) {
-            session.removeAttribute(ATTR_DISMISSED_SIGNATURE);
-            return notifications;
-        }
+        String dismissedSignature = dismissedValue instanceof String s ? s : null;
 
         if (dismissedSignature != null) {
+            String currentSignature = shellNotificationService.buildSignature(notifications);
+            if (!dismissedSignature.equals(currentSignature)) {
+                session.removeAttribute(ATTR_DISMISSED_SIGNATURE);
+                return notifications;
+            }
             return List.of();
         }
 

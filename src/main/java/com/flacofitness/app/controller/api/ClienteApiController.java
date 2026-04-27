@@ -17,10 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/api/cliente")
@@ -129,14 +126,11 @@ public class ClienteApiController {
             Usuario usuario = obtenerUsuarioAutenticado(session);
 
             if (sesionId == null) {
-                // Check-in libre
                 asistenciaService.registrarCheckInRapido(java.util.List.of(usuario.getId()), null);
             } else {
-                // Check-in asociado a sesión
-                SesionClase sesion = sesionClaseRepository.findById(sesionId)
+                sesionClaseRepository.findById(sesionId)
                         .orElseThrow(() -> new ResourceNotFoundException("Sesión no encontrada"));
-                asistenciaService.registrarCheckInRapido(
-                        java.util.List.of(usuario.getId()), null);
+                asistenciaService.registrarCheckInRapido(java.util.List.of(usuario.getId()), null);
             }
 
             return ResponseEntity.ok(Map.of(

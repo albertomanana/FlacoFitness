@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Controller
@@ -101,11 +100,8 @@ public class StaffApiController {
         if (usuario == null) {
             throw new BusinessValidationException("Usuario no autenticado");
         }
-        
-        // Validar que es staff
-        StaffPerfil staffPerfil = staffPerfilRepository.findByUsuarioId(usuario.getId())
+        staffPerfilRepository.findByUsuarioId(usuario.getId())
                 .orElseThrow(() -> new BusinessValidationException("No eres staff"));
-        
         return usuario;
     }
 }

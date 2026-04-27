@@ -881,6 +881,8 @@ a { text-decoration: none; }
     border-radius: var(--radius-xl);
     background: rgba(255, 255, 255, 0.98);
     box-shadow: var(--ff-shadow-hover);
+    z-index: 1055 !important;
+    position: absolute !important;
 }
 
 .ff-notification-menu-header,
@@ -925,6 +927,12 @@ a { text-decoration: none; }
     display: flex;
     flex-direction: column;
     gap: 0.55rem;
+    max-height: 22rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ff-border) transparent;
+    padding-right: 2px;
 }
 
 .ff-notification-item {
@@ -1003,10 +1011,21 @@ a { text-decoration: none; }
 
 .ff-user-menu {
     min-width: 18rem;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .ff-user-menu-item {
     border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: var(--ff-text);
+    padding: 0.5rem 0.75rem;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.ff-user-menu-item:hover {
+    background: var(--ff-surface);
+    color: var(--ff-primary-dark);
 }
 
 .ff-user-menu-item:active {

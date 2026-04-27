@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Servicio central para la gestión financiera del gimnasio.
+ * Controla el ciclo de vida de los pagos, desde su programación automática
+ * hasta su liquidación y el cálculo de estados morosos.
+ */
 @Service
 @Transactional(readOnly = true)
 public class PagoService {
@@ -154,6 +159,11 @@ public class PagoService {
                 operationalClockService.today());
     }
 
+    /**
+     * Proceso por lotes que genera los cobros mensuales para todos los usuarios activos.
+     * Evalúa las membresías y genera registros de pago programados basados en la duración del plan.
+     * @return Número total de pagos generados en la ejecución.
+     */
     @Transactional
     public int generarPagosMensuales() {
         LocalDate fechaReferencia = operationalClockService.today();
@@ -178,6 +188,12 @@ public class PagoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Pago no encontrado con id: " + id));
     }
 
+    /**
+     * Registra manualmente un nuevo pago en el sistema.
+     * Valida que no existan duplicados para el mismo periodo y normaliza el estado según la fecha.
+     * @param pago Entidad con los datos del pago.
+     * @return El pago persistido.
+     */
     @Transactional
     public Pago guardar(Pago pago) {
         Usuario usuario = obtenerUsuarioValido(pago.getUsuario());
@@ -213,6 +229,12 @@ public class PagoService {
         return pagoRepository.save(pagoExistente);
     }
 
+    /**
+     * Procesa la recepción de un pago, cambiando su estado a PAGADO.
+     * Este método dispara la actualización de la fecha de próximo pago del usuario.
+     * @param id Identificador del pago a liquidar.
+     * @return El pago actualizado con la fecha de recepción.
+     */
     @Transactional
     public Pago marcarComoPagado(Long id) {
         Pago pagoExistente = buscarPorId(id);

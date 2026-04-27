@@ -21,6 +21,11 @@ import com.flacofitness.app.repository.MembresiaUsuarioRepository;
 import com.flacofitness.app.repository.PlanRepository;
 import com.flacofitness.app.repository.UsuarioRepository;
 
+/**
+ * Servicio dedicado a la gestión de planes y contratos de membresía.
+ * Administra el catálogo de servicios del gimnasio y el ciclo de vida
+ * de las suscripciones de los socios (altas, renovaciones y vencimientos).
+ */
 @Service
 @Transactional(readOnly = true)
 public class MembresiaService {
@@ -136,6 +141,11 @@ public class MembresiaService {
                 ESTADOS_OPERATIVOS);
     }
 
+    /**
+     * Tarea programada que identifica y marca como VENCIDAS las membresías cuya fecha fin ha pasado.
+     * Es fundamental para el control de acceso automatizado.
+     * @return Número de contratos que han pasado a estado vencido.
+     */
     @Transactional
     public int procesarMembresiasVencidas() {
         LocalDate hoy = operationalClockService.today();
@@ -181,6 +191,15 @@ public class MembresiaService {
         return Optional.empty();
     }
 
+    /**
+     * Asocia un plan a un usuario creando un nuevo contrato.
+     * @param usuarioId ID del socio.
+     * @param planId ID del plan del catálogo.
+     * @param fechaInicio Fecha de inicio (por defecto hoy).
+     * @param estado Estado inicial del contrato.
+     * @param origen Canal por el cual se realizó la suscripción.
+     * @return El contrato generado.
+     */
     @Transactional
     public MembresiaUsuario asignarMembresia(Long usuarioId, Long planId, LocalDate fechaInicio, EstadoMembresia estado, String origen) {
         MembresiaUsuario contrato = new MembresiaUsuario();
@@ -192,6 +211,12 @@ public class MembresiaService {
         return guardarContrato(contrato);
     }
 
+    /**
+     * Persiste un contrato de membresía y sincroniza los datos del usuario.
+     * Al activar un contrato, se actualiza automáticamente la fecha de próximo pago del socio.
+     * @param contrato Datos del contrato a guardar.
+     * @return Contrato persistido.
+     */
     @Transactional
     public MembresiaUsuario guardarContrato(MembresiaUsuario contrato) {
         Usuario usuario = obtenerUsuarioValido(contrato.getUsuario());

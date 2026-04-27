@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Ayuda rápida')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar('Ayuda rápida', 'Consultas sencillas sobre tu cuenta y el gimnasio.')}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('inicio')}"></div>
+
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Ayuda rápida', 'Consultas sencillas sobre tu cuenta y el gimnasio.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
             <section class="ff-section-header">
                 <div>
                     <span class="ff-section-eyebrow">Ayuda</span>
@@ -30,6 +33,7 @@
             <div th:replace="~{fragments/footer :: footer}"></div>
         </div>
     </main>
+</div>
 </div>
 </body>
 </html>

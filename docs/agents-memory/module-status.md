@@ -1,8 +1,8 @@
 # Module Status
 
-Fecha de referencia: 2026-04-27
+Fecha de referencia: 2026-04-28
 
-Estado actual 2026-04-27: cierre estable con tema claro premium, sin runtime experimental de dark mode/Operations Deck, con paneles cliente/staff propios, chat interno, automatizaciones bajo demanda y 43 tests en verde.
+Estado actual 2026-04-28: shell HTML unificado en todos los templates cliente/staff (body class="ff-app"), paneles de cliente y staff reescritos con estructura canónica ff-*, bug de reservarSesion corregido, APIs limpias sin imports muertos, CSS con linked-row y hero-client. BUILD SUCCESS 202 fuentes.
 
 ## Resumen
 

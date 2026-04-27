@@ -1,87 +1,70 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Dashboard Gerente')}"></head>
-<body class="ff-app-shell">
-<div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
-<div class="ff-main">
-    <div th:replace="~{fragments/topbar :: topbar('Dashboard', 'Equipo, agenda y avisos del día.')}"></div>
-    <main class="ff-content">
-        <div class="ff-content-stack ff-page-stack">
-            <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+<body class="ff-app">
+<div class="ff-app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('staff')}"></div>
 
-            <!-- Resumen operativo -->
-            <section class="row g-3">
-                <div class="col-sm-6 col-xl-3">
-                    <article class="ff-surface-card ff-stat-card">
-                        <div class="ff-stat-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <circle cx="12" cy="8" r="4"/>
-                                <path d="M4 21a8 8 0 0 1 16 0"/>
-                            </svg>
-                        </div>
+    <div class="ff-main">
+        <div th:replace="~{fragments/topbar :: topbar('Panel de gerencia', 'Equipo, agenda y avisos del día.')}"></div>
+
+        <main class="ff-content">
+            <div class="ff-content-stack ff-page-stack">
+                <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
+
+                <!-- ═══ HEADER ═══ -->
+                <section class="ff-section-header">
+                    <div>
+                        <span class="ff-section-eyebrow">Gerencia</span>
+                        <h1 class="ff-section-title">Resumen operativo</h1>
+                        <p class="ff-section-subtitle">Equipo, clientes y actividad en tiempo real.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-success" th:href="@{/finanzas}">
+                            <i class="fa-solid fa-chart-line me-1"></i> Centro financiero
+                        </a>
+                        <a class="btn btn-outline-secondary" th:href="@{/staff/nominas}">
+                            <i class="fa-solid fa-file-invoice-dollar me-1"></i> Mis nóminas
+                        </a>
+                    </div>
+                </section>
+
+                <!-- ═══ KPIs ═══ -->
+                <section class="ff-kpi-grid ff-kpi-grid-priority">
+                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
                         <p class="ff-stat-label">Clientes activos</p>
-                        <p class="ff-stat-value" th:text="${usuariosActivos}">0</p>
-                        <p class="ff-stat-note">Suscripción activa</p>
+                        <p class="ff-stat-value ff-tabular" th:text="${usuariosActivos}">0</p>
+                        <p class="ff-stat-note">Con suscripción activa</p>
                     </article>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <article class="ff-surface-card ff-stat-card">
-                        <div class="ff-stat-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                <path d="M16 2v4"/>
-                                <path d="M8 2v4"/>
-                                <path d="M3 10h18"/>
-                                <path d="M9 16l2 2 4-4"/>
-                            </svg>
-                        </div>
+                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
                         <p class="ff-stat-label">Asistencias hoy</p>
-                        <p class="ff-stat-value" th:text="${asistenciasHoy}">0</p>
+                        <p class="ff-stat-value ff-tabular" th:text="${asistenciasHoy}">0</p>
                         <p class="ff-stat-note">Check-ins registrados</p>
                     </article>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <article class="ff-surface-card ff-stat-card">
-                        <div class="ff-stat-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                <path d="M16 2v4"/>
-                                <path d="M8 2v4"/>
-                                <path d="M3 10h18"/>
-                            </svg>
-                        </div>
+                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
                         <p class="ff-stat-label">Clases hoy</p>
-                        <p class="ff-stat-value" th:text="${sesionesHoy}">0</p>
+                        <p class="ff-stat-value ff-tabular" th:text="${sesionesHoy}">0</p>
                         <p class="ff-stat-note">Sesiones programadas</p>
                     </article>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <article class="ff-surface-card ff-stat-card">
-                        <div class="ff-stat-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </div>
+                    <article class="ff-surface-card ff-stat-card ff-kpi-card">
                         <p class="ff-stat-label">Staff activo</p>
-                        <p class="ff-stat-value" th:text="${#lists.size(staffActivo)}">0</p>
+                        <p class="ff-stat-value ff-tabular" th:text="${#lists.size(staffActivo)}">0</p>
                         <p class="ff-stat-note">Entrenadores y recepción</p>
                     </article>
-                </div>
-            </section>
+                </section>
 
-            <!-- Staff activo -->
-            <section class="row g-4">
-                <div class="col-lg-6">
-                    <article class="ff-surface-card h-100">
-                        <div class="ff-card-header">
-                            <h3 class="ff-card-title">Staff activo</h3>
-                            <p class="ff-card-subtitle">Equipo disponible.</p>
-                        </div>
-                        <div class="ff-card-body">
-                            <div class="vstack gap-2" th:if="${not #lists.isEmpty(staffActivo)}">
+                <!-- ═══ STAFF + RENOVACIONES ═══ -->
+                <section class="row g-4">
+                    <div class="col-lg-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Staff activo</h3>
+                                    <p class="ff-card-subtitle">Equipo disponible.</p>
+                                </div>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/staff}">Ver staff</a>
+                            </div>
+                            <div class="ff-card-body ff-compact-list">
                                 <a class="ff-linked-row" th:each="personal : ${staffActivo}" th:href="@{/staff/{id}(id=${personal.id})}">
                                     <span>
                                         <strong th:text="${personal.usuario != null ? personal.usuario.nombre : 'Staff'}">Nombre</strong>
@@ -89,105 +72,69 @@
                                     </span>
                                     <span class="badge rounded-pill text-bg-success">Activo</span>
                                 </a>
+                                <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(staffActivo)}">Sin staff registrado.</p>
                             </div>
-                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(staffActivo)}">Sin staff registrado.</p>
-                        </div>
-                    </article>
-                </div>
+                        </article>
+                    </div>
 
-                <!-- Próximas renovaciones -->
-                <div class="col-lg-6">
-                    <article class="ff-surface-card h-100">
-                        <div class="ff-card-header">
-                            <h3 class="ff-card-title">Próximas renovaciones</h3>
-                            <p class="ff-card-subtitle">Clientes a renovar.</p>
-                        </div>
-                        <div class="ff-card-body">
-                            <div class="vstack gap-2" th:if="${not #lists.isEmpty(ultimosPagos)}">
+                    <div class="col-lg-6">
+                        <article class="ff-surface-card h-100">
+                            <div class="ff-card-header">
+                                <div>
+                                    <h3 class="ff-card-title">Próximas renovaciones</h3>
+                                    <p class="ff-card-subtitle">Clientes a contactar.</p>
+                                </div>
+                                <a class="btn btn-sm btn-outline-secondary" th:href="@{/usuarios}">Ver clientes</a>
+                            </div>
+                            <div class="ff-card-body ff-compact-list">
                                 <a class="ff-linked-row" th:each="usuario : ${ultimosPagos}" th:href="@{/usuarios/{id}(id=${usuario.id})}">
                                     <span>
                                         <strong th:text="${usuario.nombre}">Nombre</strong>
-                                        <small th:text="${usuario.plan != null} ? ${usuario.plan.nombre} : 'Sin plan'">Plan</small>
+                                        <small th:text="${usuario.plan != null ? usuario.plan.nombre : 'Sin plan'}">Plan</small>
                                     </span>
                                     <span class="badge rounded-pill text-bg-warning">Próximo</span>
                                 </a>
+                                <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(ultimosPagos)}">Sin renovaciones pendientes.</p>
                             </div>
-                            <p class="ff-empty-state mb-0" th:if="${#lists.isEmpty(ultimosPagos)}">Sin renovaciones pendientes.</p>
-                        </div>
-                    </article>
-                </div>
-            </section>
+                        </article>
+                    </div>
+                </section>
 
-            <!-- Acciones de gestión -->
-            <section class="row g-4">
-                <div class="col-12">
-                    <article class="ff-surface-card">
-                        <div class="ff-card-header">
-                            <h3 class="ff-card-title">Acciones rápidas</h3>
+                <!-- ═══ ACCIONES RÁPIDAS ═══ -->
+                <section class="ff-surface-card">
+                    <div class="ff-card-header">
+                        <div>
+                            <p class="ff-section-eyebrow mb-0">Atajos</p>
+                            <h3 class="ff-card-title mt-1">Acciones rápidas</h3>
                         </div>
-                        <div class="ff-card-body">
-                            <div class="row g-2">
-                                <div class="col-sm-6 col-md-3">
-                                    <a th:href="@{/staff/nominas}" class="btn btn-success w-100 d-flex align-items-center gap-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <rect x="3" y="5" width="18" height="14" rx="2"/>
-                                            <path d="M7 9h10"/><path d="M7 13h6"/>
-                                        </svg>
-                                        Mis nóminas
-                                    </a>
-                                </div>
-                                <div class="col-sm-6 col-md-3">
-                                    <a th:href="@{/usuarios}" class="btn btn-outline-secondary w-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-right: 0.5rem;">
-                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                            <circle cx="9" cy="7" r="4"/>
-                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                        </svg>
-                                        Clientes
-                                    </a>
-                                </div>
-                                <div class="col-sm-6 col-md-3">
-                                    <a th:href="@{/staff}" class="btn btn-outline-secondary w-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-right: 0.5rem;">
-                                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                                            <circle cx="9" cy="7" r="4"/>
-                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                                        </svg>
-                                        Staff
-                                    </a>
-                                </div>
-                                <div class="col-sm-6 col-md-3">
-                                    <a th:href="@{/pagos}" class="btn btn-outline-secondary w-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-right: 0.5rem;">
-                                            <rect x="3" y="5" width="18" height="14" rx="2"/>
-                                            <path d="M7 9h10"/>
-                                            <path d="M7 13h6"/>
-                                        </svg>
-                                        Pagos
-                                    </a>
-                                </div>
-                                <div class="col-sm-6 col-md-3">
-                                    <a th:href="@{/finanzas}" class="btn btn-outline-secondary w-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline; margin-right: 0.5rem;">
-                                            <rect x="3" y="5" width="18" height="14" rx="2"/>
-                                            <path d="M7 9h10"/>
-                                            <path d="M7 13h6"/>
-                                        </svg>
-                                        Finanzas
-                                    </a>
-                                </div>
-                            </div>
+                    </div>
+                    <div class="ff-card-body pt-0">
+                        <div class="ff-quick-actions-grid" style="padding: 0;">
+                            <a class="ff-quick-action" th:href="@{/usuarios}">
+                                <i class="fa-solid fa-users"></i>
+                                <span>Clientes</span>
+                            </a>
+                            <a class="ff-quick-action" th:href="@{/staff}">
+                                <i class="fa-solid fa-user-tie"></i>
+                                <span>Staff</span>
+                            </a>
+                            <a class="ff-quick-action" th:href="@{/pagos}">
+                                <i class="fa-solid fa-credit-card"></i>
+                                <span>Pagos</span>
+                            </a>
+                            <a class="ff-quick-action" th:href="@{/finanzas}">
+                                <i class="fa-solid fa-chart-line"></i>
+                                <span>Finanzas</span>
+                            </a>
                         </div>
-                    </article>
-                </div>
-            </section>
-        </div>
-    </main>
+                    </div>
+                </section>
+
+                <div th:replace="~{fragments/footer :: footer}"></div>
+            </div>
+        </main>
+    </div>
 </div>
-<div th:replace="~{fragments/footer :: footer}"></div>
-<script src="/js/staff-panel.js"></script>
+<script th:src="@{/js/staff-panel.js}"></script>
 </body>
 </html>
-

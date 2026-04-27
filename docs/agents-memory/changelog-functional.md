@@ -6,6 +6,21 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 ## Historial
 
+### 2026-04-28 (Limpieza estructural: shell, paneles cliente/staff, CSS y APIs)
+
+- Eliminados archivos basura del raíz: `fix_filter.py`, logs de Spring y auditoría (`auth-debug.log`, `spring-*.log`, `tmp-audit-*.log`).
+- Todos los templates de `cliente/` y `staff/` migrados al patrón canónico `<body class="ff-app"><div class="ff-app-shell">` (14 templates tenían `<body class="ff-app-shell">` incorrecto).
+- Panel cliente (`panel.html`): hero rehecho con `.ff-client-hero` + `.ff-kpi-grid-compact`, sin gradientes ni animate.css en línea.
+- `clases.html`: corregido bug de llamada `reservarSesion(id, nombre)` a 2 args (función JS acepta 1), arreglados `#temporals.format` con sintaxis errónea, añadido `th:disabled` cuando cupo=0.
+- `pago-detail.html`, `rutina-detail.html`: estructura unificada con `ff-card-body`, footer y shell correctos.
+- Dashboards staff (entrenador, recepción, gerente): reescritos con header `ff-section-header`, KPIs con `ff-kpi-grid-priority`, listas con `.ff-linked-row`, acciones rápidas con `.ff-quick-actions-grid` y `fa-*` icons.
+- `nominas.html` y `nomina-detail.html` staff: tabla con `ff-table`, botón PDF inline, click-on-row; detail con `ff-card-body` y colores semánticos (deducción=rojo, neto=verde).
+- `chat/index.html`: shell corregido.
+- CSS (`styles.css`): añadidas clases `.ff-client-hero`, `.ff-kpi-grid-compact`, `.ff-stat-value-sm`, `.ff-nowrap`, `.ff-linked-row` y `.ff-card-footer-link` que faltaban.
+- `ClienteApiController`: limpiados imports sin uso (`LocalDate`, `HashMap`, `Optional`); check-in con sesionId ya valida la sesión antes de registrar.
+- `StaffApiController`: eliminado `HashMap` sin uso; `obtenerStaffAutenticado` limpiado (variable local `staffPerfil` innecesaria).
+- Compilación limpia: `BUILD SUCCESS` con 202 fuentes, sin errores (solo warnings de Lombok/Unsafe ajenos al código).
+
 ### 2026-04-27 (Cierre UI, password, paneles, automatizacion y chat interno)
 
 - Footer simplificado con autor real: `Hecho por Alberto Mañana` y enlace a `https://github.com/albertomanana/FlacoFitness`.
