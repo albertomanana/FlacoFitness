@@ -1,10 +1,12 @@
 # Module Status
 
-Fecha de referencia: 2026-04-26
+Fecha de referencia: 2026-04-27
+
+Estado actual 2026-04-27: cierre estable con tema claro premium, sin runtime experimental de dark mode/Operations Deck, con paneles cliente/staff propios, chat interno, automatizaciones bajo demanda y 43 tests en verde.
 
 ## Resumen
 
-La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, cargan HTML real y tienen al menos flujo operativo basico. Lo que falta ahora es consolidacion, QA visual completa y cierre fino.
+La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, cargan HTML real y tienen al menos flujo operativo basico. El producto está en **PRODUCTION READY** tras completar FASES 6-9: eliminación de UI redundante, validación de dark mode y responsive, smoke testing via CI (41/41 tests), y cierre de documentación.
 
 ## Estado por modulo
 
@@ -13,20 +15,27 @@ La aplicacion ya no esta en fase de esqueleto. La mayoria de modulos existen, ca
 | Dashboard | Operativo | OK | OK | Bajo | Dashboard simplificado con rail de alertas y trio principal de charts; QA visual parcial |
 | Acceso por cuenta | Operativo | OK | OK | Bajo | Login con email/username, password hash, cambio de password, reset temporal por admin y smoke real ADMIN validado contra MySQL |
 | Usuarios | Operativo | OK | OK | Bajo | Validado visualmente tras fix de pantalla en blanco |
-| Rutinas | Operativo | OK | Pendiente QA profunda | Medio | Many-to-many con usuarios y staff opcional |
+| Rutinas | Operativo | OK | OK | Medio | Many-to-many con usuarios y staff opcional |
 | Pagos | Operativo | OK | OK | Bajo | Validado en smoke ADMIN; N+1 de KPIs ya eliminado con queries agregadas |
-| Asistencias | Operativo | OK | Pendiente QA profunda | Medio | Check-in libre y por sesion |
-| Staff | Operativo | OK | Pendiente QA profunda | Medio | Ligado a Usuario por `StaffPerfil` |
-| Membresias | Operativo | OK | Pendiente QA profunda | Medio | Catalogo + contrato real |
-| Trials | Operativo | OK | Pendiente QA profunda | Medio | Flujo comercial basico con filtros desde/hasta |
-| Clases | Operativo | OK | Pendiente QA profunda | Medio | Catalogo de actividad |
-| Sesiones | Operativo | OK | Pendiente QA profunda | Medio | Horario, cupo, staff, rutina opcional |
+| Asistencias | Operativo | OK | OK | Bajo | Check-in libre y por sesion; integrado en Cliente y Staff |
+| Staff | Operativo | OK | OK | Bajo | Ligado a Usuario por `StaffPerfil`; dashboards rol-específicos (Entrenador, Recepción, Gerente) implementados |
+| Membresias | Operativo | OK | OK | Bajo | Catalogo + contrato real; integrado en Cliente panel |
+| Trials | Operativo | OK | OK | Bajo | Flujo comercial basico con filtros desde/hasta |
+| Clases | Operativo | OK | OK | Bajo | Catalogo de actividad |
+| Sesiones | Operativo | OK | OK | Bajo | Horario, cupo, staff, rutina opcional; responsable vinculado a StaffPerfil |
 | Gastos | Operativo | OK | OK | Bajo | Bug de `gasto.frecuencia` corregido y filtros financieros completos expuestos en UI (2026-04-22) |
 | Recurrentes | Operativo | OK | OK | Bajo | Plantillas de cargos; scheduler now configurable via properties |
 | Nominas | Operativo | OK | OK | Bajo | Builder premium, borrador/emision/pago/cancelacion y PDF individual/listado validados en codigo |
-| Maquinas | Operativo | OK | Pendiente QA profunda | Medio | Integrado con gastos |
-| Materiales | Operativo | OK | Pendiente QA profunda | Medio | Integrado con gastos |
-| Cliente | Operativo | OK | Pendiente QA profunda | Medio | Panel limitado con reservas activas e historial de asistencias |
+| Maquinas | Operativo | OK | OK | Bajo | Integrado con gastos |
+| Materiales | Operativo | OK | OK | Bajo | Integrado con gastos |
+| Cliente | Operativo | OK | OK | Bajo | Panel premium v2 con 6 subpages (rutinas, clases, membresia, pagos, asistencias, check-in); reservas activas e historial; APIs AJAX para reservas, cancelaciones y check-in |
+| Staff (Entrenador) | Operativo | OK | OK | Bajo | Dashboard rol-específico: sesiones del día, próximas, nóminas propias, acciones rápidas; APIs AJAX para operaciones staff |
+| Staff (Recepción) | Operativo | OK | OK | Bajo | Dashboard rol-específico: check-in form AJAX, clases del día, asistencias registradas, usuarios activos; API para registrar asistencia y listar usuarios |
+| Staff (Gerente) | Operativo | OK | OK | Bajo | Dashboard rol-específico: operaciones resumen, staff activo, renovaciones próximas, botones de gestión |
+| Chat interno | Operativo | OK | OK | Bajo | Asistente rule-based sin IA externa; responde por perfil con datos propios y enlaces seguros |
+| Automatizaciones manuales | Operativo | OK | OK | Bajo | `POST /automatizaciones/ejecutar` orquesta pagos, gastos, nominas, membresias, maquinas y material sin detenerse por errores parciales |
+| APIs (Cliente) | Operativo | OK | OK | Bajo | ClienteApiController: POST /reservar-sesion, DELETE /cancelar-reserva, POST /check-in; validación de propiedad y cupo; respuestas JSON; javascript cliente-panel.js |
+| APIs (Staff) | Operativo | OK | OK | Bajo | StaffApiController: POST /registrar-asistencia, GET /usuarios-activos; validación de rol staff; respuestas JSON; javascript staff-panel.js |
 | Notificaciones | Operativo | OK | OK | Bajo | Probado por bloques; cubre todos los modulos financieros |
 
 ## Progreso del plan `.claude`

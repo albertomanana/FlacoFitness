@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
@@ -201,7 +201,7 @@
 <div class="sheet">
     <div class="header">
         <div class="header-main">
-            <img class="brand" th:src="@{/img/logo.svg}" alt="FlacoFitness" />
+            <div class="brand" style="font-size:22px;font-weight:700;color:#166534;">FlacoFitness</div>
             <p class="eyebrow">FlacoFitness / Finanzas internas</p>
             <h1 th:text="${titulo}">Nómina interna</h1>
             <p class="subtitle" th:text="${subtitulo}">Detalle salarial individual.</p>
@@ -237,7 +237,7 @@
 
     <div class="detail-grid">
         <div class="detail-card">
-            <h2 class="detail-title">Ficha documental</h2>
+            <h2 class="detail-title">Datos de la nómina</h2>
             <div class="detail-row">
                 <span>Cuenta del staff</span>
                 <strong th:text="${nomina.staffPerfil != null and nomina.staffPerfil.usuario != null ? (nomina.staffPerfil.usuario.username != null ? nomina.staffPerfil.usuario.username : nomina.staffPerfil.usuario.email) : '-'}">-</strong>
@@ -252,7 +252,7 @@
             </div>
             <div class="detail-row">
                 <span>Observacion</span>
-                <strong>Documento interno para archivo, revisión y control operativo.</strong>
+                <strong>Documento interno para consulta y archivo.</strong>
             </div>
         </div>
 
@@ -279,3 +279,4 @@
 </div>
 </body>
 </html>
+

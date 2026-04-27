@@ -1,5 +1,31 @@
 # Prompts History
 
+## 2026-04-27 - Cierre UI, password, PDF, paneles, automatizacion y chat
+
+El usuario pidio quitar texto con tono de IA, poner footer personal con GitHub, arreglar el boton de cambiar contraseña, aprovechar mejor el ancho, reducir scroll, mejorar carrusel/paginacion, completar paneles cliente/staff, reparar PDF de nominas, añadir automatizaciones masivas y crear un chat interno para staff/clientes.
+
+Resultado:
+- footer `Hecho por Alberto Mañana` con enlace a GitHub;
+- password toggle reforzado;
+- layout mas ancho y paginacion/rail refinados;
+- panel cliente y staff compactos con datos reales;
+- PDF de nomina ajustado;
+- `OperationsAutomationService` para automatizaciones manuales;
+- `InternalAssistantService` con chat rule-based sin API externa;
+- permisos cubiertos y 43 tests en verde.
+
+## 2026-04-27 - Reparacion tras UI fallida
+
+El usuario reporto que la interfaz quedo fea, el sidebar no estaba fijo, las imagenes se veian enormes, la app seguia lenta y el boton de cambiar contraseña no funcionaba. Se pidio revertir selectivamente lo ultimo, conservar el sidebar y dejar coherentes cliente/staff.
+
+Resultado:
+- `styles.css` restaurado desde baseline maduro y limpiado de runtime experimental;
+- sidebar fijo en desktop;
+- limites de imagen/avatar/preview;
+- password toggle implementado y cargado en auth;
+- observers visuales masivos eliminados;
+- compile y 41 tests en verde.
+
 ## Objetivo
 
 Registrar prompts relevantes usados con agentes o asistentes para que el contexto del proyecto no dependa solo de conversaciones externas al repositorio.

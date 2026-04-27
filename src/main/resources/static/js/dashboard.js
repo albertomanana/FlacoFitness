@@ -57,13 +57,6 @@ function initializeDashboard() {
         });
     }
 
-    window.addEventListener("ff:themechange", () => {
-        if (!latestStats) {
-            return;
-        }
-        hydrateDashboard(latestStats, utils, { animateStats: false });
-    });
-
     if (!initialStats) {
         loadDashboard(defaultRange);
     } else {
@@ -554,35 +547,20 @@ function toggleDashboardAlert(visible, message) {
 }
 
 function getChartColors() {
-    const isDark = document.documentElement.dataset.theme === "dark";
-    // Operations Deck palette in dark:
-    //   primary (ingresos) = verde marca #22C55E
-    //   accent HUD (attendance) = cian #38BDF8
-    //   warning = ámbar #F59E0B
-    //   danger (gastos) = rojo #EF4444
-    //   donut rotation: cyan, green, amber, rose, gray
     return {
-        incomeBar:       isDark ? "rgba(34,197,94,0.78)"  : "rgba(22,163,74,0.82)",
-        incomeBarHover:  isDark ? "rgba(34,197,94,0.95)"  : "rgba(21,128,61,0.92)",
-        expenseBar:      isDark ? "rgba(239,68,68,0.68)"  : "rgba(239,68,68,0.72)",
-        expenseBarHover: isDark ? "rgba(239,68,68,0.88)"  : "rgba(220,38,38,0.84)",
-        attendanceLine:  isDark ? "rgba(56,189,248,0.92)" : "rgba(14,165,233,0.92)",
-        attendanceFill:  isDark ? "rgba(56,189,248,0.20)" : "rgba(14,165,233,0.16)",
-        donutColors: isDark
-            ? [
-                "rgba(56,189,248,0.85)",  // cyan — primary HUD
-                "rgba(74,222,128,0.85)",  // green — brand
-                "rgba(251,191,36,0.85)",  // amber
-                "rgba(244,114,182,0.85)", // rose
-                "rgba(148,176,220,0.75)"  // steel
-            ]
-            : [
-                "rgba(14,165,233,0.88)",
-                "rgba(22,163,74,0.88)",
-                "rgba(249,115,22,0.88)",
-                "rgba(236,72,153,0.88)",
-                "rgba(148,163,184,0.88)"
-            ]
+        incomeBar: "rgba(22,163,74,0.82)",
+        incomeBarHover: "rgba(21,128,61,0.92)",
+        expenseBar: "rgba(239,68,68,0.72)",
+        expenseBarHover: "rgba(220,38,38,0.84)",
+        attendanceLine: "rgba(14,165,233,0.92)",
+        attendanceFill: "rgba(14,165,233,0.16)",
+        donutColors: [
+            "rgba(14,165,233,0.88)",
+            "rgba(22,163,74,0.88)",
+            "rgba(249,115,22,0.88)",
+            "rgba(236,72,153,0.88)",
+            "rgba(148,163,184,0.88)"
+        ]
     };
 }
 

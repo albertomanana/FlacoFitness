@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="FlacoFitness - Panel administrativo profesional para gestion de gimnasio">
-    <meta name="theme-color" content="#05080f">
+    <meta name="theme-color" content="#f4f6f9">
     <title th:text="${pageTitle} + ' | FlacoFitness'">FlacoFitness</title>
       <link rel="icon" type="image/svg+xml" th:href="@{/img/logo-mark.svg}">
       <link rel="alternate icon" th:href="@{/favicon.ico}">
@@ -30,16 +30,6 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/3.0.7/css/responsive.bootstrap5.min.css">
 
-    <script>
-        (() => {
-            try {
-                const storedTheme = window.localStorage.getItem("flacofitness:theme:v1");
-                document.documentElement.setAttribute("data-theme", storedTheme === "light" ? "light" : "dark");
-            } catch (error) {
-                document.documentElement.setAttribute("data-theme", "dark");
-            }
-        })();
-    </script>
     <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 </html>

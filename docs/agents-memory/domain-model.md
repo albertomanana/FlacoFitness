@@ -20,6 +20,11 @@ En 2026-04-23 se anadio una capa de dominio de producto ligera, enfocada a exper
 - `RecentVisit`: ultimas fichas visitadas.
 - `ActivityLog`: actividad reciente del sistema.
 
+En 2026-04-27 se añadio una capa de producto sin nuevas tablas:
+
+- Chat interno rule-based mediante DTOs `InternalChatRequest`, `InternalChatResponse` e `InternalChatAction`.
+- Automatizaciones manuales mediante `OperationsAutomationResult`, que agrega movimientos y errores parciales sin duplicar reglas de negocio.
+
 ## Entidades principales
 
 ### Usuario

@@ -9,7 +9,7 @@
         <div th:replace="~{fragments/topbar :: topbar('Gastos', 'Control financiero interno.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack ff-command-stack" data-module-key="gastos">
+            <div class="ff-content-stack ff-page-stack" data-module-key="gastos">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
                 <section class="ff-onboarding-tip ff-animate-in"
                          th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"

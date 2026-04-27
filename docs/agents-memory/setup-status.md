@@ -1,6 +1,6 @@
 # Setup Status
 
-Fecha de referencia: 2026-04-26
+Fecha de referencia: 2026-04-27
 
 | Area | Estado | Detalle |
 | --- | --- | --- |
@@ -13,12 +13,40 @@ Fecha de referencia: 2026-04-26
 | Acceso por cuenta | Implementado | Login con `email/username + password`, hash BCrypt, limite de intentos, bloqueo temporal, cambio de password y reset temporal por admin. No se usa Spring Security web en esta fase. |
 | Perfiles | Implementado | Existen perfiles `ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE` y `CLIENTE`, con rutas filtradas por interceptor y sidebar contextual. |
 | Staff operativo | Corregido | Solo entrenadores o staff marcado con `puedeImpartirClases` pueden ser responsables de sesiones o rutinas. Gerencia no aparece como instructora por defecto. |
-| Frontend | Estabilizado | Sidebar/topbar, dashboard, modulos existentes y modulos SaaS integrados con Thymeleaf, Bootstrap, Chart.js y DataTables, incluyendo modo oscuro persistente y mejoras de legibilidad en formularios/tablas. El bug de modulos en blanco por splash/transicion ya esta corregido. |
+| Frontend | Estabilizado | Sidebar/topbar, dashboard, modulos existentes y modulos SaaS integrados con Thymeleaf, Bootstrap, Chart.js y DataTables. Desde 2026-04-27 se retiro dark mode runtime, splash bloqueante, Anime.js y `hud-motion.js`; queda tema claro premium. |
 | Producto premium | Implementado en progreso | Panel `Requiere atencion`, FAB global por perfil, busqueda global v1, ultimos visitados, actividad reciente y memoria UX por navegador/perfil ya estan integrados. Login y builder de nomina ya tienen capa visual premium. |
 | Notificaciones | Mejorado | El centro de notificaciones prioriza alertas por tono y muestra accesos accionables a modulos criticos, incluyendo gastos, recurrentes y nominas. |
 | Reloj operativo | Simplificado | Se elimino la simulacion manual persistida. `OperationalClockService` usa solo fecha/hora real del sistema y mantiene una unica referencia temporal para pagos, asistencias, sesiones, gastos, maquinaria, trials y membresias. |
-| Tests | En verde | `FlacoFitnessApplicationTests`, `ViewControllerTest`, `AccessProfileTest`, `PagoServiceTest`, `GastoServiceTest`, `GlobalSearchServiceTest` y pruebas añadidas pasan. 35 pruebas en verde. |
+| Tests | En verde | `FlacoFitnessApplicationTests`, `ViewControllerTest`, `AccessProfileTest`, `PagoServiceTest`, `GastoServiceTest`, `GlobalSearchServiceTest` y pruebas añadidas pasan. 43 pruebas en verde en la ultima validacion completa. |
 | Git | Sucio (cambios pendientes de commit) | Rama actual: `recovery/restore-core-saas-plan-a`. Hay cambios pendientes de autenticacion, UX premium, payroll builder y documentacion viva. |
+
+## Validacion 2026-04-27 (cierre UI, chat y automatizaciones)
+
+- `.\mvnw.cmd test`: correcto, 43 pruebas en verde.
+- Footer actualizado con `Hecho por Alberto Mañana` y enlace a GitHub.
+- Password toggle reforzado para login, cambio de password y formularios con `data-password-toggle`.
+- Panel cliente y panel staff quedan como vistas compactas con datos reales, enlaces `Ver mas` y sin rutas admin innecesarias.
+- PDF de nomina ajustado para abrir de forma estable y evitar dependencia fragil de logo SVG en OpenHTMLtoPDF.
+- Chat interno creado sin API externa: `/chat` y `/api/chat/consulta`.
+- Automatizaciones masivas bajo demanda creadas en `/automatizaciones/ejecutar`, delegando en servicios existentes.
+- Pendiente: smoke visual manual en navegador real con datos MySQL representativos.
+
+## Validacion 2026-04-27 (cierre visual claro)
+
+- `.\mvnw.cmd -DskipTests compile`: correcto.
+- Se eliminaron referencias runtime a `data-theme`, `ff-theme-toggle`, `hud-motion`, Anime.js y clases HUD/command.
+- Panel cliente: `/cliente`, `/cliente/dashboard`, rutas propias de pago y rutina.
+- Panel staff: `/staff/dashboard`, `/staff/nominas`, detalle/PDF propio de nomina.
+- Pendiente de esta sesion: smoke browser/MySQL manual completo; no se arranco servidor durante este bloque.
+
+## Validacion 2026-04-27 (reparacion UI, velocidad y password)
+
+- `styles.css` restaurado desde baseline maduro y limpiado de runtime experimental.
+- Sidebar fijo en desktop y control de tamaño para imagenes, avatares y previews.
+- `app.js` ahora incluye `initializePasswordToggles()` y evita observers masivos de reveal.
+- `auth/acceso.html` y `auth/password.html` cargan `app.js`, por lo que mostrar/ocultar contraseña funciona tambien fuera del shell principal.
+- `.\mvnw.cmd clean -DskipTests compile`: correcto.
+- `.\mvnw.cmd test`: correcto, 41 pruebas en verde.
 
 ## Validacion 2026-04-26 (limpieza definitiva MySQL)
 

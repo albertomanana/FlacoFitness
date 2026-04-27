@@ -14,11 +14,14 @@
                     <div>
                         <span class="ff-section-eyebrow">Finanzas</span>
                         <h2 class="ff-section-title">Expediente salarial</h2>
-                        <p class="ff-section-subtitle">Una lectura mas profesional para referencia, cierre y exportacion documental.</p>
+                        <p class="ff-section-subtitle">Importes, estado y PDF de esta nómina.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         <a class="btn btn-outline-secondary" th:href="@{/nominas}">Volver</a>
-                        <a class="btn btn-outline-secondary" th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
+                        <a class="btn btn-outline-secondary"
+                           target="_blank"
+                           rel="noopener"
+                           th:href="@{/nominas/{id}/pdf(id=${nomina.id})}">PDF</a>
                         <a class="btn btn-outline-secondary"
                            th:if="${nomina.estado != null and nomina.estado.name() == 'BORRADOR'}"
                            th:href="@{/nominas/{id}/editar(id=${nomina.id})}">Editar</a>
@@ -135,8 +138,8 @@
                             <div class="ff-card-header">
                                 <div>
                                     <p class="ff-section-eyebrow mb-0">Trazabilidad</p>
-                                    <h3 class="ff-card-title mt-1">Ficha documental</h3>
-                                    <p class="ff-card-subtitle">Referencia, emision y enlace operativo con el gasto correspondiente.</p>
+                                    <h3 class="ff-card-title mt-1">Datos de la nómina</h3>
+                                    <p class="ff-card-subtitle">Periodo, fecha y gasto vinculado.</p>
                                 </div>
                             </div>
                             <div class="ff-card-body">

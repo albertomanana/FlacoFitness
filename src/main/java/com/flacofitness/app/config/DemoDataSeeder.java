@@ -1021,28 +1021,22 @@ public class DemoDataSeeder implements ApplicationRunner {
 
     private void upsertReservation(Long sessionId, Long userId, EstadoReservaSesion estado) {
         Integer total = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM reservas_sesion WHERE (sesion_id = ? OR sesion_clase_id = ?) AND usuario_id = ?",
+                "SELECT COUNT(*) FROM reservas_sesion WHERE sesion_id = ? AND usuario_id = ?",
                 Integer.class,
-                sessionId,
                 sessionId,
                 userId);
         if (total == null || total == 0) {
             jdbcTemplate.update(
-                    "INSERT INTO reservas_sesion (sesion_id, sesion_clase_id, usuario_id, estado, asistio, fecha_reserva, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    sessionId,
+                    "INSERT INTO reservas_sesion (sesion_id, usuario_id, estado, fecha_reserva) VALUES (?, ?, ?, ?)",
                     sessionId,
                     userId,
                     estado.name(),
-                    estado == EstadoReservaSesion.ASISTIO,
-                    Timestamp.valueOf(LocalDateTime.now().minusDays(1)),
-                    "Reserva demo.");
+                    Timestamp.valueOf(LocalDateTime.now().minusDays(1)));
         } else {
             jdbcTemplate.update(
-                    "UPDATE reservas_sesion SET estado = ?, asistio = ?, observaciones = ? WHERE (sesion_id = ? OR sesion_clase_id = ?) AND usuario_id = ?",
+                    "UPDATE reservas_sesion SET estado = ?, fecha_reserva = ? WHERE sesion_id = ? AND usuario_id = ?",
                     estado.name(),
-                    estado == EstadoReservaSesion.ASISTIO,
-                    "Reserva demo.",
-                    sessionId,
+                    Timestamp.valueOf(LocalDateTime.now().minusDays(1)),
                     sessionId,
                     userId);
         }

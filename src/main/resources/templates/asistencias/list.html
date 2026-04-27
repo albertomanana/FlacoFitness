@@ -9,14 +9,13 @@
         <div th:replace="~{fragments/topbar :: topbar(${tituloListado ?: 'Asistencias'}, ${subtituloListado ?: 'Control de accesos.'})}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack ff-command-stack">
+            <div class="ff-content-stack ff-page-stack">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Asistencias</span>
-                        <h2 class="ff-section-title">Registro de entradas</h2>
-                        <p class="ff-section-subtitle">Check-in rapido, calendario de actividad y seguimiento por usuario.</p>
+                        <h2 class="ff-section-title">Control de accesos</h2>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
                         <a class="btn btn-outline-secondary" th:href="@{/asistencias(fecha=${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}, mes=${mesFiltro})}">
@@ -30,31 +29,31 @@
 
                 <section class="row g-3 ff-animate-in">
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-success">
-                            <p class="ff-stat-label text-success fw-bold">Registros visibles</p>
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Registros visibles</p>
                             <p class="ff-stat-value" th:text="${#lists.size(asistencias)}">0</p>
                             <p class="ff-stat-note">Resultado del filtro actual</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-primary">
-                            <p class="ff-stat-label text-primary fw-bold">Check-ins hoy</p>
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Check-ins hoy</p>
                             <p class="ff-stat-value" th:text="${checkInsHoy}">0</p>
                             <p class="ff-stat-note">Entradas confirmadas hoy</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-warning">
-                            <p class="ff-stat-label text-warning fw-bold">Usuarios activos</p>
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Activos recientes</p>
                             <p class="ff-stat-value" th:text="${usuariosAsistenciaActivos}">0</p>
-                            <p class="ff-stat-note">Con asistencia en los ultimos 7 dias</p>
+                            <p class="ff-stat-note">Con entrada en los ultimos 7 dias</p>
                         </article>
                     </div>
                     <div class="col-sm-6 col-xl-3">
-                        <article class="ff-surface-card ff-stat-card border-left-danger">
-                            <p class="ff-stat-label text-danger fw-bold">Usuarios inactivos</p>
+                        <article class="ff-surface-card ff-stat-card">
+                            <p class="ff-stat-label">Sin actividad</p>
                             <p class="ff-stat-value" th:text="${usuariosAsistenciaInactivos}">0</p>
-                            <p class="ff-stat-note">Cuentas activas sin uso reciente</p>
+                            <p class="ff-stat-note">Cuentas activas sin entrada reciente</p>
                         </article>
                     </div>
                 </section>
@@ -66,7 +65,6 @@
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Check-in rapido</h3>
-                                        <p class="ff-card-subtitle">Seleccion multiple, observacion opcional y bloqueo de duplicados del dia.</p>
                                     </div>
                                     <span class="ff-card-toolbar-note" data-checkin-count>0 seleccionados</span>
                                 </div>
@@ -141,7 +139,6 @@
                                 <div class="ff-card-header">
                                     <div>
                                         <h3 class="ff-card-title">Filtros</h3>
-                                        <p class="ff-card-subtitle">Consulta por fecha y usuario sin salir del modulo.</p>
                                     </div>
                                 </div>
                                 <div class="ff-card-body">
@@ -194,8 +191,7 @@
                             <div class="ff-card-header">
                                 <div class="ff-card-toolbar w-100">
                                     <div>
-                                        <h3 class="ff-card-title">Calendario de actividad</h3>
-                                        <p class="ff-card-subtitle">Pulsa un dia para abrir el listado filtrado.</p>
+                                        <h3 class="ff-card-title">Mapa de ocupacion</h3>
                                     </div>
                                     <div class="ff-calendar-nav">
                                         <a class="btn btn-outline-secondary btn-sm"
@@ -236,11 +232,8 @@
                     <div class="ff-card-header">
                         <div class="ff-card-toolbar w-100">
                             <div>
-                                <h3 class="ff-card-title">Historial de asistencias</h3>
-                                <p class="ff-card-subtitle">Fila clicable, acceso al usuario y filtros combinados.</p>
+                                <h3 class="ff-card-title">Feed de accesos</h3>
                             </div>
-                            <span class="ff-card-toolbar-note">DataTable activo.</span>
-                        </div>
                     </div>
                     <div class="ff-card-body pt-0">
                         <div class="table-responsive">

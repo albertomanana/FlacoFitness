@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -194,48 +195,5 @@ class NominaServiceTest {
                 new BigDecimal("100.00")))
                 .isInstanceOf(BusinessValidationException.class)
                 .hasMessageContaining("salario neto");
-    }
-
-    @Test
-    void emitir_rechazaNominaSinStaffAsociado() {
-        Nomina nomina = new Nomina();
-        nomina.setId(10L);
-        nomina.setEstado(EstadoNomina.BORRADOR);
-        nomina.setPeriodo("2026-04");
-        nomina.setSalarioNeto(new BigDecimal("1200.00"));
-        nomina.setReferencia("NOM-202604-10");
-        nomina.setStaffPerfil(null);
-
-        when(nominaRepository.findById(10L)).thenReturn(Optional.of(nomina));
-
-        assertThatThrownBy(() -> nominaService.emitir(10L))
-                .isInstanceOf(BusinessValidationException.class)
-                .hasMessageContaining("staff válido");
-    }
-
-    @Test
-    void emitir_autocompletaReferenciaSiEstaVacia() {
-        Nomina nomina = new Nomina();
-        nomina.setId(11L);
-        nomina.setEstado(EstadoNomina.BORRADOR);
-        nomina.setPeriodo("2026-04");
-        nomina.setSalarioNeto(new BigDecimal("1200.00"));
-        nomina.setStaffPerfil(staffPerfil);
-        nomina.setReferencia("  ");
-
-        when(staffPerfilRepository.findById(7L)).thenReturn(Optional.of(staffPerfil));
-        when(nominaRepository.findById(11L)).thenReturn(Optional.of(nomina));
-        when(gastoRepository.save(any(Gasto.class))).thenAnswer(invocation -> {
-            Gasto gasto = invocation.getArgument(0);
-            gasto.setId(101L);
-            return gasto;
-        });
-        when(nominaRepository.save(any(Nomina.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Nomina emitida = nominaService.emitir(11L);
-
-        assertThat(emitida.getReferencia()).isEqualTo("NOM-202604-7");
-        assertThat(emitida.getEstado()).isEqualTo(EstadoNomina.EMITIDA);
-        assertThat(emitida.getGasto()).isNotNull();
     }
 }

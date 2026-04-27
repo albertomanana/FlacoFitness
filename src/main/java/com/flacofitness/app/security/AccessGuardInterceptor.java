@@ -35,8 +35,9 @@ public class AccessGuardInterceptor implements HandlerInterceptor {
                 response.sendRedirect(request.getContextPath() + "/cuenta/password");
                 return false;
             }
-            if (profile == AccessProfile.CLIENTE && "/".equals(path)) {
-                response.sendRedirect(request.getContextPath() + profile.entryPoint());
+            // Redireccionar a dashboard específico por rol si se accede a /
+            if ("/".equals(path) && profile != AccessProfile.ADMIN) {
+                response.sendRedirect(request.getContextPath() + profile.dashboardEntryPoint());
                 return false;
             }
 
@@ -67,3 +68,4 @@ public class AccessGuardInterceptor implements HandlerInterceptor {
                 || path.equals("/favicon.ico");
     }
 }
+

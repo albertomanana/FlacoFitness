@@ -1,15 +1,8 @@
 (() => {
-    const SPLASH_SESSION_KEY = "flacofitness:splash-seen:v1";
-    const THEME_STORAGE_KEY = "flacofitness:theme:v1";
     const BROWSER_TOKEN_STORAGE_KEY = "flacofitness:browser-token:v1";
-    const LIGHT_THEME = "light";
-    const DARK_THEME = "dark";
-    const PAGE_TRANSITION_DELAY = 140;
-    const PAGE_VISIBILITY_FAILSAFE_DELAY = 1800;
     const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     document.documentElement.classList.add("ff-motion-enabled");
-    initializeThemeState();
 
     const utils = {
         formatInteger(value) {
@@ -58,28 +51,25 @@
     };
 
     window.ffUtils = utils;
-    primeSplashVisibility();
 
     document.addEventListener("DOMContentLoaded", () => {
-        initializeSplashScreen();
-        initializePageTransitions();
-        initializeGlobalLoadingOverlay();
+        revealCurrentPage();
         updateCurrentYear();
         initializeClickableRows();
         initializeRevealBlocks();
         initializeScrollableRails();
+        initializePasswordToggles();
         initializePaymentFormAssistant();
         initializePayrollBuilder();
         initializeUserFormAssistant();
         initializeSelectSearch();
-        initializePasswordToggles();
-        initializeThemeToggle();
         initializeBrowserTokenMirror();
         initializeFab();
         initializeGlobalSearch();
         initializeUxMemoryActions();
         initializeUxEmptyStateActions();
         initializePersistentFilters();
+        initializeInternalChat();
     });
 
     window.addEventListener("pageshow", () => {
@@ -88,66 +78,8 @@
     });
 
     window.addEventListener("load", () => {
-        forceShellVisibility();
+        revealCurrentPage();
     }, { once: true });
-
-    window.setTimeout(() => {
-        forceShellVisibility();
-    }, PAGE_VISIBILITY_FAILSAFE_DELAY);
-
-    function primeSplashVisibility() {
-        const splash = document.querySelector("[data-app-splash]");
-
-        if (!splash || !shouldSkipSplash()) {
-            return;
-        }
-
-        splash.classList.add("ff-app-splash-hidden");
-        document.body.classList.add("ff-splash-skipped");
-    }
-
-    function initializeSplashScreen() {
-        const splash = document.querySelector("[data-app-splash]");
-
-        if (!splash || shouldSkipSplash()) {
-            hideSplashImmediately(splash);
-            revealCurrentPage();
-            return;
-        }
-
-        document.body.classList.add("ff-splash-active");
-        splash.setAttribute("aria-hidden", "false");
-        rememberSplashSeen();
-
-        window.setTimeout(() => {
-            splash.classList.add("ff-app-splash-leaving");
-            document.body.classList.remove("ff-splash-active");
-            let finished = false;
-
-            const finish = () => {
-                if (finished) {
-                    return;
-                }
-                finished = true;
-                splash.classList.add("ff-app-splash-hidden");
-                splash.setAttribute("aria-hidden", "true");
-                revealCurrentPage();
-            };
-
-            splash.addEventListener("transitionend", finish, { once: true });
-            window.setTimeout(finish, 420);
-        }, 950);
-    }
-
-    function hideSplashImmediately(splash) {
-        if (!splash) {
-            return;
-        }
-
-        splash.classList.add("ff-app-splash-hidden");
-        splash.setAttribute("aria-hidden", "true");
-        document.body.classList.add("ff-splash-skipped");
-    }
 
     function revealCurrentPage() {
         window.requestAnimationFrame(() => {
@@ -155,215 +87,8 @@
         });
     }
 
-    function forceShellVisibility() {
-        const splash = document.querySelector("[data-app-splash]");
-        revealCurrentPage();
-        deactivateGlobalLoading();
-
-        if (!splash || splash.classList.contains("ff-app-splash-hidden")) {
-            return;
-        }
-
-        hideSplashImmediately(splash);
-    }
-
-    function shouldSkipSplash() {
-        if (motionQuery.matches) {
-            return true;
-        }
-
-        try {
-            return window.sessionStorage.getItem(SPLASH_SESSION_KEY) === "true";
-        } catch (error) {
-            return true;
-        }
-    }
-
-    function rememberSplashSeen() {
-        try {
-            window.sessionStorage.setItem(SPLASH_SESSION_KEY, "true");
-        } catch (error) {
-            // If sessionStorage is blocked, the splash remains harmlessly per page load.
-        }
-    }
-
-    function initializePageTransitions() {
-        document.addEventListener("click", (event) => {
-            const link = event.target.closest("a[href]");
-
-            if (!link || !shouldTransitionLink(event, link)) {
-                return;
-            }
-
-            event.preventDefault();
-            activateGlobalLoading();
-            navigateWithTransition(link.href);
-        });
-    }
-
-    function initializeGlobalLoadingOverlay() {
-        const overlay = document.querySelector("[data-app-loading-overlay]");
-        if (!overlay) {
-            return;
-        }
-
-        document.addEventListener("submit", (event) => {
-            const form = event.target;
-            if (!(form instanceof HTMLFormElement)) {
-                return;
-            }
-
-            if (form.hasAttribute("data-no-loading")) {
-                return;
-            }
-
-            window.setTimeout(() => {
-                activateGlobalLoading();
-            }, 0);
-        });
-
-        window.addEventListener("pageshow", () => {
-            deactivateGlobalLoading();
-        });
-    }
-
-    function activateGlobalLoading() {
-        document.body.classList.add("ff-global-loading");
-    }
-
-    function deactivateGlobalLoading() {
-        document.body.classList.remove("ff-global-loading");
-    }
-
-    function initializeThemeState() {
-        const storedTheme = readStoredTheme();
-        applyTheme(storedTheme || DARK_THEME, false);
-    }
-
-    function initializeThemeToggle() {
-        const toggle = document.querySelector("[data-theme-toggle]");
-        if (!toggle) {
-            return;
-        }
-
-        syncThemeToggle(toggle, getCurrentTheme());
-        toggle.addEventListener("click", () => {
-            const nextTheme = getCurrentTheme() === DARK_THEME ? LIGHT_THEME : DARK_THEME;
-            applyTheme(nextTheme, true);
-            syncThemeToggle(toggle, nextTheme);
-        });
-
-        window.addEventListener("ff:themechange", (event) => {
-            syncThemeToggle(toggle, event.detail?.theme || getCurrentTheme());
-        });
-    }
-
-    function initializePasswordToggles() {
-        document.querySelectorAll("[data-password-toggle]").forEach((button) => {
-            const field = button.closest(".ff-password-field");
-            const input = field?.querySelector("[data-password-input]");
-
-            if (!input) {
-                return;
-            }
-
-            button.addEventListener("click", () => {
-                const shouldShow = input.type === "password";
-                input.type = shouldShow ? "text" : "password";
-                button.setAttribute("aria-label", shouldShow ? "Ocultar contraseña" : "Mostrar contraseña");
-                const icon = button.querySelector("i");
-                if (icon) {
-                    icon.classList.toggle("fa-eye", !shouldShow);
-                    icon.classList.toggle("fa-eye-slash", shouldShow);
-                }
-            });
-        });
-    }
-
-    function syncThemeToggle(toggle, theme) {
-        const isDark = theme === DARK_THEME;
-        toggle.setAttribute("aria-label", isDark ? "Activar modo claro" : "Activar modo oscuro");
-        toggle.setAttribute("title", isDark ? "Cambiar a claro" : "Cambiar a oscuro");
-        toggle.classList.toggle("is-dark", isDark);
-    }
-
-    function applyTheme(theme, persist) {
-        const nextTheme = theme === DARK_THEME ? DARK_THEME : LIGHT_THEME;
-        document.documentElement.setAttribute("data-theme", nextTheme);
-        document.body.classList.toggle("ff-theme-dark", nextTheme === DARK_THEME);
-
-        if (persist) {
-            storeTheme(nextTheme);
-        }
-
-        window.dispatchEvent(new CustomEvent("ff:themechange", {
-            detail: { theme: nextTheme }
-        }));
-    }
-
-    function getCurrentTheme() {
-        return document.documentElement.getAttribute("data-theme") === DARK_THEME ? DARK_THEME : LIGHT_THEME;
-    }
-
-    function readStoredTheme() {
-        try {
-            const stored = window.localStorage.getItem(THEME_STORAGE_KEY);
-            if (stored === DARK_THEME || stored === LIGHT_THEME) {
-                return stored;
-            }
-            return null;
-        } catch (error) {
-            return null;
-        }
-    }
-
-    function storeTheme(theme) {
-        try {
-            window.localStorage.setItem(THEME_STORAGE_KEY, theme);
-        } catch (error) {
-            // Ignore storage failures gracefully.
-        }
-    }
-
-    function shouldTransitionLink(event, link) {
-        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
-            return false;
-        }
-
-        if (link.target || link.download || link.hasAttribute("data-no-transition") || link.hasAttribute("data-bs-toggle")) {
-            return false;
-        }
-
-        const rawHref = link.getAttribute("href") || "";
-        if (rawHref.startsWith("#") || rawHref.startsWith("javascript:")) {
-            return false;
-        }
-
-        const url = new URL(link.href, window.location.href);
-
-        if (url.origin !== window.location.origin || !["http:", "https:"].includes(url.protocol)) {
-            return false;
-        }
-
-        const currentUrl = new URL(window.location.href);
-
-        if (url.pathname === currentUrl.pathname && url.search === currentUrl.search && url.hash) {
-            return false;
-        }
-
-        return url.href !== currentUrl.href;
-    }
-
     function navigateWithTransition(destination) {
-        if (!destination || motionQuery.matches) {
-            window.location.href = destination;
-            return;
-        }
-
-        document.body.classList.add("ff-page-exiting");
-        window.setTimeout(() => {
-            window.location.href = destination;
-        }, PAGE_TRANSITION_DELAY);
+        window.location.href = destination;
     }
 
     function updateCurrentYear() {
@@ -400,33 +125,38 @@
             return;
         }
 
-        if (!("IntersectionObserver" in window)) {
-            revealTargets.forEach((element) => element.classList.add("is-visible"));
-            return;
-        }
+        // Keep pages instant: no observers over every card/list row.
+        revealTargets.forEach((element) => element.classList.add("is-visible"));
+    }
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (!entry.isIntersecting) {
-                    return;
-                }
-
-                entry.target.classList.add("is-visible");
-                observer.unobserve(entry.target);
-            });
-        }, {
-            threshold: 0.15,
-            rootMargin: "0px 0px -40px 0px"
-        });
-
-        revealTargets.forEach((element) => {
-            if (element.classList.contains("ff-chart-card") || element.querySelector("canvas")) {
-                element.classList.add("is-visible");
+    function initializePasswordToggles() {
+        document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+            if (button.dataset.passwordToggleReady === "true") {
                 return;
             }
 
-            element.classList.add("ff-reveal");
-            observer.observe(element);
+            const targetId = button.getAttribute("data-password-toggle");
+            const input = targetId
+                ? document.getElementById(targetId)
+                : button.closest(".ff-password-field")?.querySelector("input[type='password'], input[type='text']");
+
+            if (!input) {
+                return;
+            }
+
+            button.addEventListener("click", () => {
+                const isPassword = input.type === "password";
+                input.type = isPassword ? "text" : "password";
+                button.setAttribute("aria-label", isPassword ? "Ocultar contraseña" : "Mostrar contraseña");
+
+                const icon = button.querySelector("i");
+                if (icon) {
+                    icon.classList.toggle("fa-eye", !isPassword);
+                    icon.classList.toggle("fa-eye-slash", isPassword);
+                }
+            });
+
+            button.dataset.passwordToggleReady = "true";
         });
     }
 
@@ -532,8 +262,7 @@
             return;
         }
 
-        const staffSelect = root.querySelector("[name='staffPerfilId']")
-            || root.querySelector("[name='staffPerfil.id']");
+        const staffSelect = root.querySelector("[name='staffPerfil.id']");
         const periodInput = root.querySelector("[name='periodo']");
         const baseInput = root.querySelector("[data-payroll-base]");
         const bonusInput = root.querySelector("[data-payroll-bonus]");
@@ -686,48 +415,47 @@
                 return;
             }
 
-            const normalize = (value) => String(value || "")
-                .normalize("NFD")
-                .replace(/[\u0300-\u036f]/g, "")
-                .toLowerCase()
-                .trim();
+            const originalOptions = Array.from(select.options).map((option) => ({
+                value: option.value,
+                text: option.textContent || "",
+                disabled: option.disabled
+            }));
 
-            const options = Array.from(select.options).map((option) => {
-                option.dataset.ffSearchText = normalize(option.textContent || "");
-                return option;
-            });
-
-            let feedback = document.querySelector(`[data-ff-select-search-feedback="${targetId}"]`);
-            if (!feedback) {
-                feedback = document.createElement("div");
-                feedback.className = "form-text text-warning d-none";
-                feedback.dataset.ffSelectSearchFeedback = targetId;
-                select.insertAdjacentElement("afterend", feedback);
-            }
-
-            const renderOptions = () => {
-                const term = normalize(input.value);
+            const renderOptions = (term) => {
+                const normalizedTerm = String(term || "").trim().toLowerCase();
                 const selectedValue = select.value;
-                let visibleCount = 0;
+                const placeholder = originalOptions[0];
+                const matches = originalOptions.slice(1).filter((option) =>
+                    !normalizedTerm || option.text.toLowerCase().includes(normalizedTerm)
+                );
 
-                options.forEach((option, index) => {
-                    if (index === 0 || option.value === selectedValue) {
-                        option.hidden = false;
-                        return;
-                    }
-                    const visible = !term || option.dataset.ffSearchText.includes(term);
-                    option.hidden = !visible;
-                    if (visible) {
-                        visibleCount++;
-                    }
+                select.innerHTML = "";
+
+                if (placeholder) {
+                    const placeholderOption = new Option(placeholder.text, placeholder.value, false, !selectedValue);
+                    placeholderOption.disabled = placeholder.disabled;
+                    select.add(placeholderOption);
+                }
+
+                if (matches.length === 0) {
+                    select.add(new Option(input.dataset.noResults || "Sin coincidencias", ""));
+                    select.value = "";
+                    return;
+                }
+
+                matches.forEach((option) => {
+                    const next = new Option(option.text, option.value, false, option.value === selectedValue);
+                    next.disabled = option.disabled;
+                    select.add(next);
                 });
 
-                feedback.textContent = input.dataset.noResults || "Sin coincidencias para la busqueda actual.";
-                feedback.classList.toggle("d-none", visibleCount > 0 || !term);
+                if (matches.some((option) => option.value === selectedValue)) {
+                    select.value = selectedValue;
+                }
             };
 
-            input.addEventListener("input", renderOptions);
-            renderOptions();
+            input.addEventListener("input", () => renderOptions(input.value));
+            renderOptions(input.value);
         });
     }
 
@@ -921,6 +649,77 @@
             restoreFormState(form, key);
             form.addEventListener("change", () => persistFormState(form, key));
             form.addEventListener("submit", () => persistFormState(form, key));
+        });
+    }
+
+    function initializeInternalChat() {
+        const panel = document.querySelector("[data-internal-chat]");
+        const launcher = document.querySelector("[data-chat-launcher]");
+        if (!panel) {
+            return;
+        }
+
+        const form = panel.querySelector("[data-chat-form]");
+        const input = panel.querySelector("[data-chat-input]");
+        const messages = panel.querySelector("[data-chat-messages]");
+        const closeButton = panel.querySelector("[data-chat-close]");
+
+        const addMessage = (text, type = "assistant", actions = []) => {
+            if (!messages) {
+                return;
+            }
+
+            const actionMarkup = actions.length
+                ? `<div class="ff-chat-actions mt-2">${actions.map((action) => `
+                    <a class="btn btn-sm btn-outline-success" href="${escapeHtml(action.url)}">${escapeHtml(action.label)}</a>
+                `).join("")}</div>`
+                : "";
+
+            messages.insertAdjacentHTML("beforeend", `
+                <div class="ff-chat-message ${type === "user" ? "is-user" : ""}">
+                    <div>${escapeHtml(text)}</div>
+                    ${actionMarkup}
+                </div>
+            `);
+            messages.scrollTop = messages.scrollHeight;
+        };
+
+        if (launcher) {
+            launcher.addEventListener("click", () => {
+                panel.classList.toggle("is-open");
+                if (panel.classList.contains("is-open")) {
+                    input?.focus();
+                }
+            });
+        }
+
+        if (panel.dataset.chatPage === "true" || panel.hasAttribute("data-chat-page")) {
+            panel.classList.add("is-open");
+        }
+
+        closeButton?.addEventListener("click", () => panel.classList.remove("is-open"));
+
+        form?.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            const question = input?.value.trim();
+            if (!question) {
+                return;
+            }
+
+            addMessage(question, "user");
+            input.value = "";
+
+            try {
+                const response = await fetch("/api/chat/consulta", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: question })
+                });
+                const payload = await response.json();
+                addMessage(payload.message || "No he encontrado una respuesta clara.", "assistant", payload.actions || []);
+            } catch (_error) {
+                addMessage("No he podido responder ahora. Prueba de nuevo en unos segundos.");
+            }
         });
     }
 

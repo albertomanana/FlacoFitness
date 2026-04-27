@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <body>
 <header class="ff-topbar" th:fragment="topbar(pageTitle, pageHint)">
@@ -23,9 +23,7 @@
             </div>
         </div>
         <div class="ff-topbar-info">
-            <span class="ff-topbar-eyebrow">FlacoFitness</span>
             <h1 class="ff-topbar-title" th:text="${pageTitle}">Panel</h1>
-            <span class="ff-topbar-text" th:text="${pageHint}">Vista de trabajo del panel actual.</span>
         </div>
     </div>
 
@@ -46,20 +44,6 @@
             </form>
             <div class="ff-global-search-results d-none" data-global-search-results></div>
         </div>
-
-        <button class="ff-topbar-btn ff-theme-toggle"
-                type="button"
-                data-theme-toggle
-                aria-label="Activar modo oscuro"
-                title="Cambiar tema">
-            <span class="ff-theme-toggle-icon" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 3a9 9 0 1 0 9 9"/>
-                    <path d="M19 3v4"/>
-                    <path d="M21 5h-4"/>
-                </svg>
-            </span>
-        </button>
 
         <div class="dropdown ff-notifications-dropdown">
             <button class="ff-topbar-btn dropdown-toggle"
@@ -144,3 +128,4 @@
 </header>
 </body>
 </html>
+

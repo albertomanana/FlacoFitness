@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head('Centro financiero')}"></head>
 <body class="ff-app">
@@ -13,16 +13,16 @@
                 {}
             </script>
 
-            <div class="ff-content-stack ff-command-stack" data-finance-center>
+            <div class="ff-content-stack ff-page-stack" data-finance-center>
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
 
-                <section class="ff-command-hero ff-animate-in">
+                <section class="ff-surface-card ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Finanzas</span>
                         <h2 class="ff-section-title">Centro financiero</h2>
                         <p class="ff-section-subtitle">
                             Lectura ejecutiva del mes <strong th:text="${financialStats.periodoActual}">2026-04</strong>:
-                            ingresos, gastos, deuda, nóminas y vencimientos en un solo panel operativo.
+                            ingresos, gastos, deuda, nóminas y vencimientos en una sola vista.
                         </p>
                     </div>
                     <div class="d-flex flex-wrap gap-2">
@@ -38,23 +38,23 @@
                     </div>
                 </section>
 
-                <section class="ff-hud-grid">
-                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/pagos}">
+                <section class="ff-kpi-grid">
+                    <a class="ff-stat-card ff-animate-in text-decoration-none" th:href="@{/pagos}">
                         <span class="ff-section-eyebrow">Ingresos mes</span>
                         <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.ingresosMes, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
                         <span class="ff-card-subtitle">EUR cobrados</span>
                     </a>
-                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/gastos}">
+                    <a class="ff-stat-card ff-animate-in text-decoration-none" th:href="@{/gastos}">
                         <span class="ff-section-eyebrow">Gastos mes</span>
                         <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.gastosMes, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
                         <span class="ff-card-subtitle">EUR registrados</span>
                     </a>
-                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/gastos}">
+                    <a class="ff-stat-card ff-animate-in text-decoration-none" th:href="@{/gastos}">
                         <span class="ff-section-eyebrow">Beneficio estimado</span>
                         <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.beneficioEstimado, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
                         <span class="ff-card-subtitle">Ingresos menos gastos</span>
                     </a>
-                    <a class="ff-hud-card ff-animate-in text-decoration-none" th:href="@{/pagos(estado='VENCIDO')}">
+                    <a class="ff-stat-card ff-animate-in text-decoration-none" th:href="@{/pagos(estado='VENCIDO')}">
                         <span class="ff-section-eyebrow">Deuda total</span>
                         <strong class="ff-kpi-value" data-stat-value th:text="${#numbers.formatDecimal(financialStats.deudaTotal, 1, 'POINT', 2, 'COMMA')}">0,00</strong>
                         <span class="ff-card-subtitle">Pendiente, vencida o programada</span>
@@ -210,3 +210,4 @@
 </div>
 </body>
 </html>
+

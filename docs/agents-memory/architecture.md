@@ -17,8 +17,8 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - JavaScript ligero en `static/js/`.
 - Chart.js para dashboard.
 - DataTables para listados interactivos.
-- La shell premium usa splash y transiciones, pero desde 2026-04-22 `.ff-main` queda visible por defecto y existe fail-safe para que un fallo visual no deje modulos en blanco. Esta regla es inviolable en cualquier bloque de UI futuro.
-- Desde 2026-04-24 la shell sigue el sistema "Operations Deck" (ver Design system v4 mas abajo): dark-first con glassmorphism, acento cian HUD `#38BDF8`, verde `#22C55E` para marca/CTAs, tokens CSS en `--ff-*`, todas las recetas en `styles.css`.
+- La shell no usa splash bloqueante ni transiciones globales que oculten el contenido. `.ff-main` debe quedar visible por defecto siempre.
+- Desde 2026-04-27 el sistema visual vigente es tema claro premium: Bootstrap 5, `styles.css`, superficies blancas, bordes suaves, sombras sobrias y verde FlacoFitness como acento. Quedan retirados dark mode runtime, Stitch/Operations Deck, Anime.js y `hud-motion.js`.
 - La navegacion visible prioriza fila clicable en listados y reduce botones redundantes cuando abrir detalle y pulsar "ver" aportan exactamente lo mismo.
 - `topbar` incorpora buscador global v1, centro de alertas y accesos recientes por perfil.
 - `footer` aloja un FAB global por perfil para acciones de alta frecuencia sin introducir SPA.
@@ -46,6 +46,8 @@ La decision principal es conservar un monolito claro: es suficiente para el alca
 - `RecentVisitService` guarda y limita las ultimas fichas visitadas por `browserToken + accessProfile`.
 - `UxMemoryStateService` persiste tooltips first-use y estados de onboarding por modulo.
 - `ActivityLogService` y `ControllerActivityLogger` registran actividad de producto usando principalmente el perfil de sesion; la autenticacion ya es individual por cuenta, pero la auditoria ligera sigue priorizando el perfil para mantener trazabilidad simple y defendible.
+- `OperationsAutomationService` orquesta automatizaciones manuales bajo demanda reutilizando servicios existentes: finanzas, membresias, maquinas y materiales. No duplica reglas ni añade schedulers nuevos.
+- `InternalAssistantService` responde consultas simples por perfil sin API externa ni LLM: CLIENTE solo ve datos propios, STAFF ve datos operativos permitidos y ADMIN recibe accesos de gestion.
 
 ### Repositorios
 
@@ -76,6 +78,8 @@ No se usa Spring Security web en esta fase, pero ya no existe acceso compartido 
 - `AccessProfile`: define perfiles y permisos de navegacion.
 - `CuentaController`: cambio de password del usuario autenticado.
 - `AuthBootstrapRunner`: backfill de credenciales para usuarios legacy sin password hash.
+- `ChatController` y `InternalChatApiController`: chat interno de ayuda rapida con respuestas cortas y enlaces seguros.
+- `OperationsAutomationController`: entrada POST para ejecutar automatizaciones masivas con resumen humano y sin abortar por errores parciales.
 
 Perfiles actuales:
 
@@ -100,8 +104,8 @@ Esto evita acoplar demasiado la UI efimera a la base, pero permite que la app re
 ## Modulos funcionales actuales
 
 - `usuarios`: centro operativo del cliente, con foto, datos, pagos, asistencias, rutinas y resumen inteligente.
-- `cliente`: panel limitado para perfil cliente autenticado.
-- `staff`: perfiles internos ligados a usuarios.
+- `cliente`: panel limitado para perfil cliente autenticado. Dashboard `panel.html` v2 con stat cards y 6 subpages (rutinas, clases, membresia, pagos, asistencias).
+- `staff`: perfiles internos ligados a usuarios. Dashboard por rol (`dashboard-entrenador.html`, `dashboard-recepcion.html`, `dashboard-gerente.html`) con datos filtrados por responsabilidad.
 - `membresias`: catalogo comercial basado en `Plan` y contratos mediante `MembresiaUsuario`.
 - `trials`: gestion de leads y dias de prueba.
 - `clases`: catalogo de actividades.
@@ -114,13 +118,29 @@ Esto evita acoplar demasiado la UI efimera a la base, pero permite que la app re
 - `maquinas` y `materiales`: inventario operativo.
 - `busqueda`: pagina agrupada y endpoint JSON para busqueda global.
 
+## Controladores de rol específico (FASE 3-4)
+
+**ClientePortalController** (`/cliente`):
+- Maneja el panel personal del cliente autenticado.
+- Métodos: `panel()` (dashboard v2), `misRutinas()`, `clasesDisponibles()`, `miMembresia()`, `misPagos()`, `misAsistencias()`.
+- Datos filtrados por usuario autenticado desde sesion HTTP.
+- Usa servicios: `UsuarioControlCenterService`, `RutinaService`, `SesionClaseService`, `MembresiaService`, `PagoService`, `AsistenciaService`, `OperationalClockService`.
+
+**StaffDashboardController** (`/staff/dashboard`):
+- Router inteligente por `RolStaff` (Entrenador/Recepción/Gerente).
+- Método principal: `dashboard()` — obtiene `StaffPerfil` del usuario autenticado, evalúa rol, delega a método específico.
+- Método `dashboardEntrenador()`: sesiones filtradas por `staffPerfilRepository.getId()`, próximas sesiones, asistencias del día, nóminas propias.
+- Método `dashboardRecepcion()`: sesiones de todas las clases hoy, asistencias registradas, usuarios activos, nuevo cliente count.
+- Método `dashboardGerente()`: resumen operativo (usuarios activos, asistencias, staff), lista de staff, próximas renovaciones, botones de gestión.
+- Todos los dashboards cargan datos en tiempo real desde servicios y calculan métricas al momento con `OperationalClockService.today()`.
+
 ## Criterio de dominio
 
 - `Plan` define una oferta comercial.
 - `MembresiaUsuario` define el contrato real de un usuario.
 - `Pago` registra cobros y estado financiero.
 - `Clase` define una actividad reutilizable.
-- `SesionClase` define una ocurrencia con fecha, hora, cupo y responsable.
+- `SesionClase` define una ocurrencia con fecha, hora, cupo y responsable (`StaffPerfil` vía `staffResponsable`).
 - `ReservaSesion` conecta usuarios con sesiones.
 - `Asistencia` conserva check-in libre y puede asociarse opcionalmente a una sesion.
 - `StaffPerfil` se liga a `Usuario` para no duplicar identidad.
@@ -190,6 +210,16 @@ com.flacofitness.app
 - La mejora es de rendimiento y mantenibilidad, no de dominio: no se introdujeron entidades ni dependencias nuevas.
 
 ## Nota 2026-04-26 (Command Center UI)
+
+Nota historica: esta direccion visual fue revertida en runtime el 2026-04-27. El estado vigente no usa dark mode runtime, `data-theme`, Anime.js ni `hud-motion.js`; el tema activo es claro, sobrio y basado en Bootstrap refinado.
+
+## Nota 2026-04-27 (paneles y permisos por rol)
+
+- Cliente usa `/cliente`, alias `/cliente/dashboard`, subpaginas propias y detalles protegidos por ownership para rutinas y pagos.
+- Staff usa `/staff/dashboard` como entrada rol-especifica y `/staff/nominas/**` para consultar sus nominas sin exponer el modulo administrativo global.
+- `AccessProfile` permite `/api/cliente/**` a CLIENTE y `/api/staff/**` a perfiles staff, manteniendo ADMIN con acceso total.
+
+## Nota historica 2026-04-26 (Command Center UI revertido)
 
 - La capa visual principal sigue en Thymeleaf + Bootstrap + CSS propio, sin SPA.
 - `styles.css` contiene una capa final Command Center que gana en cascada sobre reglas legacy y evita reescribir templates completos.

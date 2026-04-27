@@ -29,10 +29,8 @@ public class CuentaController {
 
     @GetMapping("/password")
     public String mostrarCambioPassword(HttpSession session, Model model) {
-        Usuario usuario = accessSessionService.getCurrentUser(session).orElse(null);
-        if (usuario == null) {
-            return "redirect:/acceso";
-        }
+        Usuario usuario = accessSessionService.getCurrentUser(session)
+                .orElseThrow(() -> new IllegalStateException("No hay una sesion autenticada."));
         model.addAttribute("passwordForm", new PasswordChangeForm());
         model.addAttribute("mustChangePassword", Boolean.TRUE.equals(usuario.getMustChangePassword()));
         return "auth/password";
@@ -43,16 +41,10 @@ public class CuentaController {
                                   HttpSession session,
                                   Model model,
                                   RedirectAttributes redirectAttributes) {
-        Usuario usuario = accessSessionService.getCurrentUser(session).orElse(null);
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("mensajeError", "Debes iniciar sesion para cambiar la contrasena.");
-            return "redirect:/acceso";
-        }
+        Usuario usuario = accessSessionService.getCurrentUser(session)
+                .orElseThrow(() -> new IllegalStateException("No hay una sesion autenticada."));
         try {
-            usuarioService.cambiarPassword(usuario.getId(),
-                    form.getCurrentPassword(),
-                    form.getNewPassword(),
-                    form.getConfirmPassword());
+            usuarioService.cambiarPassword(usuario.getId(), form.getCurrentPassword(), form.getNewPassword(), form.getConfirmPassword());
             Usuario refreshed = usuarioService.buscarPorId(usuario.getId());
             accessSessionService.refreshSession(session, refreshed);
             redirectAttributes.addFlashAttribute("mensajeExito", "Contrasena actualizada correctamente.");
@@ -60,6 +52,11 @@ public class CuentaController {
         } catch (BusinessValidationException ex) {
             model.addAttribute("mustChangePassword", Boolean.TRUE.equals(usuario.getMustChangePassword()));
             model.addAttribute("mensajeError", ex.getMessage());
+            return "auth/password";
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            model.addAttribute("mustChangePassword", Boolean.TRUE.equals(usuario.getMustChangePassword()));
+            model.addAttribute("mensajeError", "Error interno al cambiar contrasena: " + (ex.getMessage() != null ? ex.getMessage() : ex.toString()));
             return "auth/password";
         }
     }

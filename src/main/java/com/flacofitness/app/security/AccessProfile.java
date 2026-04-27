@@ -52,7 +52,7 @@ public enum AccessProfile {
     }
 
     public String entryPoint() {
-        return this == CLIENTE ? "/cliente" : "/";
+        return dashboardEntryPoint();
     }
 
     public boolean canSeeSection(String section) {
@@ -92,6 +92,10 @@ public enum AccessProfile {
             return this != CLIENTE;
         }
 
+        if (path.startsWith("/chat") || path.startsWith("/api/chat")) {
+            return true;
+        }
+
         if (path.startsWith("/stats/finanzas")) {
             return this == ADMIN || this == STAFF_GERENTE;
         }
@@ -109,8 +113,23 @@ public enum AccessProfile {
         };
     }
 
+    public String dashboardEntryPoint() {
+        return switch (this) {
+            case ADMIN -> "/";
+            case STAFF_ENTRENADOR -> "/staff/dashboard";
+            case STAFF_RECEPCION -> "/staff/dashboard";
+            case STAFF_GERENTE -> "/staff/dashboard";
+            case CLIENTE -> "/cliente";
+        };
+    }
+
     private boolean canAccessAsTrainer(String path, boolean write) {
         if (path.equals("/") || path.startsWith("/stats")) {
+            return true;
+        }
+        if (path.startsWith("/staff/dashboard")
+                || path.startsWith("/staff/nominas")
+                || path.startsWith("/api/staff")) {
             return true;
         }
         if (path.startsWith("/rutinas") || path.startsWith("/clases")
@@ -128,6 +147,9 @@ public enum AccessProfile {
 
     private boolean canAccessAsReception(String path, boolean write) {
         if (path.equals("/") || path.startsWith("/stats")) {
+            return true;
+        }
+        if (path.startsWith("/staff/dashboard") || path.startsWith("/api/staff")) {
             return true;
         }
 
@@ -148,6 +170,14 @@ public enum AccessProfile {
         if (path.equals("/") || path.startsWith("/stats")) {
             return true;
         }
+        if (path.startsWith("/staff/dashboard")
+                || path.startsWith("/staff/nominas")
+                || path.startsWith("/api/staff")) {
+            return true;
+        }
+        if (path.startsWith("/automatizaciones")) {
+            return true;
+        }
         if (path.startsWith("/clases") || path.startsWith("/sesiones")
                 || path.startsWith("/rutinas") || path.startsWith("/asistencias")) {
             return !write && !isCreateOrEditRoute(path);
@@ -164,7 +194,7 @@ public enum AccessProfile {
     }
 
     private boolean canAccessAsClient(String path, boolean write) {
-        return path.startsWith("/cliente");
+        return path.startsWith("/cliente") || path.startsWith("/api/cliente");
     }
 
     private boolean isCreateOrEditRoute(String path) {

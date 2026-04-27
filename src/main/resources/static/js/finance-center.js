@@ -107,12 +107,8 @@ function renderCategoryChart(root, key, items) {
 }
 
 function createChart(canvas, config) {
-    const gridColor = document.documentElement.dataset.theme === "dark"
-        ? "rgba(148, 163, 184, .16)"
-        : "rgba(15, 23, 42, .12)";
-    const textColor = document.documentElement.dataset.theme === "dark"
-        ? "rgba(226, 232, 240, .82)"
-        : "rgba(15, 23, 42, .72)";
+    const gridColor = "rgba(15, 23, 42, .12)";
+    const textColor = "rgba(15, 23, 42, .72)";
 
     return new Chart(canvas, {
         ...config,

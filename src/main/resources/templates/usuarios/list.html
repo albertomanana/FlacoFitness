@@ -9,7 +9,7 @@
         <div th:replace="~{fragments/topbar :: topbar('Usuarios', 'Gestion de miembros.')}"></div>
 
         <main class="ff-content">
-            <div class="ff-content-stack ff-command-stack" data-module-key="usuarios">
+            <div class="ff-content-stack ff-page-stack" data-module-key="usuarios">
                 <div th:replace="~{fragments/alerts :: alerts(${mensajeExito}, ${mensajeError})}"></div>
                 <section class="ff-onboarding-tip ff-animate-in"
                          th:if="${currentModuleUxState != null and !currentModuleUxState.tooltipSeen()}"
@@ -26,8 +26,7 @@
                 <section class="ff-section-header ff-animate-in">
                     <div>
                         <span class="ff-section-eyebrow">Usuarios</span>
-                        <h2 class="ff-section-title">Directorio de miembros</h2>
-                        <p class="ff-section-subtitle">Miembros, planes y estado.</p>
+                        <h2 class="ff-section-title">Directorio de socios</h2>
                     </div>
                     <a class="btn btn-success" th:href="@{/usuarios/nuevo}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
@@ -63,9 +62,9 @@
                     </div>
                     <div class="col-sm-6 col-xl-3">
                         <article class="ff-surface-card ff-stat-card">
-                            <p class="ff-stat-label">Con foto</p>
-                            <p class="ff-stat-value" th:text="${#lists.size(usuarios.?[fotoPath != null and !fotoPath.isBlank()])}">0</p>
-                            <p class="ff-stat-note">Con avatar</p>
+                            <p class="ff-stat-label">Inactivos</p>
+                            <p class="ff-stat-value" th:text="${#lists.size(usuarios.?[activo == false])}">0</p>
+                            <p class="ff-stat-note">Miembros inactivos</p>
                         </article>
                     </div>
                 </section>
@@ -74,10 +73,8 @@
                     <div class="ff-card-header">
                         <div class="ff-card-toolbar w-100">
                             <div>
-                                <h3 class="ff-card-title">Base de usuarios</h3>
-                                <p class="ff-card-subtitle">Busqueda, orden y acciones.</p>
+                                <h3 class="ff-card-title">Directorio de socios</h3>
                             </div>
-                            <span class="ff-card-toolbar-note">DataTable activo.</span>
                         </div>
                     </div>
                     <div class="ff-card-body pt-0">
@@ -145,15 +142,6 @@
                                     </td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                            <a class="btn btn-outline-success btn-sm ff-btn-icon"
-                                               th:href="@{/usuarios/{id}/editar(id=${usuario.id})}"
-                                               title="Editar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                                </svg>
-                                            </a>
                                             <form th:if="${usuario.activo}"
                                                   th:action="@{/usuarios/{id}/desactivar(id=${usuario.id})}"
                                                   method="post"

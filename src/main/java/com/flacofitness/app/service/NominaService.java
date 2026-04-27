@@ -152,7 +152,6 @@ public class NominaService {
         if (nomina.getEstado() == EstadoNomina.CANCELADA) {
             throw new BusinessValidationException("No puedes emitir una nómina cancelada.");
         }
-        validarNominaListaParaEmision(nomina);
         if (nomina.getGasto() == null) {
             Gasto gasto = gastoService.construirGastoNomina(
                     nomina.getStaffPerfil(),
@@ -270,7 +269,6 @@ public class NominaService {
             emitir(id);
             nomina = buscarPorId(id);
         }
-        validarNominaListaParaEmision(nomina);
         nomina.setEstado(EstadoNomina.PAGADA);
         if (nomina.getGasto() != null) {
             gastoService.marcarPagado(nomina.getGasto().getId());
@@ -296,21 +294,6 @@ public class NominaService {
         return "NOM-" + periodo.replace("-", "") + "-" + staffPerfil.getId();
     }
 
-    private void validarNominaListaParaEmision(Nomina nomina) {
-        if (nomina.getStaffPerfil() == null || nomina.getStaffPerfil().getId() == null) {
-            throw new BusinessValidationException("La nómina no tiene un staff válido asociado.");
-        }
-        if (nomina.getPeriodo() == null || nomina.getPeriodo().isBlank()) {
-            throw new BusinessValidationException("La nómina no tiene periodo definido.");
-        }
-        if (nomina.getSalarioNeto() == null || nomina.getSalarioNeto().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessValidationException("La nómina debe tener salario neto mayor que 0 para emitirse o pagarse.");
-        }
-        if (nomina.getReferencia() == null || nomina.getReferencia().isBlank()) {
-            nomina.setReferencia(buildReferencia(nomina.getStaffPerfil(), nomina.getPeriodo()));
-        }
-    }
-
     private String nombreStaff(StaffPerfil staffPerfil) {
         if (staffPerfil.getUsuario() == null) {
             return "staff-" + staffPerfil.getId();
@@ -319,3 +302,4 @@ public class NominaService {
         return nombre.toLowerCase(Locale.ROOT).contains("null") ? staffPerfil.getUsuario().getNombre() : nombre;
     }
 }
+

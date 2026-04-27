@@ -8,12 +8,23 @@ Usar una entrada por decision tecnica relevante. Mantener el registro en orden c
 
 | Fecha | Decision | Motivo | Impacto |
 | --- | --- | --- | --- |
+| 2026-04-27 | Crear chat interno rule-based sin API externa | El usuario pidio un chat tipo agente para clientes y staff, pero el cierre debe evitar costes, claves externas y fuga de datos | `/chat` y `/api/chat/consulta` responden con datos propios y enlaces seguros segun perfil, sin LLM ni dependencia externa |
+| 2026-04-27 | Resolver automatizaciones como accion masiva bajo demanda | Automatizar no debe significar mas schedulers ni duplicar logica financiera ya existente | `OperationsAutomationService` delega en servicios actuales, continua ante errores parciales y devuelve resumen humano |
+| 2026-04-27 | Sustituir copy corporativo por textos cortos y footer de autor real | La interfaz sonaba artificial y el usuario queria que se sintiera mas humana y personal | Footer con `Hecho por Alberto Mañana`, mensajes mas directos y menos texto de relleno |
+| 2026-04-27 | Restaurar el CSS maduro previo al reemplazo compacto y conservar solo el sidebar como direccion visual | El reemplazo compacto dejo la interfaz pobre, imagenes sobredimensionadas y estilos maduros perdidos; el usuario solo aprobo el sidebar | Se recuperan formularios, cards, avatares, tablas y detalles del baseline estable; el sidebar queda fijo y la UI recupera consistencia |
+| 2026-04-27 | Eliminar observers masivos de reveal y scripts visuales bloqueantes | La interfaz se sentia lenta y las animaciones globales no aportaban suficiente valor | Las vistas aparecen inmediatamente, se reduce trabajo del cliente y se evita cualquier pantalla en blanco por JS visual |
+| 2026-04-27 | Revertir runtime Stitch/Operations Deck y eliminar dark mode | La capa visual experimental introducia complejidad, restos de tema oscuro, motion innecesario y riesgo de pantallas en blanco; el cierre del producto prioriza estabilidad y claridad | FlacoFitness queda con tema claro premium, sin Anime.js ni `hud-motion.js`, con Bootstrap refinado y menor superficie de fallo frontend |
+| 2026-04-27 | Crear rutas propias seguras para cliente y staff en lugar de enlazar a vistas admin | Cliente y staff no deben depender de rutas administrativas globales ni exponer datos ajenos por URL | `/cliente/rutinas/{id}`, `/cliente/pagos/{id}` y `/staff/nominas/{id}` validan ownership/contexto antes de renderizar |
 | AAAA-MM-DD | Describir la decision tecnica | Explicar por que se toma | Indicar consecuencias, beneficios o limitaciones |
 
 ## Registro inicial
 
 | Fecha | Decision | Motivo | Impacto |
 | --- | --- | --- | --- |
+| 2026-04-27 | Eliminar botones Activar/Desactivar de tablas de listado (clases, membresias) | Con filas clickables los botones en tabla son redundantes — las acciones de estado viven en el detalle | Tablas más limpias, menos acciones inline que distraen |
+| 2026-04-27 | Reemplazar KPI "Con foto" por "Inactivos" en usuarios/list | "Con foto" no tiene valor operativo — saber cuántos miembros están inactivos sí lo tiene | Mejor signal-to-noise en panel de métricas de usuarios |
+| 2026-04-27 | Eliminar ff-topbar-eyebrow "FlacoFitness" del topbar | El brand en el topbar era ruido en cada página — el sidebar ya muestra la identidad y el título de página ya da contexto | Topbar más limpio y ejecutivo |
+| 2026-04-27 | Añadir bloque CSS Tactical Polish final con mejoras de densidad y ergonomía | Tras revisión Stitch: KPI min-height reducido, sidebar hover menos agresivo, tabular nums en métricas, print styles, clock oculto en móvil | Interfaz más compacta, legible y performante |
 | 2026-03-23 | Adoptar una arquitectura monolitica MVC con Spring Boot y Thymeleaf | Se ajusta al alcance academico, facilita despliegue y simplifica la defensa del proyecto | Permite avanzar rapido con una base coherente y mantenible |
 | 2026-03-24 | Adoptar flujo de ramas con `main` estable y `develop` como integracion | Mejora trazabilidad y reduce riesgo de mezclar trabajo inestable con entregas | Facilita colaboracion, revision y automatizacion del repositorio |
 | 2026-04-07 | Ejecutar una alineacion automatica del esquema de `rutinas` al arrancar | La base MySQL conservaba `rutinas.usuario_id` aunque el dominio ya usa una relacion `ManyToMany` con `usuario_rutina` | Se migran relaciones legacy sin perder datos y se evita el error 500 al crear o editar rutinas |

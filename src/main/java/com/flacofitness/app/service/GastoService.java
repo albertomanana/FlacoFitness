@@ -440,3 +440,4 @@ public class GastoService {
                 .orElseThrow(() -> new ResourceNotFoundException("Material no encontrado con id: " + material.getId()));
     }
 }
+

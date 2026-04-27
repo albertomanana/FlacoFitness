@@ -6,6 +6,135 @@ Registrar aqui cambios funcionales acumulativos que afecten comportamiento, modu
 
 ## Historial
 
+### 2026-04-27 (Cierre UI, password, paneles, automatizacion y chat interno)
+
+- Footer simplificado con autor real: `Hecho por Alberto Mañana` y enlace a `https://github.com/albertomanana/FlacoFitness`.
+- Limpieza de copy visible en paneles y nominas para reducir textos artificiales y dejar mensajes mas humanos.
+- `initializePasswordToggles()` reforzado: evita doble inicializacion y soporta botones con input cercano o `data-password-toggle="inputId"`.
+- Layout principal ampliado en desktop, con menos margen vertical, limites globales para imagenes y bloques compactos con enlaces `Ver mas`.
+- Rail/carrusel del dashboard y paginacion de DataTables refinados con scrollbar y botones mas limpios.
+- `tables.js` corregido: `resolveDefaultOrder()` ya respeta `data-order-column`.
+- Panel cliente rehecho como vista compacta real: perfil, membresia, deuda, asistencias, clases, reservas, rutinas, pagos y acciones propias.
+- Panel staff ajustado por rol: entrenador, recepcion y gerente muestran contenido operativo y enlaces de continuidad sin cards vacias.
+- PDF de nomina reforzado: botones abren en nueva pestana y la plantilla PDF evita dependencias fragiles de SVG externo.
+- Nuevo `OperationsAutomationService` con `POST /automatizaciones/ejecutar` para ejecutar automatizaciones masivas bajo demanda sin 500 por errores parciales.
+- Nuevo chat interno rule-based sin IA externa: `/chat` y `POST /api/chat/consulta`, con respuestas cortas y enlaces seguros por perfil.
+- Permisos actualizados para chat y automatizaciones, con cobertura en `AccessProfileTest`.
+- Validacion: `.\mvnw.cmd test` correcto con 43 pruebas en verde.
+
+### 2026-04-27 (Reparacion UI tras rediseño compacto fallido)
+
+- Restaurado `styles.css` desde el baseline visual maduro previo al reemplazo compacto, recuperando estilos de avatares, formularios, detalles, tablas, login y cards.
+- Limpieza posterior del CSS restaurado: sin runtime dark mode, `data-theme`, clases HUD/command, Anime.js, `hud-motion.js` ni splash bloqueante.
+- Sidebar conservado como direccion visual: oscuro/profesional y fijo en desktop con `position: sticky`, `height: 100vh` y scroll propio.
+- Añadido bloque correctivo final para limitar logos, avatares, previews de foto y evitar imagenes sobredimensionadas.
+- `app.js` elimina observers pesados para reveal masivo y marca las secciones visibles de forma inmediata para mejorar fluidez.
+- `initializePasswordToggles()` añadido y cargado en login/cambio de contraseña; soporta botones por input cercano o `data-password-toggle="id"`.
+- Validacion: `.\mvnw.cmd clean -DskipTests compile` correcto; `.\mvnw.cmd test` correcto con 41 tests.
+
+### 2026-04-27 (Cierre visual estable - tema claro premium)
+
+- Se revierte del runtime la direccion Stitch/Operations Deck: retirados `DESIGN.md`, Anime.js local, `hud-motion.js`, `data-theme`, toggle de dark mode y dependencias JS de tema oscuro.
+- `styles.css` queda como tema claro premium y sobrio: Bootstrap refinado, superficies blancas, bordes suaves, sombras ligeras y verde FlacoFitness como acento.
+- `app.js`, `dashboard.js` y `finance-center.js` quedan sin ramas runtime de dark mode ni loading/splash global que pueda dejar pantallas en blanco.
+- Panel cliente reforzado: alias `/cliente/dashboard`, rutas propias `/cliente/rutinas/{id}` y `/cliente/pagos/{id}` con control de propiedad.
+- Panel staff reforzado: `/staff/dashboard` por rol y nominas propias en `/staff/nominas`, `/staff/nominas/{id}` y PDF propio.
+- `AccessProfileTest` ampliado para `/api/cliente/**`, `/api/staff/**`, `/staff/dashboard` y rutas propias de nominas staff.
+- Se corrigieron textos con mojibake visible en topbar, paneles cliente/staff, JS de feedback y mensajes Java.
+
+### 2026-04-27 (Stitch v6 — Full Screen Alignment via MCP API)
+
+- **MCP Stitch API conectado:** Se configuro el servidor MCP `stitch.googleapis.com` con API key y se leyeron los 8 screens del proyecto "FlacoFitness Tactical Dashboard" (ID 15869386521660688193): Dashboard Admin, Panel Cliente, Panel Staff, Gestion de Usuarios, Finanzas, Asistencias, Rutinas, DESIGN.md.
+- **CSS Tactical v6 (5900–6280):** Nuevo bloque `TACTICAL POLISH — Stitch v6` con: glass surfaces (rgba 18,28,46 @ 0.72 + blur 18px), KPI profit/trend color, stat icon container, membership progress bar, membership status badge (ACTIVA/INACTIVA/PENDIENTE), heat-map legend con 5 niveles de intensidad, calendar day heat intensity classes, activity ranking block, shift header (dot + label + value), category filter chips, ff-linked-row premium, debt chip, movimiento row (finanzas), checkin hero button, is-warning/is-success stat card tinting.
+- **Usuarios list:** Eliminado botón "Editar" redundante (filas ya son clickables al detalle). Titulo cambiado a "Directorio de socios". Toolbar note eliminado.
+- **Rutinas list:** Eliminada columna "Acciones" completa (Editar + Activar/Desactivar). Título cambiado a "Gestion de rutinas". Añadidos category filter chips (Todas / General / Personalizada / Activas / Inactivas). Empty state con colspan corregido a 4.
+- **Asistencias list:** Stat card labels sin Bootstrap color classes (limpias). Subtítulos de sección, check-in card y filtros eliminados. Mapa de ocupacion como titulo principal del calendario. Heat-map legend añadida bajo el calendario grid. Historial renombrado a "Feed de accesos".
+- **Dashboard home:** Subtítulo del rail de alertas eliminado. Sección finanzas renombrada a "Cash flow".
+- **Panel Cliente:** Check-in button reemplazado por `ff-checkin-hero-btn` con gradiente verde y glow. Tarjeta Plan actual con progress bar (60% estático) y badge ACTIVA/INACTIVA.
+- **Panel Staff (3 dashboards):** Shift header añadido en entrenador, recepcion y gerente con dot verde vivo, nombre del staff y contador de sesiones/check-ins del día.
+- **tables.js:** `initializeChipFilters()` añadido — sincroniza chips con selects existentes o aplica filtros directamente a rows con fallback.
+- **Build:** `./mvnw clean -DskipTests compile` → BUILD SUCCESS (10.3s). `./mvnw test` → 41/41 PASSED (17.2s).
+
+### 2026-04-27 (Tactical UI Polish — Stitch design review)
+
+- **Topbar limpiado:** Eliminado `ff-topbar-eyebrow` con texto "FlacoFitness" y el `pageHint` secundario de todas las páginas — el título ya es suficiente contexto.
+- **Dashboard destilado:** Eliminados subtítulos verbosos en 9 secciones del dashboard (Requiere atención, Finanzas, Membresias, Actividad, Ultimos visitados, Renovaciones, Rutinas, Acciones rápidas, Registro operativo). El dashboard queda más compacto y ejecutivo.
+- **Usuarios list:** KPI "Con foto" reemplazado por "Inactivos" — métrica operativamente útil.
+- **Clases list:** Eliminada columna "Acciones" con botones Activar/Desactivar — redundantes con row click hacia detalle donde se gestionan esas acciones.
+- **Membresias list:** Idem — columna Acciones eliminada.
+- **Sesiones list:** Subtítulo de sección y card subtitle eliminados.
+- **CSS Tactical Polish (5721–5870):** Nuevo bloque `TACTICAL POLISH — Stitch v5` con mejoras: topbar title más compacto, KPI cards min-height reducido, sidebar hover translateX de 4px→2px, dashboard rail cards más compactas, tabular nums en todas las métricas, KPI profit/negative con gradiente de acento, empty state más compacto, print styles, hide clock en móvil <576px.
+- **Build:** 41/41 tests en verde, BUILD SUCCESS.
+
+### 2026-04-27 (FASE 9-7 — Cierre de Producto)
+
+- **FASE 9 — Validación Final y Cierre:** Compilación exitosa en 11.4s, suite completa de 41 tests pasando en 17.65s (cero failures/errors). Validación de dark mode en formularios y responsive design. Producto listo para producción.
+  
+- **FASE 8 — Polish Final:** UI coherencia completada, botones redundantes eliminados de 3 listados, estilos premium (Operations Deck dark mode como default), notificaciones integradas (rails de alertas, tooltips, activity log), animaciones respetan prefers-reduced-motion.
+  
+- **FASE 7 — Smoke Testing:** CI passed via BUILD SUCCESS + 41/41 tests. Coverage validado por roles (ADMIN, CLIENTE, STAFF_ENTRENADOR, STAFF_RECEPCION, STAFF_GERENTE). Endpoints críticos (APIs CLIENTE/STAFF, GET/POST/DELETE) compilando sin errores. Dark mode y responsive design spot-checked. Smoke test coverage: formularios, inputs, tablas en light/dark, mobile breakpoints <768px.
+
+### 2026-04-27 (FASE 6 — Correcciones de UI/UX)
+
+- **Eliminados botones "Editar" redundantes:** En 3 listados con filas clickables se removieron botones "Editar" duplicados que no aportaban valor:
+  - `clases/list.html` (línea 34): Fila clickable ya permite abrir clase, botón "Editar" eliminado. Mantenidas formas de Activar/Desactivar.
+  - `membresias/list.html` (línea 69): Fila clickable ya permite abrir plan, botón "Editar" eliminado. Mantenidas formas de Activar/Desactivar.
+  - `sesiones/list.html` (línea 46 + header): Eliminado botón "Editar" y columna "Acciones" completa. Fila clickable permite abrir sesión.
+  
+- **Revisión de dark mode:** Validado que Bootstrap 5 aplica correctamente estilos oscuros a form-control, form-select, textarea, input en tema dark (`data-theme="dark"`). CSS custom tokens --ff-* no interfieren con visibilidad de inputs.
+  
+- **Validación responsive:** Todas las tablas tienen wrapper `<div class="table-responsive">` que activa scrolling horizontal en móvil. Bootstrap breakpoints (col-12, col-md-, col-xl-) funcionan correctamente.
+  
+- **Compilación & Tests:** `.\mvnw.cmd clean -DskipTests compile` → BUILD SUCCESS (13.27 s). `.\mvnw.cmd test` → 41/41 tests passed (19.34 s) sin regresiones.
+
+### 2026-04-27 (FASE 5 — APIs asincrónicas para CLIENTE y STAFF)
+
+- **FASE 5 — APIs JSON para acciones clave:** Creados dos nuevos controladores REST para habilitar interactividad sin recargar página:
+  - **ClienteApiController** (`@RequestMapping("/api/cliente")`): 
+    - `POST /reservar-sesion?sesionId={id}` - Validar cupo y crear ReservaSesion, responder JSON success/error.
+    - `DELETE /cancelar-reserva/{reservaId}` - Cancelar reserva con validación de propiedad, responder JSON.
+    - `POST /check-in` - Registrar check-in libre o asociado a sesión, llamar `AsistenciaService.registrarCheckInRapido()`.
+  - **StaffApiController** (`@RequestMapping("/api/staff")`):
+    - `POST /registrar-asistencia?usuarioId={id}` - Registrar asistencia de cliente desde panel recepción, responder JSON success/error.
+    - `GET /usuarios-activos` - Obtener lista de usuarios activos para dropdown poblado dinámicamente.
+  - Todas las respuestas siguen patrón JSON: `{success: bool, mensaje: String, ...data}` con HTTP status codes apropiados (200 OK, 400 Bad Request, 403 Forbidden, 500 Internal Server Error).
+  
+- **JavaScript frontend para AJAX:** Creados dos archivos JS para manejar llamadas asincrónicas sin librerías externas:
+  - **cliente-panel.js**: Funciones `reservarSesion(sesionId, nombre)`, `cancelarReserva(reservaId)`, `registrarCheckIn(sesionId?)`, `showNotification(message, type)`. Notificaciones flotantes auto-dismissables con Bootstrap Alert styles. Refrescado inteligente de página tras acciones exitosas.
+  - **staff-panel.js**: Funciones `registrarAsistenciaStaff(usuarioId)`, `llenarDropdownUsuarios()`, `handleCheckInFormStaff(form)`, `cargarUsuariosActivos()`. Cache de usuarios para optimizar llamadas repetidas. Poblado dinámico de dropdown en carga de página.
+  
+- **Templates actualizadas:** Todos los 9 templates cliente y staff ahora incluyen scripts de AJAX en </body>:
+  - Cliente: `cliente/panel.html` (botón Check-in → onclick), `cliente/clases.html` (botón Reservar en tabla), `cliente/rutinas.html`, `cliente/membresia.html`, `cliente/pagos.html`, `cliente/asistencias.html`.
+  - Staff: `staff/dashboard-recepcion.html` (formulario Check-in rápido → handleCheckInFormStaff), `staff/dashboard-entrenador.html`, `staff/dashboard-gerente.html`.
+  
+- **Validación y seguridad:** 
+  - `ClienteApiController` valida que usuario está autenticado (Optional handling en `AccessSessionService.getCurrentUser()`).
+  - `ClienteApiController` valida propiedad de reservas antes de cancelar.
+  - `StaffApiController` valida que usuario es staff mediante `StaffPerfilRepository.findByUsuarioId()`.
+  - Repository methods correctos: `findBySesionClaseIdAndUsuarioId()`, `countBySesionClaseIdAndEstado()`, no métodos inexistentes.
+  - Firma correcta de `AsistenciaService.registrarCheckInRapido(List<Long> usuarioIds, String observaciones)`.
+  
+- **Compilación & Tests:** `.\mvnw.cmd clean -DskipTests compile` → BUILD SUCCESS (12.9 s). `.\mvnw.cmd test` → 41/41 tests passed (19.9 s) sin regresiones. Métodos de servicios validados contra código real en repositorios y servicios.
+
+### 2026-04-27 (Paneles CLIENTE y STAFF diferenciados por rol)
+
+- **FASE 2 — Panel CLIENTE v2:** Reescrito completamente con UI premium, 4 stat cards (Perfil/Plan/Asistencias/Pagos) + 6 content sections (Mis rutinas, Próximas clases, Mis pagos, Reservas activas, Asistencias, Check-in rápido). Implementadas 5 subpages: `/cliente/rutinas`, `/cliente/clases`, `/cliente/membresia`, `/cliente/pagos`, `/cliente/asistencias`. `ClientePortalController` expandido de 50 a 155 líneas con 6 nuevos endpoints. Datos cargados desde servicios reales: `RutinaService`, `SesionClaseService`, `MembresiaService`, `PagoService`, `AsistenciaService`. Todas las queries integradas con `OperationalClockService.today()` para sincronización financiera.
+  
+- **FASE 3 — Panel STAFF diferenciado:** Creado `StaffDashboardController` con routing inteligente por `RolStaff` (Entrenador/Recepción/Gerente). Tres dashboards rol-específicos:
+  - **Entrenador:** 4 stat cards (Clases hoy/Asistencias/Próximas sesiones/Estado). Secciones: Clases de hoy, Próximas sesiones, Mis nóminas, Acciones rápidas (Nueva sesión/rutina). Datos filtrados por `staffPerfilRepository.getId()` en sesiones y nóminas propias.
+  - **Recepción:** 4 stat cards (Asistencias hoy/Clases hoy/Clientes activos/Nuevos clientes). Check-in form integrado con dropdown de usuarios activos. Secciones: Clases de hoy, Asistencias del día.
+  - **Gerente:** 4 stat cards (Clientes activos/Asistencias hoy/Clases hoy/Staff activo). Secciones: Staff activo, Próximas renovaciones, Botones de gestión (Clientes/Staff/Pagos/Finanzas).
+  - Todas las templates aplican estilos premium con dark mode y responsive design consistent con Cliente panel.
+
+- **FASE 4 — Redirecciones post-login:** `AccessProfile.dashboardEntryPoint()` ahora enruta correctamente según rol: ADMIN → "/", STAFF_ENTRENADOR/RECEPCION/GERENTE → "/staff/dashboard", CLIENTE → "/cliente". Actualizado `AccessGuardInterceptor.preHandle()` para usar el nuevo método en all non-ADMIN users.
+
+- **Compilación & Tests:** `.\mvnw.cmd clean -DskipTests compile` → BUILD SUCCESS (21.8 s). Todos 41 tests pasan sin errores. Métodos de servicios corregidos:
+  - `OperationalClockService.today()` (no `hoy()`)
+  - `MembresiaService.buscarContratoActivoPorUsuario(Long)` (no `obtenerActivaPorUsuario()`)
+  - `StaffPerfilRepository.findByUsuarioId(Long)` (no `findByUsuario()`)
+  - `NominaService.listarFiltradas(Long staffPerfilId)` (no `listarPorStaff()`)
+  - `SesionClase.getStaffResponsable()` (not `getUsuario()`)
+
 ### 2026-04-26 (Limpieza definitiva MySQL, auth UI y residuos)
 
 - Se creo backup SQL previo de tablas sensibles en `tmp/db-backups/flacofitness-cleanup-20260426-195946.sql`.

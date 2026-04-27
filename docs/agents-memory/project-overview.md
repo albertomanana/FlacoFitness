@@ -40,11 +40,13 @@ Dejar una base estable, profesional y defendible para seguir iterando sin romper
 - Dashboard: operativo con metricas, graficos, notificaciones y un rail premium de alertas accionables.
 - Dashboard premium v2: incorpora bloque `Requiere atencion`, guia inicial, actividad reciente y ultimos visitados.
 - Acceso por cuenta con `email/username + password`: operativo.
-- Shell premium "Operations Deck": dark-first, glassmorphism, acento cian HUD, barra activa deslizante, scanline topbar, HUD KPI cards con corner ticks, Chart.js paleta tematica, DataTables y forms reskinned, stepper de nominas 4-estados. Light mode conservado funcional.
+- Shell premium actual: tema claro sobrio basado en Bootstrap refinado, cards blancas, bordes suaves, verde FlacoFitness como acento, tablas limpias y sin runtime experimental de dark mode, Stitch, Anime.js ni `hud-motion.js`.
 - Nominas: formulario premium con preview en vivo, flujo `BORRADOR -> EMITIDA -> PAGADA/CANCELADA`, detalle tipo expediente y PDF profesional.
 - Navegacion operativa: en progreso avanzado. Los modulos principales ya redirigen a detalle tras crear/editar y varias fichas secundarias dejaron de ser CRUDs planos.
 - Productividad: FAB global por perfil, acciones contextuales, buscador global v1, filtros persistentes en navegador y memoria UX por modulo ya estan integrados.
 - Trazabilidad de producto: existen `recent_visit`, `ux_memory_state` y `activity_log` para dar sensacion de SaaS vivo y no de simple CRUD.
+- Chat interno v1: asistente rule-based sin IA externa para ADMIN, STAFF y CLIENTE, con respuestas cortas basadas en datos propios y enlaces seguros.
+- Automatizaciones masivas bajo demanda: ADMIN y STAFF_GERENTE pueden lanzar un cierre operativo desde `/automatizaciones/ejecutar` sin introducir schedulers nuevos.
 
 ## Base de datos
 
@@ -65,12 +67,35 @@ No hay H2, no hay fallback en memoria y no debe reintroducirse.
 - El arbol de trabajo no esta limpio; no hacer reset ciego.
 - `.\mvnw.cmd clean -DskipTests compile` pasa.
 - `.\mvnw.cmd test` pasa.
-- Suite actual validada: 35 tests en verde.
+- Suite actual validada: 43 tests en verde.
 - La app arranca en `http://localhost:8080` cuando MySQL local esta disponible.
 - En la validacion del 2026-04-26 MySQL respondio, la app arranco en `8083` y se verificaron rutas criticas con sesion ADMIN real.
 - Credenciales bootstrap para usuarios legacy: password temporal definida por `app.auth.bootstrap-password` y obligacion de cambio al primer acceso.
 
 ## Ultima iteracion cerrada
+
+En la iteracion 2026-04-27 de cierre UI/producto:
+
+- el footer queda personal y simple: `Hecho por Alberto Mañana` enlazado al GitHub del proyecto;
+- se limpio copy artificial en pantallas prioritarias y se reforzo el layout para aprovechar mas ancho sin volver a meter efectos pesados;
+- se corrigio el toggle de contraseña para formularios de auth y formularios con `data-password-toggle`;
+- cliente y staff tienen paneles compactos con datos reales, enlaces `Ver mas` y acciones propias;
+- se corrigio el boton PDF de nominas a nivel de enlace y plantilla compatible con OpenHTMLtoPDF;
+- se añadieron chat interno y automatizaciones manuales controladas;
+- validacion: `.\mvnw.cmd test` con 43 pruebas en verde.
+
+En la iteracion 2026-04-27 se ejecuto una reversion visual controlada para cerrar producto:
+
+- se retiraron del runtime las referencias experimentales a Stitch/Operations Deck, Anime.js, `hud-motion.js`, `data-theme` y toggle de dark mode;
+- `styles.css` queda como tema claro premium y ligero, con compatibilidad para clases existentes pero sin semantica HUD/command center;
+- `app.js`, `dashboard.js` y `finance-center.js` ya no dependen de ramas de tema oscuro ni transiciones globales que puedan dejar pantallas en blanco;
+- `/cliente` conserva alias `/cliente/dashboard` y ahora tiene detalles propios seguros para rutinas y pagos (`/cliente/rutinas/{id}`, `/cliente/pagos/{id}`);
+- `/staff/dashboard` se mantiene como entrada por rol y se añadieron rutas propias seguras de nominas staff (`/staff/nominas`, `/staff/nominas/{id}`, PDF propio);
+- `AccessProfile` permite APIs propias (`/api/cliente/**`, `/api/staff/**`) sin abrir rutas administrativas globales;
+- se corrigieron copys con mojibake y CTAs visibles en paneles cliente/staff y shell;
+- validacion local: `.\mvnw.cmd -DskipTests compile` correcto; pendiente smoke browser/MySQL manual tras levantar la app.
+
+Nota: la iteracion Command Center/Operations Deck de 2026-04-26 queda como historial, pero fue revertida en runtime por introducir complejidad visual y dark mode parcial incompatible con el cierre estable.
 
 En la iteracion 2026-04-26 se ejecuto la limpieza definitiva de base de datos y residuos:
 

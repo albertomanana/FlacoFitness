@@ -207,10 +207,13 @@ function rowMatchesFilters(row, activeFilters) {
 }
 
 function resolveDefaultOrder(table) {
-    const orderColumn = Number(table.dataset.orderColumn ?? 0);
+    const orderColumn = table.dataset.orderColumn != null
+        ? Number(table.dataset.orderColumn)
+        : 0;
     const orderDirection = table.dataset.orderDirection || "asc";
 
     return Number.isNaN(orderColumn)
         ? [[0, "asc"]]
         : [[orderColumn, orderDirection]];
 }
+

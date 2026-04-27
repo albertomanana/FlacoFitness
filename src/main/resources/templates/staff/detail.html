@@ -241,7 +241,7 @@
                                 </div>
                                 <div class="ff-card-body">
                                     <div th:if="${not #lists.isEmpty(nominasRecientes)}" class="ff-chip-list">
-                                        <a th:each="nomina : ${nominasRecientes}" class="ff-soft-link-card" th:href="@{/nominas/{id}(id=${nomina.id})}">
+                                        <a th:each="nomina : ${nominasRecientes}" class="ff-soft-link-card" th:href="@{/staff/nominas/{id}(id=${nomina.id})}">
                                             <span class="ff-soft-link-title" th:text="${nomina.periodo}">2026-01</span>
                                             <span class="ff-soft-link-meta" th:text="${nomina.salarioNeto != null ? #numbers.formatDecimal(nomina.salarioNeto, 1, 'POINT', 2, 'COMMA') + ' EUR' : 'Sin neto'}">0.00 EUR</span>
                                         </a>

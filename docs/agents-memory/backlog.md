@@ -8,7 +8,8 @@
 - Ejecutar QA visual profunda por modulo sobre MySQL real: `/rutinas`, `/asistencias`, `/staff`, `/membresias`, `/trials`, `/clases`, `/sesiones`, `/maquinas`, `/materiales` y `/cliente`.
 - Verificar smoke por perfiles reales (`ADMIN`, `STAFF_ENTRENADOR`, `STAFF_RECEPCION`, `STAFF_GERENTE`, `CLIENTE`) incluyendo accesos denegados, redirecciones y visibilidad de sidebar.
 - Ejecutar QA visual especifica del bloque financiero tras el nuevo builder de nominas, el detalle premium y el PDF individual.
-- Revisar dark mode modulo por modulo con foco en login, formularios, tablas, dropdowns y charts.
+- Smoke visual especifico tras reparacion UI: verificar sidebar fijo, tamaño de imagenes, usuario form, cliente panel y staff dashboard en navegador real.
+- Smoke visual del cierre UI 2026-04-27: verificar footer, chat interno, `/automatizaciones/ejecutar`, PDF de nomina real y paneles cliente/staff con datos MySQL.
 - Revisar notificaciones restantes para que todas apunten a detalle o listado filtrado, no a modulos genericos.
 - Anadir tests dedicados para `ProductIntelligenceService`, `GlobalSearchService`, truncado de `RecentVisitService` y flujo de `NominaService`.
 
@@ -29,6 +30,21 @@
 - Crear diagramas ER y diagrama de arquitectura en `docs/diagrams/`.
 - Evaluar multi-gimnasio/multi-tenant solo si aparece un caso comercial real.
 - Revisar codificacion de algunos markdown antiguos para eliminar restos de mojibake.
+
+## COMPLETADO 2026-04-27 (cierre UI, password, chat y automatizacion)
+
+- [x] Footer personal con `Hecho por Alberto Mañana` y enlace a GitHub.
+- [x] Copy visible reducido en paneles y nominas para evitar tono artificial.
+- [x] Toggle de contraseña reforzado y protegido contra doble inicializacion.
+- [x] Layout ampliado, scroll reducido y estilos de carrusel/paginacion refinados.
+- [x] `tables.js` corrige `data-order-column`.
+- [x] Panel cliente compacto con datos propios y enlaces `Ver mas`.
+- [x] Panel staff por rol con contenido operativo real.
+- [x] PDF de nomina abre en nueva pestaña y plantilla evita logo SVG fragil.
+- [x] `OperationsAutomationService` y `/automatizaciones/ejecutar` añadidos.
+- [x] `InternalAssistantService`, `/chat` y `/api/chat/consulta` añadidos sin IA externa.
+- [x] Permisos de chat/automatizaciones cubiertos en `AccessProfileTest`.
+- [x] Validacion: `.\mvnw.cmd test` con 43 pruebas en verde.
 
 ## COMPLETADO 2026-04-22 (bloque financiero)
 

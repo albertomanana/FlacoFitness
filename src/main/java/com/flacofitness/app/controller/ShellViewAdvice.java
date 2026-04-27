@@ -38,8 +38,11 @@ import java.util.Set;
         MaquinaController.class,
         MaterialController.class,
         ClientePortalController.class,
+        StaffDashboardController.class,
         BusquedaController.class,
-        CuentaController.class
+        CuentaController.class,
+        ChatController.class,
+        OperationsAutomationController.class
 })
 public class ShellViewAdvice {
 
